@@ -77,3 +77,8 @@ fi
 
 SOLINK=" $SOLINK $TARGET.$SOSUFFIX "
 export COMP SOLINK M32 LIBREADLINE
+
+echo "comp:$COMP"
+echo "solink:$SOLINK"
+echo "m32:$M32"
+echo "libreadline:$LIBREADLINE"
