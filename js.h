@@ -61,6 +61,8 @@
 
 #if defined(__FreeBSD__)
 #define SYS SYS_FREEBSD
+#undef SY_FREEBSD
+#define SY_FREEBSD 1
 #endif
 
 #if defined(__NetBSD__)
@@ -168,8 +170,8 @@
  error: "SYS must be defined"
 #endif
 
-#if 1!=SY_WIN32+SY_LINUX+SY_MAC
- error: "one and only one of SY_WIN32, SY_LINUX, SY_MAC must be 1"
+#if 1!=SY_WIN32+SY_LINUX+SY_MAC+SY_FREEBSD
+#error "one and only one of SY_WIN32, SY_LINUX, SY_MAC, SY_FREEBSD must be 1"
 #endif 
 
 #endif /* only include once */

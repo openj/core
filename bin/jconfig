@@ -10,8 +10,8 @@ LIBREADLINE=""
 # readline should be enabled if possible
 
 # remove # from next 2 lines to enable readline
-# readline=1
-# LIBREADLINE=" -lreadline "
+readline=1
+LIBREADLINE=" -lreadline "
 
 # if link fails install readline or try one of next lines
 # LIBREADLINE=" -ledit -lncurses "
@@ -45,6 +45,12 @@ COMP=" -fPIC -O3 -fno-strict-aliasing -DNOASM "
 if [ $un == Linux ]
 then
 SOLINK="  -shared -W1,soname,libj.so -lm -ldl -o "
+SOSUFFIX=so
+fi
+
+if [ $un == FreeBSD ]
+then
+SOLINK="  -shared -W1,soname,libj.so -lm -o "
 SOSUFFIX=so
 fi
 
