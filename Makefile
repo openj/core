@@ -2,6 +2,11 @@ CFLAGS=-DREADLINE -D_UNIX64 -fPIC -O3 -fno-strict-aliasing -DNOASM
 SOLINK=-shared -W1,soname,libj.so -lm 
 M32=
 LIBREADLINE=-lreadline
+LIBJ=libj.so
+JCONSOLE=jconsole
+BUILD_OBJS=$(LIBJ) $(JCONSOLE)
+TSDLL_OBJS=tsdll.o
+JCONSOLE_OBJS=jconsole.o jeload.o
 LIBJ_OBJS= \
 	a.o \
 	ab.o \
@@ -125,19 +130,19 @@ LIBJ_OBJS= \
 	xt.o \
 	xu.o 
 
-all : libj jconsole
+all : $(BUILD_OBJS)
 
-libj : $(LIBJ_OBJS)
-	cc $(LIBJ_OBJS) $(SOLINK) -o libj.so
+$(LIBJ) : $(LIBJ_OBJS)
+	cc $(LIBJ_OBJS) $(SOLINK) -o $(LIBJ)
 
-jconsole : jconsole.o jeload.o
-	cc jconsole.o jeload.o $(JCON_LINK) $(M32) $(LIBREADLINE) -o jconsole
+$(JCONSOLE) : $(JCONSOLE_OBJS)
+	cc $(JCONSOLE_OBJS) $(JCON_LINK) $(M32) $(LIBREADLINE) -o $(JCONSOLE)
 
-tsdll : tsdll.o
-	cc tsdell.o $(SOLINK)
+tsdll : $(TSDLL_OBJS)
+	cc $(TSDLL_OBJS) $(SOLINK)
 
+.PHONY: clean
 clean : 
-	rm -f jconsole
-	rm -f *.o
-	rm -f *.so
+	rm -f $(JCONSOLE_OBJS) $(LIBJ_OBJS) $(TSDLL_OBJS) $(BUILD_OBJS)
+
 
