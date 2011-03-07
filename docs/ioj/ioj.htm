@@ -1,0 +1,149 @@
+<html>
+
+<head>
+<title>An Implementation of J</title>
+</head>
+
+<body>
+
+<p align=center>
+<font size="6"><b>An Implementation of J</b></font><br>
+<font size="5"><b>Roger K.W. Hui</b></font>
+</p>
+Copyright © 1990-2011, Jsoftware Inc. <br>last updated: 2000-06-23</td>
+<br>
+
+<hr>
+<p align=center><font size="5"><b>Preface</b></font></p>
+J is a dialect of APL freely available on a wide variety of machines.
+It is the latest in the line of development known as "dictionary APL".
+The spelling scheme uses the ASCII alphabet. 
+The underlying concepts, such as arrays, verbs, adverbs, and rank,
+are extensions and generalizations of ideas in APL\360.
+Anomalies have been removed.
+The result is at once simpler and more powerful than previous dialects.<br><br>
+
+This document describes an implementation of J in C.
+The reader is assumed to be familiar with J and C.
+J is specified by the 
+<a href="iojbib.htm#JDictionary"><i>J Dictionary</i></a>, and
+introductions to the language are available in
+<a href="iojbib.htm#ProgrammingInJ"><i>Programming in J</i></a> and 
+<a href="iojbib.htm#JPrimer"><i>J Primer</i></a>; 
+C is described in 
+<a href="iojbib.htm#CProgrammingLanguage"><i>The C Programming Language</i></a>.<br><br>
+
+Why "J"? It is easy to type.
+
+<p align=center><a name="KEI"></a><font size="5"><b>Acknowledgment</b></font></p>
+<p align=center><em>Ex ungue leonem</em>.</p>
+
+<hr>
+<br>
+
+<a name="TOC"></a>
+<table align=center>
+<caption><font size=5><b>Contents</b></font></caption>
+<tr><td>&nbsp;</td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>0. <a href="iojIntro.htm">Introduction</a></td>
+    <td>6. <a href="iojDisp.htm">Display</a></td>
+</tr>
+<tr><td> </td>
+    <td>&nbsp;&nbsp;6.1 <a href="iojDisp.htm#Numeric">Numeric Display</a></td>
+</tr>
+<tr><td>1. <a href="iojSent.htm" >Interpreting a Sentence</a></td>
+    <td>&nbsp;&nbsp;6.2 <a href="iojDisp.htm#Boxed">Boxed Display</a> </td>
+</tr>
+<tr><td>&nbsp;&nbsp;1.1 <a href="iojSent.htm#Word Formation">Word Formation</a></td>
+    <td>&nbsp;&nbsp;6.3 <a href="iojDisp.htm#Formatted">Formatted Display</a></td>
+</tr>
+<tr><td>&nbsp;&nbsp;1.2 <a href="iojSent.htm#Parsing">Parsing</a></td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;&nbsp;1.3 <a href="iojSent.htm#Trains">Trains</a></td>
+    <td>7. <a href="iojComp.htm">Comparatives</a></td>
+</tr>
+<tr><td>&nbsp;&nbsp;1.4 <a href="iojSent.htm#Name Resolution">Name Resolution</a></td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;</td>
+    <td><a href="iojATW.htm">Appendices</a></td>
+</tr>
+<tr><td>2. <a href="iojNoun.htm">Nouns</a></td>
+    <td>&nbsp;&nbsp;A.  <a href="iojATW.htm">Incunabulum</a></td>
+</tr>
+<tr><td>&nbsp;&nbsp;2.1 <a href="iojNoun.htm#Arrays">Arrays</a></td>
+    <td>&nbsp;&nbsp;B.  <a href="iojSp.htm">Special Code</a></td>
+</tr>
+<tr><td>&nbsp;&nbsp;2.2 <a href="iojNoun.htm#Types">Types</a></td>
+    <td>&nbsp;&nbsp;C.  <a href="iojTest.htm">Test Scripts</a></td>
+</tr>
+<tr><td>&nbsp;&nbsp;2.3 <a href="iojNoun.htm#Memory Management">Memory Management</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>&nbsp;&nbsp;D.  <a href="iojFiles.htm">Program Files</a></td>
+</tr>
+<tr><td>&nbsp;&nbsp;2.4 <a href="iojNoun.htm#Global Variables">Global Variables</a></td>
+    <td>&nbsp;&nbsp;E.  <a href="iojXenos.htm">Foreign Conjunction</a></td>
+</tr>
+<tr><td>&nbsp;</td>
+    <td>&nbsp;&nbsp;F.  <a href="iojSumm.htm">System Summary</a></td>
+</tr>
+<tr><td>3. <a href="iojVerb.htm">Verbs</a></td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;&nbsp;3.1 <a href="iojVerb.htm#Anatomy">Anatomy of a Verb</a></td>
+    <td><a href="iojBib.htm">Bibliography</a></td>
+</tr>
+<tr><td>&nbsp;&nbsp;3.2 <a href="iojVerb.htm#Rank">Rank</a></td>
+    <td><a href="iojIndex.htm">Glossary and Index</a></td>
+</tr>
+<tr><td>&nbsp;&nbsp;3.3 <a href="iojVerb.htm#Atomic">Atomic (Scalar) Verbs</a></td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;&nbsp;3.4 <a href="iojVerb.htm#Obverse">Obverses, Identities, and Variants</a>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;&nbsp;3.5 <a href="iojVerb.htm#Error">Error Handling</a></td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;</td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>4. <a href="iojAdv.htm">Adverbs and Conjunctions</a></td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;</td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>5. <a href="iojRep.htm">Representation</a></td>
+    <td>&nbsp;</td>
+</tr>
+    <td>&nbsp;&nbsp;5.1 <a href="iojRep.htm#Atomic">Atomic Representation</a></td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;&nbsp;5.2 <a href="iojRep.htm#Boxed">Boxed Representation</a></td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;&nbsp;5.3 <a href="iojRep.htm#Tree">Tree Representation</a></td>
+    <td>&nbsp;</td>
+</tr>
+<tr><td>&nbsp;&nbsp;5.4 <a href="iojRep.htm#Linear">Linear Representation</a></td>
+    <td>&nbsp;</td>
+</tr>
+</table>
+
+<br>
+<hr>
+
+<a href="iojIntro.htm">Next</a>
+ &#149; 
+<a href="iojIndex.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

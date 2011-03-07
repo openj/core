@@ -1,0 +1,186 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Foreign Conjunction</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Foreign Conjunction</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<hr>
+<br>
+
+<pre>
+0!:0    scm00     &#149; scd00   
+0!:1    scm01     &#149; scd01   
+0!:2    sct1      &#149; sct2    
+0!:3    scz1      &#149; scz2    
+0!:10   scm10     &#149; scd10   
+0!:11   scm11     &#149; scd11   
+0!:100  scm00     &#149; scd00   
+0!:101  scm01     &#149; scd01   
+0!:110  scm10     &#149; scd10   
+0!:111  scm11     &#149; scd11   
+
+1!:0    jdir      &#149;         
+1!:1    jfread    &#149;         
+1!:2              &#149; jfwrite 
+1!:3              &#149; jfappend
+1!:4    jfsize    &#149;         
+1!:5    jmkdir    &#149;         
+1!:6    jfatt1    &#149; jfatt2  
+1!:7    jfperm1   &#149; jfperm2 
+1!:11   jiread    &#149;         
+1!:12             &#149; jiwrite 
+1!:20   jfiles    &#149;         
+1!:21   jopen     &#149;         
+1!:22   jclose    &#149;         
+1!:30   jlocks    &#149;         
+1!:31   jlock     &#149;         
+1!:32   junlock   &#149;         
+1!:40   pathapp   &#149;         
+1!:41   pathdll   &#149;         
+1!:42   pathlib   &#149;         
+1!:55   jferase   &#149;         
+
+2!:0    host      &#149;         
+2!:1    hostne    &#149;         
+2!:2    hostio    &#149;         
+2!:3    jwait     &#149;         
+2!:4    jargv     &#149;         
+2!:5    jgetenv   &#149;         
+2!:55   joff      &#149;         
+
+3!:0    stype     &#149;         
+3!:1    ir        &#149;         
+3!:2    ri        &#149;         
+3!:3    irx       &#149;         
+3!:4              &#149; ic2     
+3!:5              &#149; fc2     
+
+4!:0    nc        &#149;         
+4!:1    nl1       &#149; nl2     
+4!:3    snl       &#149;         
+4!:4    scind     &#149;         
+4!:5    nch       &#149;         
+4!:55   ex        &#149;         
+4!:56   exall     &#149;         
+
+5!:0    fxx       &#149;         
+5!:1    arx       &#149;         
+5!:2    drx       &#149;         
+5!:4    trx       &#149;         
+5!:5    lrx       &#149;         
+5!:6    prx       &#149;         
+
+6!:0    ts        &#149;         
+6!:1    tss       &#149;         
+6!:2    tsit1     &#149; tsit2   
+6!:3    dl        &#149;         
+6!:8    qpfreq    &#149;         
+6!:9    qpctr     &#149;         
+6!:10   pmarea1   &#149; pmarea2 
+6!:11   pmunpack  &#149;         
+6!:12   pmctr     &#149;         
+6!:13   pmstats   &#149;         
+
+7!:0    sp        &#149;         
+7!:1    sps       &#149;         
+7!:2    spit      &#149;         
+7!:3    spcount   &#149;         
+7!:4    spfree    &#149;         
+
+9!:0    rlq       &#149;         
+9!:1    rls       &#149;         
+9!:2    dispq     &#149;         
+9!:3    disps     &#149;         
+9!:4    promptq   &#149;         
+9!:5    prompts   &#149;         
+9!:6    boxq      &#149;         
+9!:7    boxs      &#149;         
+9!:8    evmq      &#149;         
+9!:9    evms      &#149;         
+9!:10   ppq       &#149;         
+9!:11   pps       &#149;         
+9!:12   sysq      &#149;         
+9!:14   versq     &#149;         
+9!:16   posq      &#149;         
+9!:17   poss      &#149;         
+9!:18   ctq       &#149;         
+9!:19   cts       &#149;         
+9!:20   mmaxq     &#149;         
+9!:21   mmaxs     &#149;         
+9!:22   numdefq   &#149;         
+9!:23   numdefs   &#149;         
+9!:24   seclevq   &#149;         
+9!:25   seclevs   &#149;         
+9!:26   ilxq      &#149;         
+9!:27   ilxs      &#149;         
+9!:28   doilxq    &#149;         
+9!:29   doilxs    &#149;         
+
+11!:x   wd        &#149;         
+
+13!:0   dbc       &#149;         
+13!:1   dbs       &#149;         
+13!:2   dbsq      &#149;         
+13!:3   dbss      &#149;         
+13!:4   dbrun     &#149;         
+13!:5   dbnext    &#149;         
+13!:6   dbret     &#149;         
+13!:7   dbjump    &#149;         
+13!:8   dbsig1    &#149; dbsig2  
+13!:9   dbrr1     &#149; dbrr2   
+13!:10  dbrrx1    &#149; dbrrx2  
+13!:11  dberr     &#149;         
+13!:12  dbetx     &#149;         
+13!:13  dbcall    &#149;         
+13!:14  dbtrapq   &#149;         
+13!:15  dbtraps   &#149;         
+13!:16  J         &#149;         
+13!:17  dbq       &#149;         
+13!:18  dbsz      &#149;         
+13!:31            &#149; colaux  
+
+15!:0             &#149; cd      
+15!:1   memr      &#149;         
+15!:2             &#149; memw    
+15!:3   mema      &#149;         
+15!:4   memf      &#149;         
+15!:5   cdf       &#149;         
+15!:6   symget    &#149;         
+15!:7   symset    &#149;         
+15!:8   gh15      &#149;         
+15!:9   fh15      &#149;         
+15!:10  cder      &#149;         
+15!:11  cderx     &#149;         
+15!:12  smmblks   &#149;         
+
+18!:0   locnc     &#149;         
+18!:1   locnl1    &#149; locnl2  
+18!:2   locpath1  &#149; locpath2
+18!:3   loccreate &#149;         
+18!:4   locswitch &#149;         
+18!:5   locname   &#149;         
+18!:55  locexmark &#149;         
+
+128!:0  qr        &#149;         
+128!:1  rinv      &#149;         
+</pre>
+
+<br>
+<hr>
+
+<a href="iojSumm.htm">Next</a>
+ &#149; 
+<a href="iojFiles.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

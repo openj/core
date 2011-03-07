@@ -1,0 +1,596 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Verbs</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Verbs</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<a href="#Anatomy">Anatomy of a Verb</a><br>
+<a href="#Rank">Rank</a><br>
+<a href="#Atomic">Atomic (Scalar) Verbs</a><br>
+<a href="#Obverse">Obverses, Identities, and Variants</a><br>
+<a href="#Errors">Error Handling</a><br><br>
+
+<hr>
+<br>
+
+<a name="Anatomy"></a><font size="5"><b>Anatomy of a Verb</b></font><br><br>
+
+Verbs are implemented as functions.  A verb applies to a noun
+(if used monadically) or to two nouns (if used dyadically),
+and produces a noun result.  
+The defined type<tt> <a name="AF">AF</a> </tt>and the 
+macros<tt> <a name="F1">F1</a> </tt>and<tt> <a name="F2">F2</a> </tt>
+codify these properties:<br><br>
+
+<pre>
+   typedef A(*AF)();
+
+   #define F1(f)  A f(J jt,    A w); 
+   #define F2(f)  A f(J jt,A a,A w); 
+</pre>
+<tt>AF </tt>is the data type of a function having these properties.<tt> </tt>
+<tt>F1 </tt>and<tt> F2 </tt>are used to specify the headers of functions
+implementing verbs (and adverbs and conjunctions); 
+the majority of functions in the implementation are so specified.<tt> </tt>
+(<tt><a href="iojNoun.htm#jt">jt</a> </tt>is the global variables 
+parameter;<tt> a </tt>and<tt> w </tt>denote <font face="Symbol">a</font>
+and <font face="Symbol">w</font>, traditionally the names given to 
+the left and right arguments of APL functions.)
+Verbs are represented by arrays of type<tt> VERB</tt>;<tt> </tt>
+the details of this representation are discussed in
+<a href="iojAdv.htm">Adverbs and Conjunctions</a>.<br><br>
+
+The verb<tt> j. </tt>is used here to illustrate the relationship
+among relevant system components.<tt> j. </tt>has monad<tt> 0j1&*"0 </tt>
+and dyad<tt> (+j.)"0</tt>.<tt> </tt>There are three main steps in
+the implementation:<br><br>
+
+1. Define and declare functions which implement the monad and the dyad.<br>
+2. Associate<tt> j. </tt>with the functions and other information.<br>
+3. Specify obverses, identity functions, and variants (if any).<br><br>
+
+These steps are executed as follows:<br><br>
+
+1. Functions which implement the monad and the dyad<tt> j. </tt>are added
+to file vm.c (or to one of the v*.c files), and declarations are
+added to je.h:<br><br>
+
+<table>
+<tr><td><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+    <td>File vm.c</td>
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td>File je.h</td>
+</tr>
+<tr><td> </td>
+    <td><tt>&nbsp;F1(jtjdot1){R tymes(a0j1,w);}</tt></td>
+    <td> </td>
+    <td><tt>&nbsp;extern F1(jtjdot1);</tt>
+</tr>
+<tr><td> </td>
+    <td><tt>&nbsp;F2(jtjdot2){R plus(a,tymes(a0j1,w));}</tt></td>
+    <td> </td>
+    <td><tt>&nbsp;extern F2(jtjdot2);</td>
+</td>
+</table><br>
+
+2. The association between<tt> j. </tt>and<tt> jdot1 </tt>and<tt> jdot2 </tt>
+is established
+in the table<tt> <a name="pst"></a>pst</tt>,<tt> </tt>initialized by 
+functions<tt> <a name="pinit"></a>pinit </tt>
+and<tt> <a name="pdef"></a>pdef </tt>in file t.c.<tt> </tt>
+<tt>pst </tt>is declared as<tt> A pst[256]; </tt>, 
+a 256-element vector of type<tt> A</tt>,<tt> </tt>
+and<tt> pst[x] </tt>contains the information for the primitive whose 
+<a href="iojSent.htm#ID">ID</a> is unsigned byte<tt> x</tt>.<tt> </tt>The ID 
+for<tt> j. </tt>is<tt> CJDOT</tt>,<tt> </tt>therefore the information
+for<tt> j. </tt>can be found in<tt> pst[(UC)CJDOT]</tt>.<tt> </tt>
+The surrounding entries in<tt> pst </tt>are initialized as follows; 
+the entry for<tt> j. </tt> indicates that it is a verb, with
+monad<tt> jdot1</tt>,<tt> </tt>dyad<tt> jdot2</tt>,<tt> </tt>
+and zero monadic, left, and right ranks:<br><br>
+
+<pre>
+   /*  i: */  pdef(CICO,    VERB, jtjico1,   jtjico2,  0L,  RMAX,RMAX);
+   /*  I. */  pdef(CICAP,   ADV,  jticap,    0L,       0L,  0L,  0L  );
+   /*  j. */  pdef(CJDOT,   VERB, jtjdot1,   jtjdot2,  0L,  0L,  0L  );
+   /*  L. */  pdef(CLDOT,   VERB, jtlevel1,  0L,       RMAX,0L,  0L  );
+   /*  L: */  pdef(CLCO,    CONJ, 0L,        jtlco,    0L,  0L,  0L  );
+</pre>
+
+The macro<tt> <a name="ds"></a>ds(x) </tt>is defined 
+as<tt> pst[(UC)(x)]</tt>,<tt> </tt>
+and is a convenient reference for a primitive; 
+for example,<tt> ds(CJDOT) </tt>is the verb<tt> j. </tt>as an array 
+(in short,<tt> ds(CJDOT) </tt><i>is</i><tt> j.</tt>).<br><br>
+
+3. A verb may have information additional to that in<tt> pst</tt>,<tt> </tt>
+embodied in functions<tt> inv </tt>and<tt> invamp </tt>(obverses) in file 
+ai.c,<tt> iden </tt>(identity functions) in ai.c, and<tt> fit </tt>
+(variants) in cf.c.
+See <a href="#Obverse">Obverse, Identities, and Variants</a>.<br><br>
+
+The obverses associated with<tt> j. </tt>are:<br><br>
+
+<pre>
+   j.       %&0j1          
+   n&j.     %&0j1@(-&n) 
+   j.&n     -&(j.n)
+</pre>
+
+The obverse of<tt> j. </tt>is implemented 
+as<tt> case CJDOT </tt>in<tt> inv</tt>;<tt> </tt>those
+for<tt> n&j. </tt>and<tt> j.&n </tt>are implemented 
+as<tt> case CJDOT </tt>in<tt> invamp</tt>.<tt> </tt>
+The identity function for<tt> j. </tt>is<tt> $&0@(}.@$)</tt>,<tt> </tt>
+and is implemented 
+as<tt> case CJDOT </tt>in<tt> iden</tt>.<tt> j. </tt>
+has no variants; the implementation of a variant would have 
+required a<tt> case </tt>in<tt> fit</tt>.<br><br>
+
+<br>
+
+<a name="Rank"></a><p><font size="5"><b>Rank</b></font><br><br>
+
+Verb (function) rank was introduced by Iverson [1978 §6], 
+further developed in Iverson [1983, 1987, 1995], 
+and implemented in SHARP APL, SHARP APL/HP, SAX, A, and J 
+(see Bernecky <i>et al</i>. [1983, 1987], Hodgkinson [1986], 
+Steinbrook [1986], Whitney [1989], and Hui <i>et al</i>. [1990], 
+respectively).  This description first appeared in Hui [1995].<br><br>
+
+A verb of rank<tt> r </tt>is defined on arguments 
+with rank bounded by<tt> r</tt>;<tt> </tt> 
+the extension to higher-rank arguments is the same for all verbs.  
+The rank conjunction<tt> " </tt>(operator) augments the default ranks of 
+a verb by user-specified ranks.  It provides for the 
+generalization of a verb to higher-rank arrays, 
+and could justifiably be called the generalization 
+or extension operator; it also provides for consistent application 
+to lower-rank arrays, subsuming and superseding 
+the anomalous bracket-axis operator.<br><br>
+
+Various aspects of rank are here discussed in terms of a model in J, 
+updated from Hui [1987 §A.2].<br><br>  
+
+<b>Frames and Cells.</b> A rank<tt> r </tt>splits the argument shape into 
+the frame and the cell shape; a positive<tt> r </tt>specifies the number
+of trailing cell axes, while a negative<tt> r </tt>specifies the 
+negative of the number of leading frame axes.<br><br>
+
+<pre>
+rk    =: #@$
+er    =: (0:>.(+rk))`(<.rk) @. (0:<:[)
+fr    =: -@er }. $@]
+cs    =: -@er {. $@]
+boxr  =: ]`(<@$ , [ $: */@[}.])@.(*@#@])
+cells =: fr $ cs boxr ,@]
+</pre>
+
+For rank<tt> r </tt>and argument<tt> y</tt>,<tt> </tt>
+the phrase<tt> r er y </tt>computes 
+the effective rank (non-negative and bounded by<tt> #$y</tt>);<tt> </tt>
+<tt>r fr y </tt>computes the frame and<tt> r cs y </tt>the cell shape; 
+and<tt> r cells y </tt>computes the array of 
+cells with shape<tt> r fr y</tt>,<tt> </tt> 
+each cell individually boxed and shaped<tt> s=:  r cs y </tt>
+(<tt>r cells y </tt>is<tt> <"r y</tt>).<tt> </tt>  
+The recursively-defined verb<tt> s boxr y </tt>
+produces the list of such cells.<br><br>
+
+The model is shown in action on<tt> x*"0 _1 y</tt>,<tt> </tt>
+the atoms (scalars) of<tt> x </tt>times the items of<tt> y</tt>:<br><br>
+
+<pre>
+   x=:1 2 3
+   y=:i.3 2
+   y                        x*"0 _1 y
+0 1                      0  1
+2 3                      4  6
+4 5                      12 15
+   0 er x                   _1 er y
+0                        1
+   0 fr x                   _1 fr y
+3                        3
+   0 cs x                   _1 cs y
+                         2
+   0 cells x                _1 cells y<font face="ISIJ">
+ÚÄÂÄÂÄ¿                  ÚÄÄÄÂÄÄÄÂÄÄÄ¿
+³1³2³3³                  ³0 1³2 3³4 5³
+ÀÄÁÄÁÄÙ                  ÀÄÄÄÁÄÄÄÁÄÄÄÙ</font>
+</pre>
+
+<b>Agreement.</b>  In the dyad<tt> v"r</tt>,<tt> </tt>commonly the left and 
+right frames match, that is, the two cell arrays have the same shape; 
+if not, several design choices are possible:
+
+In <i>scalar</i> agreement, one frame must be empty, 
+and the single cell is reshaped using the other frame; 
+in <i>suffix</i> agreement, one frame must be a suffix of the other, 
+and again the list of cells is reshaped using the other frame; 
+finally, in <i>prefix</i> agreement, one frame must be a prefix of the other, 
+and each cell is reshaped with the excess in the other frame.  
+All three agreements are proper generalizations 
+of scalar extension in APL\360, with cells acting the role of scalars.  
+Agreement results in the two cell 
+arrays having the same shape ("the frame").<br><br>
+
+Prefix agreement is adopted in J as suggested by Whitney [1992], 
+because it best fits the emphasis on leading axes.<br><br>
+
+<pre>
+pfx   =: <.&rk
+agree =: (pfx {. $@[) -: (pfx {. $@])
+frame =: [:`($@([^:(>&rk))) @. agree
+rag   =: frame $ ([: */ rk@]}.$@[) # ,@]
+lag   =: rag~
+</pre>
+
+<tt>rag </tt>and<tt> lag </tt>apply to both cell arrays 
+(the results of cells in the previous section), 
+producing cell arrays with the same shape.  
+If<tt> v"r </tt>itself were used in the model,<tt> rag </tt>could 
+be defined more 
+directly from the specification:<tt> (rk@]}.$@[) $"1 0 ] </tt>&#151; 
+each cell is reshaped with the excess in the other frame.  
+In the continuing example, rag and lag have no effect because 
+the left and right frames match.<br><br>
+
+<pre>
+   [xc=.0 cells x           [yc=._1 cells y<font face="ISIJ">
+ÚÄÂÄÂÄ¿                  ÚÄÄÄÂÄÄÄÂÄÄÄ¿
+³1³2³3³                  ³0 1³2 3³4 5³
+ÀÄÁÄÁÄÙ                  ÀÄÄÄÁÄÄÄÁÄÄÄÙ</font>
+   [xa=.xc lag yc           [ya=.xc rag yc<font face="ISIJ">
+ÚÄÂÄÂÄ¿                  ÚÄÄÄÂÄÄÄÂÄÄÄ¿
+³1³2³3³                  ³0 1³2 3³4 5³
+ÀÄÁÄÁÄÙ                  ÀÄÄÄÁÄÄÄÁÄÄÄÙ</font>
+</pre>
+
+<b>Assembly.</b> After agreement, the phrase<tt> v&.> </tt>applies<tt> v </tt>
+under<tt> > </tt>to corresponding boxed left and right argument cells, 
+to produce an array of boxed result cells.  
+It remains to assemble the overall result from the individual results.<br><br>
+
+Cells are brought to a common rank by adding leading unit axes, 
+then to a common shape by padding.  
+The overall shape is<tt> fm,sir</tt>,<tt> </tt> 
+where<tt> fm </tt>is the frame and<tt> sir </tt>is the common shape 
+of the individual results.  
+This is a design choice:  the individual results could be required 
+to have a common shape without further intervention, 
+but this permissive assembly proves useful.  For example, 
+open<tt> > </tt>on a list of boxed words yields a matrix with the words 
+padded to a common length.<br><br>
+
+<pre>
+mrk   =: >./@:(rk&>)@,
+crank =: mrk ,:@]^:(-rk)&.> ]
+msh   =: >./@:( $&>)@,
+cshape=: <@msh {.&.> ]
+asm   =: > @ cshape @ crank
+rank  =: 2 : 0
+ 'm l r'=.3&$&.|.y.
+ ([: asm [: x.&.> m&cells) : ([: asm l&cells@[ (lag x.&.> rag) r&cells@])
+)
+</pre>
+
+The conjunction rank integrates the model components.  
+The left argument<tt> x. </tt>is the verb<tt> v</tt>;<tt> </tt>
+the right argument<tt> y.</tt> 
+is reshaped from the right to exactly 3 numbers 
+and assigned to<tt> m</tt>,<tt> l</tt>,<tt> </tt>and<tt> r</tt>.<br><br>
+
+<pre>
+   [ za=. xa *&.> ya<font face=ISIJ>
+ÚÄÄÄÂÄÄÄÂÄÄÄÄÄ¿
+³0 1³4 6³12 15³
+ÀÄÄÄÁÄÄÄÁÄÄÄÄÄÙ</font>
+   asm za
+ 0  1
+ 4  6
+12 15
+   x * rank 0 _1 y
+ 0  1
+ 4  6
+12 15
+</pre>
+
+<b>Zero Frame.</b> If the frame contains 0 (as in<tt> 3*"1 i.0 4</tt>),<tt> </tt> 
+there are no argument cells to apply<tt> v </tt>to, 
+and the shape of a result cell (the value of<tt> sir</tt>)<tt> </tt>
+is indeterminate.  
+Pesch [1986] describes a variety of strategies to address this problem.  
+In J, the shape is calculated if<tt> v </tt>is uniform (see below); 
+otherwise<tt> v </tt>is applied to a cell of fills.<br><br>
+
+<b>Implementation.</b> Rank is implemented by 
+functions<a name="rank1ex"><tt> rank1ex </tt></a>
+and<a name="rank2ex"><tt> rank2ex </tt></a>("rank execution") in file cr.c.
+A function<tt> f </tt>has access to the entire arguments of the verb
+that it implements, regardless of the ranks of the verb.
+Within<tt> f</tt>,<tt> </tt>rank effects can be achieved by 
+invoking<tt> rank1ex </tt>and<tt> rank2ex</tt>,<tt> </tt>mediated
+by the 
+macros<a name="F1RANK"><tt> F1RANK </tt></a>
+and<a name="F2RANK"><tt> F2RANK</tt></a>:<br><br>
+
+<pre>
+   A rank1ex(    A w,A self,I m,    AF f1);
+   A rank2ex(A a,A w,A self,I l,I r,AF f2);
+
+   F1RANK(m,  f1,self);
+   F2RANK(l,r,f2,self);
+</pre>
+
+<tt>a </tt>and<tt> w </tt>are the left and right arguments of the
+verb;<tt> f1 </tt>and<tt> f2 </tt>are functions which implement
+the monad and dyad;<tt> m</tt>,<tt>l</tt>,<tt>r </tt>are ranks;
+and<a name="self"><tt> self </tt></a>is an 
+<a href="iojAdv.htm#array">array representing the verb</a>.
+For example, the dyad<tt> ": </tt>has ranks<tt> 1 _ </tt>
+and is implemented by the function<tt> thorn2</tt>,<tt> </tt>
+which uses<tt> F2RANK </tt>as follows:<br><br>
+
+<pre>
+   F2(jtthorn2){PROLOG;A da,ea,h,ma,s,y,*yv,z;B e,*ev; ...
+    F2RANK(1,RMAX,jtthorn2,0);
+    an=AN(a); t=AT(w);
+    ...
+   }
+</pre>
+If the argument ranks are not greater than the verb ranks,
+then<tt> F2RANK </tt>(<tt>F1RANK</tt>)<tt> </tt>does nothing,
+and execution proceeds to the statement following the macro;
+if the argument ranks <i>are</i> greater, 
+then<tt> F2RANK </tt>(<tt>F1RANK</tt>)<tt> </tt>
+invokes<tt> rank2ex </tt>(<tt>rank1ex</tt>),<tt> </tt>
+and on return therefrom exits<tt> f </tt>with the result
+obtained therefrom.  
+In this scheme,<tt> rank2ex </tt>(<tt>rank1ex</tt>)<tt> </tt>
+invokes<tt> f </tt> repeatedly, but with arguments of
+rank bounded by the verb ranks.<br><br>
+
+A function may implement rank by other means.  For example,
+the dyad<tt> { </tt>has ranks<tt> 0 _ </tt>and is implemented
+by the function<tt> from</tt>,<tt> </tt>which 
+eschews<tt> rank2ex </tt>on numeric left arguments wherein rank
+effects are uniform and rather simple.<tt> </tt>(<tt>from </tt>
+does use<tt> rank2ex </tt>on boxed left arguments.)  
+<a href="#Atomic">Atomic verbs</a>
+also implement rank independently to exploit the special properties
+of such verbs.<br><br>
+
+Verbs derived from adverbs and conjunctions are <i>always</i> invoked
+with<tt> self</tt>.<tt> </tt>The
+macros<tt> <a name="PREF1">PREF1</a> </tt>and<tt> <a name="PREF2">PREF2</a> </tt>
+are used in such cases,
+wherein<tt> rank1ex </tt>and<tt> rank2ex </tt>are invoked with
+ranks extracted from<tt> self</tt>,<tt> </tt>and not with constants
+as in the use of<tt> F1RANK </tt>and<tt> F2RANK </tt>
+for primitive verbs.<br><br>
+
+<br>
+
+<a name="Atomic"></a><p><font size="5"><b>Atomic (Scalar) Verbs</b></font><br><br>
+
+Not Yet Available<br><br>
+<br>
+
+<p><font size="5"><b>Obverses, Identities, and Variants</b></font><br><br>
+
+Verbs have additional parts &#151; obverse, identity, and variants &#151;
+which can not be specified as static data structures. 
+Such information is embodied in functions.<br><br>
+
+<font size="4">&#149; Obverses</font><a name="obverse"></a><a name="obverse"></a><br><br>
+
+A verb<tt> u </tt>is an obverse (usually the inverse) of a verb<tt> v </tt>
+if<tt> x=u v x </tt>
+for a significant subdomain of<tt> v</tt>.<tt> </tt>
+The obverse is used in the conjunctions <i>under</i><tt> </tt>
+(<tt>&.</tt>)<tt> </tt>and <i>power</i><tt> </tt>(<tt>^:</tt>).<tt> </tt> 
+For example, exponential<tt> ^ </tt>and logarithm<tt> ^. </tt>
+are obverses, and:<br><br>
+
+<pre>
+   3 +&.^. 4  <font size=3 face="Times New Roman">is</font>  ^ (^.3) + ^.4        ^ ^:_1  <font size=3 face="Times New Roman">is</font>  ^.
+   3 *&.^  4  <font size=3 face="Times New Roman">is</font>  ^.(^ 3) * ^ 4        ^.^:_1  <font size=3 face="Times New Roman">is</font>  ^
+</pre>
+
+Obverses are produced by the function<a name="inv"></a><tt> inv </tt>
+in file ai.c.  (<tt>inv </tt>implements<tt> ^:_1.</tt>)<tt> </tt>
+The logic is a combination of table look-up and nested 
+branch tables<tt> </tt>(<tt>switch/case</tt>).<br><br>
+
+<b>Primitives. </b>If the obverse of a primitive verb is itself primitive,
+the information is recorded in the 
+2-row table<a name="invf"></a><tt> invf </tt>in file ai.c.<br><br>
+
+<b>Bonded Verbs. </b>Bonding (Currying) is fixing an argument of
+a dyad to derive a monad:<tt> n&v </tt>or<tt> v&n</tt>.<tt> </tt>
+For example,<tt> 10&^. </tt>is <i>base-10 log</i> 
+and<tt> ^&0.5 </tt>is <i>square root</i>.
+The obverse of a bonded verb is computed by the 
+subfunction<a name="invamp"></a><tt> invamp </tt>in file ai.c,
+invoked by<tt> inv </tt>as appropriate.<br><br>
+
+<b>Prefix and Suffix. </b> Sum prefix<tt> +/\ </tt>and sum 
+suffix<tt> +/\. </tt>can be
+expressed as pre-multiplication by matrices obtained by 
+applying<tt> +/\ </tt>and<tt> +/\. </tt>on the identity matrix;
+the obverse is therefore pre-multiplication by the
+matrix inverse of these matrices. 
+(The actual obverse is a more efficient equivalent derived therefrom.)
+Similar reasoning applies to<tt> -</tt>,<tt> *</tt>,<tt> %</tt>,<tt> </tt> 
+and to<tt> = </tt>and<tt> ~: </tt>
+on Boolean arguments. The logic is embodied as a sub-<tt>switch </tt>
+in<tt> inv</tt>,<tt> </tt>
+under<tt> case CBSLASH </tt>and<tt> case CBSDOT</tt>.<br><br>
+
+<b>Reflex (<tt>~</tt>). </b>The monad<tt> v~ </tt>computes
+<tt>y v y</tt>;<tt> </tt>for example,<tt> +~ </tt>is <i>double</i>.  
+The obverses of a few such verbs are implemented by
+a sub-<tt>switch </tt>in<tt> inv</tt>,<tt> </tt>
+under<tt> case CTILDE</tt>. <br><br>
+
+<b>Assigned Obverse. </b>A verb may be assigned an obverse with
+the <i>obverse conjunction</i><tt> </tt>(<tt>:.</tt>).<tt>  </tt>
+<tt>f=: u :.v </tt>
+is like<tt> u </tt>but the obverse of<tt> f </tt>is<tt> v</tt>.<br><br>
+
+<b>Other Verbs. </b><tt>inv </tt>applies to a few other verbs,
+including<tt> u@v </tt>and<tt> u&v</tt>,<tt> </tt>whose obverses are<tt> </tt>
+<tt>(v inv)@(u inv) </tt>and<tt> (v inv)&(u inv)</tt>.<br><br>
+
+
+<font size="4">&#149; Identities</font><a name="identity"></a><br><br>
+
+<tt>u/y </tt>applies the dyad between the items of<tt> y</tt>.<tt> </tt>
+When<tt> y </tt>has <i>zero</i> items, 
+the result of<tt> u/y </tt>obtains by applying 
+to<tt> y </tt>the <i>identity function</i><tt> ui </tt>
+of<tt> u</tt>,<tt> </tt>so-called because
+<tt>(iu y) u y </tt>or<tt> y u (iu y) </tt>is<tt> y </tt>
+for a significant subdomain of<tt> u</tt>.<br><br>
+
+Identity functions are computed by 
+function<tt> <a name="iden">iden</a> </tt>
+in file ai.c.<tt> iden </tt> behaves like an adverb, applying
+to verbs and producing verbs.
+The logic is implemented as a branch table<tt> </tt>
+(<tt>switch/case</tt>).<tt> </tt>
+Not all verbs have identity functions;
+<tt>iden </tt>signals error in such cases.<br><br>
+
+
+<font size="4">&#149; Variants</font>
+<a name="variant"></a><a name="fit"></a><br><br>
+
+Variants of a verb are produced by the <i>fit</i> 
+conjunction<tt> !.</tt>,<tt> </tt>and are used to effect
+<a href="iojComp.htm">tolerant comparison</a><tt> </tt>
+(<tt>= &lt; &lt;. </tt>and so forth), formatting to
+a specific precision<tt> </tt>(<tt>":</tt>),<tt> </tt>
+shifts<tt> </tt>(<tt>|.</tt>),<tt> </tt>
+and factorial polynomials<tt> </tt> (<tt>^</tt>).<br><br>
+
+<tt>!. </tt>is implemented by function<tt> fit </tt>in file cf.c.
+The logic is implemented as a branch 
+table<tt> </tt>(<tt>switch/case</tt>).<tt> </tt>
+Not all verbs have variants;<tt> fit </tt>signals error in such cases.<br><br>
+
+<br>
+
+<a name="Errors"></a><p><font size="5"><b>Error Handling</b></font><br><br>
+
+When an error is encountered in a function, the global 
+variable<tt> <a name="jerr">jerr</a> </tt>is set to an error number, and zero is returned.
+Therefore, when calling a function that can not have zero as a valid result
+(but does return a result), the returned value must be checked for zero;
+when calling a "void" function or one whose range 
+includes zero,<tt> jerr </tt>must be inspected.<br><br>
+
+Error numbers range between 1 and<tt> <a name="NEVM">NEVM</a></tt>,<tt> </tt>
+and are referenced by the<tt> EV* </tt>names (file jerr.h).  
+The function<tt> <a name="jsignal">jsignal</a> </tt>(d.c) 
+applies to an error number, sets<tt> jerr </tt>to this number, and 
+displays the appropriate error message;<tt> jsignal </tt>exits 
+immediately if<tt> jerr </tt>is already nonzero.<tt> </tt>
+<tt><a name="evm">evm</a> </tt>is a list of the error messages.
+These messages are initialized by 
+function<tt> <a name="evinit">evinit</a> </tt>(file i.c),
+and may be inspected and changed by the user 
+through<tt> 9!:8 </tt>and<tt> 9!:9</tt>.<br><br>
+
+The macro<tt> <a name="ASSERT">ASSERT</a> </tt>(file j.h) is used
+extensively in argument validation.
+It applies to a proposition and an error number.  For example,
+the following statements check whether<tt> w </tt> is a literal atom:<br><br>
+
+<pre>
+   ASSERT(!AR(w),EVRANK);
+   ASSERT(LIT&AT(w),EVDOMAIN);
+</pre>
+
+If the proposition is nonzero, execution proceeds to the next statement;
+otherwise, the indicated error is<tt> jsignal</tt>-ed and a zero is returned.
+The macros<tt> <a name="RZ">RZ</a> </tt>and<tt> <a name="RE">RE</a> </tt>
+(file j.h) are used in function calls.<tt> RZ </tt>returns zero
+if its argument is zero;<tt> RE </tt>evaluates its argument,
+and returns zero if<tt> jerr </tt>is nonzero. For example,
+the function<tt> iota </tt>(implementing the 
+monad<tt> i.</tt>)<tt> </tt>exploits<tt> RZ </tt>as follows:
+<br><br>
+
+<pre>
+   F1(jtiota){A z;I m,n,*v;
+    F1RANK(1,jtiota,0);
+    if(AT(w)&XNUM+RAT)R cvt(XNUM,iota(vi(w)));
+    RZ(w=vi(w)); n=AN(w); v=AV(w);
+    if(1==n){m=*v; R 0>m?apv(-m,-m-1,-1L):apv(m,0L,1L);}
+    m=prod(n,v); z=reshape(mag(w),apv(ABS(m),0L,1L));
+    DO(n, if(0>v[i])z=irs1(z,0L,n-i,jtreverse););
+    R z;
+   }
+</pre>
+
+The arguments of a function may be the result of another function;
+the convention is that a function checks its arguments for zero
+and returns zero immediately in such cases.  Thus, in<tt> iota </tt>above:<br><br>
+
+<pre>
+   z=reshape(mag(w),apv(ABS(m),0L,1L));
+</pre>
+
+If<tt> reshape </tt>did <i>not</i> check for zero arguments,
+the statement would have to be elaborated:<br><br>
+
+<pre>
+   RZ(t0=mag(w));
+   RZ(t1=apv(ABS(m),0L,1L));
+   z=reshape(t0,t1);
+</pre>
+
+A <a name="conventional function"></a><i>conventional function</i> is a 
+function that follows the conventions
+described herein &#151; return zero on zero arguments and on errors.
+The defined type<tt> <a href="#AF">AF</a> </tt>(file jtype.h) typifies a
+conventional function.  Most functions in the system are conventional;
+in particular, all functions implementing primitives are conventional.
+Expressions and statements that use only conventional functions
+need not employ<tt> RZ </tt>or<tt> RE</tt>,<tt> </tt>and the resulting 
+programs are neater.
+For example, consider functions<tt> shape </tt>and<tt> nub </tt>(file v.c),
+implementing the monads<tt> $ </tt>and<tt> ~.</tt>,<tt> </tt>respectively:<br><br>
+
+<pre>
+   F1(jtshape){RZ(w); R vec(INT,AR(w),AS(w));}
+   F1(jtnub){R repeat(nubsieve(w),w);}
+</pre>
+
+<tt>shape </tt>must check for zero arguments<tt> RZ(w)</tt>,<tt> </tt>
+because it
+applies the <i>un</i>conventional macros<tt> AR </tt>and<tt> AS </tt>to 
+the argument<tt> w</tt>.<tt> </tt>In contrast,<tt> nub </tt>applies only 
+conventional functions to <i>its</i> argument and to
+results of conventional functions on that argument.<br><br>
+
+<br>
+<hr>
+
+<a href="iojAdv.htm">Next</a>
+ &#149; 
+<a href="iojNoun.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

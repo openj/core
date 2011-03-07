@@ -1,0 +1,206 @@
+<html>
+
+<html>
+
+<head>
+<title>An Implementation of J -- Test Scripts</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Test Scripts</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<hr>
+<br>
+
+A <em>script</em> is an ASCII text file containing J sentences;
+a <em>test script</em> is script which contains purportedly 
+true J sentences.<br><br>
+
+The J test scripts are a set of about 280 scripts that 
+test the J interpreter.  Each script tests a particular
+aspect, usually a single primitive.  The scripts have names of the 
+form<tt> gxxx.ijs</tt>,<tt> </tt>where<tt> xxx </tt>
+is an encoding based on the vocabulary page of 
+the J dictionary.  For example, the 
+script<tt> g022.ijs </tt>
+tests the primitive<tt> >: </tt> 
+(increment / larger or equal), named on the basis 
+that<tt> >: </tt>is group 0, row 2, and column 2.<br><br>
+
+Test scripts require the utilities in the script<tt> tsu.ijs</tt>.<tt> </tt>  
+Test scripts can be run with either the<tt> 0!:2 </tt>or 
+the<tt> 0!:3 </tt>primitive.<br><br>
+
+<tt>0!:2 </tt>runs a test script <i>with</i> output, stopping at the first result
+which is not all 1s, or at the first (untrapped) error.
+For example:<br><br>
+
+<pre>
+   0!:0 <'\dev\js\tsu.ijs'
+   0!:2 <'\dev\js\g022.ijs'
+   NB. >:y -----------------------------------------------------------------
+   
+   (>: -: 1&+) 1=?2 3 4$2
+1
+   (>: -: 1&+) _1e9+?2 3 4$2e9
+1
+   (>: -: 1&+) o._1e9+?2 3 4$2e9
+1
+   (>: -: 1&+) j./?2 3 4$2e9
+1
+   
+   _1 0 1 2 3  -: >: _2 _1 0 1 2
+1
+   2147483648  -: >: 2147483647
+1
+   _2147483647 -: >:_2147483648
+1
+   
+   t -: [&.>: t=._1e9+?2 3 4$2e9
+1
+   
+   'domain error' -: >: etx 'abc' 
+1
+   'domain error' -: >: etx <'abc'  
+1
+   
+   
+   NB. x>:y ----------------------------------------------------------------
+   
+   1 0 1 1 -: 0 0 1 1 >: 0 1 0 1
+1
+   
+   'domain error' -: 'abc' >: etx 3 4 5
+1
+   'domain error' -: 'abc' >:~etx 3 4 5 
+1
+   'domain error' -: 3j4   >: etx 3 4 5 
+1
+   'domain error' -: 3j4   >:~etx 3 4 5
+1
+   'domain error' -: (<34) >: etx 3 4 5
+1
+   'domain error' -: (<34) >:~etx 3 4 5 
+1
+   
+   'length error' -: 3 4     >: etx 5 6 7
+1
+
+   'length error' -: 3 4     >:~etx 5 6 7
+1
+   'length error' -: (i.3 4) >: etx i.5 4
+1
+   'length error' -: (i.3 4) >:~etx i.5 4  
+1
+
+   4!:55 ;:'t'
+1
+</pre>
+
+<tt>0!:3 </tt>runs a test script <i>without</i> output, returning a result of 0
+if the script had a result which is not all 1s
+or if it contained an (untrapped) error, and a result of 1 otherwise.
+For example:<br>
+
+<pre>
+   0!:0 <'\dev\js\tsu.ijs'
+   0!:3 <'\dev\js\g022.ijs'
+1
+</pre>
+
+The J test scripts are divided into three groups (running times are 
+seconds on a Pentium III 500 MHz computer):<br>  
+
+<table>
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;Type</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>             
+<td align=center>Number</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>             
+<td align=center>Name List</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>             
+<td>&nbsp;&nbsp;Run</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>             
+<td align=center>Time (Seconds)</td>
+</tr>
+
+<tr>
+<td>Ordinary</td>
+<td> </td>
+<td>240</td>
+<td> </td>
+<td><tt>ddall</tt></td>
+<td> </td>
+<td>rundd.ijs</td>
+<td> </td>
+<td>113</td>
+</tr>
+
+<tr>
+<td>Sparse Arrays</td>         
+<td> </td>
+<td>27</td>
+<td> </td>
+<td><tt>ssall</tt></td>
+<td> </td>
+<td>runss.ijs</td>
+<td> </td>
+<td>1140</td><br>
+</tr>
+
+<tr>
+<td>Mapped Boxed Arrays</td>   
+<td> </td>
+<td>12</td>
+<td> </td>
+<td><tt>mbxall</tt></td>
+<td> </td>
+<td>runmbx.ijs</td>
+<td> </td>
+<td>3</td>
+</tr>
+</table>
+
+<br>
+For example, the "ordinary" test scripts can be run as follows:<br>
+<br>
+<pre>
+   0!:2 <'\dev\js\rundd.ijs'
+   NB. run dd test scripts
+
+   0!:0 <'d:\dev\js\tsu.ijs'               NB. define utilities
+   jsts0=: 6!:0 ''                         NB. timestamp at start
+   ddall=: 3!:2 (1!:1) <'d:\dev\js\ddall'  NB. define namelist
+   ] bbb=: 0!:3 ddall                      NB. run the test scripts
+1 1 1 1 1 1 1 1 1 1 1 1 1 ...
+   jsts1=: 6!:0 ''                         NB. timestamp at end
+</pre>
+
+The<tt> rundd.ijs </tt>script first runs 
+the<tt> tsu.ijs </tt>script 
+(to define the requisite utilities), then
+defines<tt> ddall</tt>,<tt> </tt>the list
+of test script names, then runs the test scripts.  The boolean
+vector<tt> bbb </tt>has the same shape 
+as<tt> ddall</tt>,<tt> </tt>and can be used 
+to detect which test scripts have failed.  
+The bad scripts<tt> (-.b)#ddall </tt>can
+be run using the<tt> 0!:2 </tt>
+primitive to narrow in on the offending expressions.<br><br>
+
+<br>
+<hr>
+
+<a href="iojFiles.htm">Next</a>
+ &#149; 
+<a href="iojSp.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

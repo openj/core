@@ -1,0 +1,214 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Comparatives</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Comparatives</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<hr>
+<br>
+
+Comparisons between finite numbers are <i>tolerant</i>, as defined in 
+<a href="iojBib.htm#Bernecky1977">Bernecky</a> [1977]:<br><br>
+
+<tt>&nbsp;&nbsp;&nbsp;x = y &nbsp;&nbsp;</tt>if<tt>&nbsp;&nbsp; (|x-y) <:!.0 ct * (|x)>.(|y)</tt>
+<br><br>
+
+(<tt><:!.0 </tt>means <i>exact</i> less than or equal.) 
+That is,<tt> x </tt>and<tt> y </tt>are tolerantly equal if the smaller
+is on or within the circle centered at the larger, having
+radius<tt> ct </tt>times the magnitude of the 
+larger.<a name="tolerance"></a><tt> ct</tt>,<tt> </tt>comparison tolerance, 
+is a real number between<tt> 0 </tt>and<tt> 2^_34 </tt>with a default value
+of<tt> 2^_44</tt>;<tt> </tt>a non-default tolerance may be specified
+using the <i><a href="iojVerb.htm#fit">fit</a></i> conjunction 
+(<tt>!.</tt>).<tt> </tt>Tolerant relations can be modelled as follows:<br><br>
+
+<table>
+
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td><tt>ct</tt></td>
+<td><tt>=: </tt></td>
+<td><tt>2^_44</tt></td>
+<td>comparison tolerance</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>teq</tt></td>
+<td><tt>=: </tt></td>
+<td><tt>|@- <:!.0 ct&*@>.&|</tt></td>
+<td>equal</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>tne</tt></td>
+<td><tt>=: </tt></td>
+<td><tt>-.@teq</tt></td>
+<td>not equal</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>tlt</tt></td>
+<td><tt>=: </tt></td>
+<td><tt>< !.0 *. tne</tt></td>
+<td>less than</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>tgt</tt></td>
+<td><tt>=: </tt></td>
+<td><tt>> !.0 *. tne</tt></td>
+<td>greater than</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>tle</tt></td>
+<td><tt>=: </tt></td>
+<td><tt><:!.0 +. teq</td>
+<td>less than or equal to</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>tge</tt></td>
+<td><tt>=: </tt></td>
+<td><tt>>:!.0 +. teq</td>
+<td>greater than or equal to</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>tfloor</tt></td>
+<td><tt>=: </tt></td>
+<td><tt><.!.0@(0.5&+) ([ - tgt) ]&nbsp;&nbsp;&nbsp;</td>
+<td>floor</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>tceil</tt></td>
+<td><tt>=: </tt></td>
+<td><tt><.!.0@(0.5&+) ([ + tlt) ]</td>
+<td>ceiling</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>dsignum</tt></td>
+<td><tt>=: </tt></td>
+<td><tt>ct&<@| * 0&< - 0&></td>
+<td>signum (real)</td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>jsignum</tt></td>
+<td><tt>=: </tt></td>
+<td><tt>ct&<@| * (%|)</td>
+<td>signum (complex)</td>
+</tr>
+
+</table>
+<br>
+
+Additionally, some comparisons internal to the system are <i>fuzzy</i>.
+Fuzzy comparisons are like tolerant comparisons, but depend on the
+parameter<a name="fuzz"></a><tt> fuzz</tt>,<tt> </tt>having fixed 
+value<tt> 2^_44</tt>.<tt> </tt>Such comparisons are used in
+certain domain tests; for example,<tt> (2&nbsp;3+1e_14)$'abc' </tt>is valid 
+but<tt> (2&nbsp;3+1e_12)$'abc' </tt>is not. Fuzzy comparisons can be
+modelled as follows:<br><br>
+
+<table>
+
+<tr>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td><tt>fuzz</tt></td>
+<td><tt>=:</tt></td>
+<td><tt>2^_44</tt></td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>int</tt></td>
+<td><tt>=:</tt></td>
+<td><tt>(-2^31)&<: *. <&(2^31)</tt></td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>real</tt></td>
+<td><tt>=:</tt></td>
+<td><tt>{.@+.</tt></td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>feq</tt></td>
+<td><tt>=:</tt></td>
+<td><tt>|@- <:!.0 fuzz&*@>.&|</tt></td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>freal</tt></td>
+<td><tt>=:</tt></td>
+<td><tt>>:!.0 / @: ((fuzz,1)&*) @: | @: +.</tt></td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>BfromD</tt></td>
+<td><tt>=:</tt></td>
+<td><tt>]`(1&=) @. (feq 1&=)</tt></td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>IfromD</tt></td>
+<td><tt>=:</tt></td>
+<td><tt>]`<.    @. (int *. (feq <.))</tt></td>
+</tr>
+
+<tr>
+<td> </td>
+<td><tt>DfromZ&nbsp;</tt></td>
+<td><tt>=:</tt></td>
+<td><tt>]`real  @. (feq real)</tt></td>
+</tr>
+
+</table>
+<br>
+
+The utility<tt> int </tt>tests for membership in the 
+interval<tt> -2^31 </tt>to<tt> _1+2^31 </tt>inclusive.<tt> real </tt>produces
+the real part of a complex number.<tt> feq </tt>is 1 if its arguments
+are equal within fuzz;<tt> freal </tt>is 1 if its complex argument is within
+fuzz of real.<tt> BfromD</tt>,<tt> IfromD</tt>,<tt> </tt>and<tt> DfromZ </tt>convert
+between types: boolean from real ("double"), integer from real, and real
+from complex.<br><br>
+
+<br>
+<hr>
+
+<a href="iojATW.htm">Next</a>
+ &#149; 
+<a href="iojDisp.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

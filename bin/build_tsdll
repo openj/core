@@ -1,0 +1,11 @@
+#!/bin/bash
+TARGET=libtsdll
+source bin/jconfig
+make tsdll
+
+if [ -x libj.$SOSUFFIX ]
+then
+echo success: libtsdll.$SOSUFFIX created
+else
+echo failed: libtsdll.$SOSUFFIX NOT created
+fi

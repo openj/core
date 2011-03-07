@@ -1,0 +1,308 @@
+<html>
+
+<head>
+<title>An Implementation of J -- System Summary</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>System Summary</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<hr>
+
+<table align=center>
+<tr>
+<td>&nbsp; &nbsp; &nbsp; &nbsp;</td>
+<td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+<td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+<td>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;</td>
+</tr>
+
+<tr><td><tt>=</tt></td>
+<td><tt>sclass  </tt> &#149;<tt> eq      </tt></td>
+<td><tt>is      </tt>                         </td>
+<td><tt>is      </tt>                         </td>
+</tr>
+
+<tr><td><tt>&lt;</tt></td>
+<td><tt>box     </tt> &#149;<tt> lt      </tt></td>
+<td><tt>floor1  </tt> &#149;<tt> minimum </tt></td>
+<td><tt>decrem  </tt> &#149;<tt> le      </tt></td>
+</tr>
+
+<tr><td><tt>&gt;</tt></td>
+<td><tt>ope     </tt> &#149;<tt> gt      </tt></td>
+<td><tt>ceil1   </tt> &#149;<tt> maximum </tt></td>
+<td><tt>increm  </tt> &#149;<tt> ge      </tt></td>
+</tr>
+
+<tr><td><tt>_</tt></td>
+<td><tt>connum  </tt>                         </td>
+<td><tt>connum  </tt>                         </td>
+<td><tt>num1    </tt> &#149;<tt> num2    </tt></td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>+</tt></td>
+<td><tt>conjug  </tt> &#149;<tt> plus    </tt></td>
+<td><tt>rect    </tt> &#149;<tt> gcd     </tt></td>
+<td><tt>duble   </tt> &#149;<tt> nor     </tt></td>
+</tr>
+
+<tr><td><tt>*</tt></td>
+<td><tt>signum  </tt> &#149;<tt> tymes   </tt></td>
+<td><tt>polar   </tt> &#149;<tt> lcm     </tt></td>
+<td><tt>square  </tt> &#149;<tt> nand    </tt></td>
+</tr>
+
+<tr><td><tt>-</tt></td>
+<td><tt>negate  </tt> &#149;<tt> minus   </tt></td>
+<td><tt>not     </tt> &#149;<tt> less    </tt></td>
+<td><tt>halve   </tt> &#149;<tt> match   </tt></td>
+</tr>
+
+<tr><td><tt>%</tt></td>
+<td><tt>recip   </tt> &#149;<tt> divide  </tt></td>
+<td><tt>minv    </tt> &#149;<tt> mdiv    </tt></td>
+<td><tt>sqroot  </tt> &#149;<tt> root    </tt></td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>%</tt></td>
+<td><tt>expn1   </tt> &#149;<tt> expn2   </tt></td>
+<td><tt>logar1  </tt> &#149;<tt> logar2  </tt></td>
+<td>                  &#149;<tt> powop   </tt></td>
+</tr>
+
+<tr><td><tt>$</tt></td>
+<td><tt>shape   </tt> &#149;<tt> reitem  </tt></td>
+<td><tt>sparse1 </tt> &#149;<tt> sparse2 </tt></td>
+<td><tt>self1   </tt> &#149;<tt> self2   </tt></td>
+</tr>
+
+<tr><td><tt>~</tt></td>
+<td><tt>swap    </tt> &#149;                  </td>
+<td><tt>nub     </tt> &#149;<tt> &nbsp;  </tt></td>
+<td><tt>nubsieve </tt>&#149;<tt> ne      </tt></td>
+</tr>
+
+<tr><td><tt>|</tt></td>
+<td><tt>mag     </tt> &#149;<tt> residue </tt></td>
+<td><tt>reverse </tt> &#149;<tt> rotate  </tt></td>
+<td><tt>cant1   </tt> &#149;<tt> cant2   </tt></td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>.</tt></td>
+<td>                  &#149;<tt> dot     </tt></td>
+<td>                  &#149;<tt> even    </tt></td>
+<td>                  &#149;<tt> odd     </tt></td>
+</tr>
+
+<tr><td><tt>:</tt></td>
+<td>                  &#149;<tt> colon   </tt></td>
+<td>                  &#149;<tt> obverse </tt></td>
+<td>                  &#149;<tt> adverse </tt></td>
+</tr>
+
+<tr><td><tt>,</tt></td>
+<td><tt>ravel   </tt> &#149;<tt> over    </tt></td>
+<td><tt>table   </tt> &#149;<tt> stitch  </tt></td>
+<td><tt>lamin1  </tt> &#149;<tt> lamin2  </tt></td>
+</tr>
+
+<tr><td><tt>;</tt></td>
+<td><tt>raze    </tt> &#149;<tt> link    </tt></td>
+<td>                  &#149;<tt> cut     </tt></td>
+<td><tt>words   </tt> &#149;<tt> &nbsp;  </tt></td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>#</tt></td>
+<td><tt>tally   </tt> &#149;<tt> repeat  </tt></td>
+<td><tt>base1   </tt> &#149;<tt> base2   </tt></td>
+<td><tt>abase1  </tt> &#149;<tt> abase2  </tt></td>
+</tr>
+
+<tr><td><tt>!</tt></td>
+<td><tt>fact    </tt> &#149;<tt> outof   </tt></td>
+<td>                  &#149;<tt> fit     </tt></td>
+<td>                  &#149;<tt> foreign </tt></td>
+</tr>
+
+<tr><td><tt>/</tt></td>
+<td><tt>slash   </tt> &#149;                  </td>
+<td><tt>sldot   </tt> &#149;                  </td>
+<td><tt>grade1  </tt> &#149;<tt> grade2  </tt></td>
+</tr>
+
+<tr><td><tt>\</tt></td>
+<td><tt>bslash  </tt> &#149;                  </td>
+<td><tt>bsdot   </tt> &#149;                  </td>
+<td><tt>dgrade1 </tt> &#149;<tt> dgrade2 </tt></td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>[</tt></td>
+<td><tt>right1  </tt> &#149;<tt> left2   </tt></td>
+<td>                  &#149;<tt> lev     </tt></td>
+<td>&nbsp;                                    </td>
+</tr>
+
+<tr><td><tt>]</tt></td>
+<td><tt>right1  </tt> &#149;<tt> right2  </tt></td>
+<td>                  &#149;<tt> dex     </tt></td>
+<td><tt>ida     </tt> &#149;                  </td>
+</tr>
+
+<tr><td><tt>{</tt></td>
+<td><tt>catalog </tt> &#149;<tt> from    </tt></td>
+<td><tt>head    </tt> &#149;<tt> take    </tt></td>
+<td><tt>tail    </tt> &#149;<tt> &nbsp;  </tt></td>
+</tr>
+
+<tr><td><tt>}</tt></td>
+<td><tt>rbrace  </tt> &#149                   </td>
+<td><tt>behead  </tt> &#149;<tt> drop    </tt></td>
+<td><tt>curtail </tt> &#149;<tt> &nbsp;  </tt></td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>"</tt></td>
+<td>                  &#149;<tt> qq      </tt></td>
+<td><tt>exec1   </tt> &#149;<tt> exec2   </tt></td>
+<td><tt>thorn1  </tt> &#149;<tt> thorn2  </tt></td>
+</tr>
+
+<tr><td><tt>`</tt></td>
+<td>                  &#149;<tt> tie     </tt></td>
+<td>&nbsp;                                    </td>
+<td>                  &#149;<tt> evger   </tt></td>
+</tr>
+
+<tr><td><tt>@</tt></td>
+<td>                  &#149;<tt> atop    </tt></td>
+<td>                  &#149;<tt> agenda  </tt></td>
+<td>                  &#149;<tt> atco    </tt></td>
+</tr>
+
+<tr><td><tt>&</tt></td>
+<td>                  &#149;<tt> amp     </tt></td>
+<td>                  &#149;<tt> under   </tt></td>
+<td>                  &#149;<tt> ampco   </tt></td>
+</tr>
+
+<tr><td><tt>?</tt></td>
+<td><tt>roll    </tt> &#149;<tt> deal    </tt></td>
+<td><tt>rollx   </tt> &#149;<tt> dealx   </tt></td>
+<td>&nbsp;                                    </td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>{::</tt></td>
+<td><tt>map            </tt> &#149;<tt> fetch   </tt></td>
+<td><tt>}:: emend      </tt> &#149;<tt> &nbsp;  </tt></td>
+<td><tt>&.:            </tt> &#149;<tt> undco   </tt></td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>a.</tt></td>
+<td><tt>alp            </tt>                         </td>
+<td><tt>A. &nbsp;adot1 </tt> &#149;<tt> adot2   </tt></td>
+<td><tt>b. &nbsp;bdot  </tt> &#149;<tt> &nbsp;  </tt></td>
+</tr>
+
+<tr><td><tt>c.</tt></td>
+<td><tt>eig1           </tt> &#149;<tt> eig2    </tt></td>
+<td><tt>C.&nbsp; cdot1 </tt> &#149;<tt> cdot2   </tt></td>
+<td><tt>d.&nbsp;       </tt> &#149;<tt> ddot    </tt></td>
+</tr>
+
+<tr><td><tt>D.</tt></td>
+<td>                         &#149;<tt> dcap    </tt></td>
+<td><tt>D:&nbsp;       </tt> &#149;<tt> dcapco  </tt></td>
+<td><tt>e.&nbsp; razein </tt>&#149;<tt> eps     </tt></td>
+</tr>
+
+<tr><td><tt>E.</tt></td>
+<td>                         &#149;<tt> ebar    </tt></td>
+<td><tt>f.&nbsp; fix   </tt> &#149;                  </td>
+<td><tt>H.&nbsp;       </tt> &#149;<tt> hgeom   </tt></td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>i.</tt></td>
+<td><tt>iota           </tt> &#149;<tt> indexof </tt></td>
+<td><tt>i: &nbsp;jico1 </tt> &#149;<tt> jico2   </tt></td>
+<td><tt>I. &nbsp;icap  </tt> &#149;                  </td>
+</tr>
+
+<tr><td><tt>j.</tt></td>
+<td><tt>jdot1          </tt> &#149;<tt> jdot2   </tt></td>
+<td><tt>L.&nbsp; level1 </tt>&#149;                  </td>
+<td><tt>L:&nbsp;       </tt> &#149;<tt> lco     </tt></td>
+</tr>
+
+<tr><td><tt>m.</tt></td>
+<td><tt>xd             </tt>                         </td>
+<td><tt>n.&nbsp; xd    </tt>                         </td>
+<td><tt>o.&nbsp; pix   </tt> &#149;<tt> circle  </tt></td>
+
+<tr><td><tt>p.</tt></td>
+<td><tt>poly1          </tt> &#149;<tt> poly2   </tt></td>
+<td><tt>p:&nbsp; prime </tt> &#149;<tt> &nbsp;  </tt></td>
+<td><tt>q:&nbsp; factor </tt>&#149;<tt> qco2    </tt></td>
+</tr>
+
+<tr><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+
+<tr><td><tt>r.</tt></td>
+<td><tt>rdot1         </tt> &#149;<tt> rdot2   </tt></td>
+<td><tt>S:&nbsp;      </tt> &#149;<tt> sco     </tt></td>
+<td><tt>t.&nbsp; tdot </tt> &#149;                  </td>
+</tr>
+
+<tr><td><tt>t:</tt></td>
+<td><tt>tco           </tt> &#149;                  </td>
+<td><tt>T.&nbsp;      </tt> &#149;<tt> tcap    </tt></td>
+<td><tt>u.&nbsp; xd   </tt>                         </td>
+</tr>
+
+<tr><td><tt>v.</tt></td>
+<td><tt>xd            </tt>                         </td>
+<td><tt>x.&nbsp; xd   </tt>                         </td>
+<td><tt>x:&nbsp; xco1 </tt> &#149;<tt> xco2    </tt></td>
+</tr>
+
+<tr><td><tt>y.</tt></td>
+<td><tt>xd            </tt>                         </td>
+<td>&nbsp;                                          </td>
+<td>&nbsp;                                          </td>
+</tr>
+
+</table>
+
+<br>
+<hr>
+
+<a href="iojBib.htm">Next</a>
+ &#149; 
+<a href="iojXenos.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

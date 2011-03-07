@@ -1,0 +1,341 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Display</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Display</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<a href="#Numeric"  >Numeric Display</a><br>
+<a href="#Boxed"    >Boxed Display</a><br>
+<a href="#Formatted">Formatted Display</a><br>
+<br>
+
+<hr>
+<br>
+
+If the last operation in a line of user input is not assignment,
+the result of the line is displayed. More specifically, if the global
+variable<tt> <a name="asgn">asgn</a> </tt>is zero at the end of 
+executing an input line,
+and the line had no errors,<tt> jpr </tt>is invoked to display the 
+result.<tt> jpr </tt>first applies<tt> thorn1 </tt>(the monad<tt> ":</tt>)<tt> </tt>
+to compute the <i>display</i> of<tt> y</tt>,<tt> </tt>then writes the 
+lines to the screen.<br><br>
+
+In all cases, the display of an object is a literal array.
+The display of a literal array is itself.  The display of a
+verb, adverb, or conjunction is that of the currently
+selected <a href="iojRep.htm">representation(s)</a>. 
+The display of a <a href="#Numeric">numeric</a> array, that of a
+<a href="#Boxed">boxed</a> array, and
+<i><a href="#Formatted">format</a></i> are now discussed.<br><br>
+
+Display is implemented by functions and variables in the files
+f.c and f2.c.<br><br>
+<br>
+
+<a name="Numeric"></a><font size="5"><b>Numeric Display</b></font><br><br>
+
+The display of a numeric array<tt> y </tt>is a literal array
+having the same rank as<tt> y </tt>(but at least one), such that the shape
+of<tt> ":y </tt>matches the shape of<tt> y </tt>in all but the last axis.
+Columns are right-justified and are separated by one space.
+The conversion from numeric to literal can be modelled as follows:<br>
+
+<pre>
+sprintf =: ":
+real    =: {.@+.
+imag    =: {:@+.
+
+minus   =: $&'_'@('-'&=@{.)
+ubar    =: >@({&(<;._1 ' _ _ _. _.'))@('iInN'&i.@{.)
+afte    =: minus , (i.&0@(e.&'-+0') }. ])
+efmt    =: >:@(i.&'e') ({. , afte@}.) ]
+finite  =: ]`efmt@.('e'&e.)
+massage =: finite`ubar@.(e.&'iInN'@{.)
+fmtD    =: (minus,massage@(e.&'-+'@{.}.])) @ sprintf
+
+cleanZ  =: (* ] >&| (2^_44)"_ * |.)&.+.
+fmtZ1   =: fmtD@real , 'j'&,@fmtD@imag`(''"_)@.(0&=@imag)
+fmtZ    =: fmtZ1 @ cleanZ
+
+fmtB    =: {&'01'
+fmtI    =: sprintf
+fmt     =: (fmtB&.>)`(fmtI&.>)`(fmtD&.>)`(fmtZ&.>) @. (1 4 8&i.@(3!:0))
+
+sh      =: (*/@}:,{:@(1&,))@$ ($,) ]
+width   =: (<:@{. 0} ])@:>:@(>./)@sh@:(#&>)
+th      =: (-@width ;@:({.&.>)"1 ]) @ fmt
+</pre>
+
+The model is divided into groups of verbs. The first group 
+are utilities:<br><br>
+
+<tt>sprintf &nbsp; </tt>a function in the C library<br>
+<tt>type &nbsp; &nbsp; &nbsp;</tt>type<br>
+<tt>real &nbsp; &nbsp; &nbsp;</tt>the real part of a complex number<br>
+<tt>imag &nbsp; &nbsp; &nbsp;</tt>the imaginary part of a complex number<br><br>
+
+<tt>fmtD </tt>formats a real number. Its constituents transform the result
+of<tt> sprintf </tt>to follow J conventions in the treatment of negative 
+signs<tt> </tt>(<tt>minus</tt>),<tt> </tt>exponential 
+notation<tt> </tt>(<tt>efmt </tt>and<tt> afte</tt>),<tt> </tt>and
+infinities and indeterminates<tt> </tt>(<tt>ubar</tt>).<br><br>
+
+<tt>fmt </tt>formats a numeric array into an array of boxed strings.
+It invokes formatters specialized for the different types:<tt> fmtB </tt>
+(Boolean),<tt> fmtI </tt>(integer),<tt> fmtD </tt>(floating point),
+and<tt> fmtZ </tt>(complex).<br><br>
+
+<tt>sh </tt>shapes an array into a table having the same number
+of rows.<tt> width </tt>computes the maximum width in each column 
+of an array of boxed strings.<tt> th </tt>is a model of<tt> ": </tt>
+on numeric arrays.<br><br>
+
+<br>
+
+<a name="Boxed"></a><p><font size="5"><b>Boxed Display</b></font><br><br>
+
+The display of a boxed array<tt> b </tt>is a literal array<tt> d=:":b </tt>
+such that:<br>
+&nbsp;&#149; The rank of<tt> d </tt>is the greater of 2 or the rank of<tt> b</tt>.<br>
+&nbsp;&#149; Excluding the last two axes, the shape of<tt> d </tt>matches 
+the shape of<tt> b</tt>.<br>
+&nbsp;&#149; The frame (formed by<font size=2 face="ISIJ"> Ú Â ¿Ã Å ´À Á Ù ³ Ä</font>)
+is the same in all the planes.<br><br>
+
+Boxed display can be modelled as follows:<br>
+
+<pre>
+boxed   =: 32&= @ (3!:0)
+mt      =: 0&e.@$
+boxc    =: {. 9!:6 ''
+tcorn   =: 2  0{boxc
+tint    =: 1 10{boxc
+bcorn   =: 8  6{boxc
+bint    =: 7 10{boxc
+
+sh      =: (*/@}: , {:)@(1&,)@$ $ ,
+rows    =: */\.@}:@$
+bl      =: }.@(,&0)@(+/)@(0&=)@(|/ i.@{.@(,&1))
+mask    =: 1&,. #&, ,.&0@>:@i.@#
+mat     =: mask@bl@rows { ' '&,@sh
+
+edge    =: ,@(1&,.)@[ }.@# +:@#@[ $ ]
+left    =: edge&(3 9{boxc)@>@(0&{)@[ , "0 1"2 ]
+right   =: edge&(5 9{boxc)@>@(0&{)@[ ,~"0 1"2 ]
+top     =: 1&|.@(tcorn&,)@(edge&tint)@>@(1&{)@[ ,"2  ]
+bot     =: 1&|.@(bcorn&,)@(edge&bint)@>@(1&{)@[ ,"2~ ]
+perim   =: [ top [ bot [ left [ right ]
+
+topleft =: (4{boxc)&((<0 0)}) @ ((_2{boxc)&,.) @ ((_1{boxc)&,)
+inside  =: 1 1&}. @ ; @: (,.&.>/"1) @: (topleft&.>)
+take    =: [ {. ]`(]&' ')@.mt@]
+frame   =: [ perim {@[ inside@:(take&.>)"2 ,:^:(1&=@#@$)@]
+rc      =: (>./@sh&.>) @: (,.@|:"2@:(0&{"1);1&{"1) @: ($&>)
+
+thorn1  =: ":`thbox @. boxed
+thbox   =: (rc frame ]) @: (mat@thorn1&.>)
+</pre>
+
+The model is divided into groups of definitions (which are verbs
+unless indicated otherwise). The first group are utilities:<br><br>
+
+<tt>boxed &nbsp; &nbsp; </tt>1 if boxed<br>
+<tt>mt &nbsp; &nbsp;&nbsp; &nbsp; </tt>1 if empty<br>
+<tt>boxc &nbsp; &nbsp; &nbsp;</tt>(noun) box drawing characters<br>
+<tt>tcorn &nbsp; &nbsp; </tt>(noun) the characters<font size=2 face="ISIJ"> ¿ Ú</font><br>
+<tt>tint &nbsp; &nbsp; &nbsp;</tt>(noun) the characters<font size=2 face="ISIJ"> Â Ä</font><br>
+<tt>bcorn &nbsp; &nbsp; </tt>(noun) the characters<font size=2 face="ISIJ"> Ù À</font><br>
+<tt>bint &nbsp; &nbsp; &nbsp;</tt>(noun) the characters<font size=2 face="ISIJ"> Á Ä</font><br>
+<br>
+
+<tt>mat </tt>is the main verb of the next group of definitions.
+The argument is a literal array; the result is a literal matrix image of
+the array &#151; a literal table that "looks like" the argument array.<br><br>
+
+<tt>perim </tt>draws a perimeter around each plane of the right argument:
+According to the information in the left argument (a result 
+of<tt> rc</tt>),<tt> perim </tt>puts
+<font size=2 face="ISIJ"> ¿ Ú Â Ä </font>(<tt>top</tt>),
+<font size=2 face="ISIJ"> Ù À Á Ä </font>(<tt>bot</tt>),
+<font size=2 face="ISIJ"> Ã ³ </font>(<tt>left</tt>), or
+<font size=2 face="ISIJ"> ´ ³ </font>(<tt>right</tt>) at
+appropriate positions on the perimeter of each plane.<br><br>
+
+<tt>topleft </tt>catenates the characters<font size=2 face="ISIJ"> Å ³ Ä </font>
+on the top and left edges of a literal table.<tt> inside </tt>produces
+the inside (excluding perimeter) of a plane of the display.<tt> take </tt>
+is<tt> {. </tt>if the right argument is non-empty, and is an array
+of blanks otherwise.<tt> frame </tt>applies to an array of boxed tabular
+displays, and computes the overall display.<tt> rc </tt>computes the
+number of rows and columns in the display of atoms in a plane.<br><br>
+
+<tt>thorn1 </tt>models<tt> ":</tt>;<tt> thbox </tt>models<tt> ": </tt>on
+a boxed array.<br><br>
+
+The following examples illustrate the inner workings of the model:<br>
+<pre>
+   y=: 2 3$(i.2 3);'abc';(i.4 1);(<2 2$'ussr');12;<+&.>i.2 2 3
+   x=: mat@thorn1&.>y
+
+   $&.> x              rc x              { rc x<font size=2 face="ISIJ">
+ÚÄÄÄÂÄÄÄÂÄÄÄÄ¿      ÚÄÄÄÄÂÄÄÄÄÄ¿      ÚÄÄÄÄÂÄÄÄÄÂÄÄÄÄ¿
+³2 5³1 3³4 1 ³      ³4 11³5 3 9³      ³4 5 ³4 3 ³4 9 ³
+ÃÄÄÄÅÄÄÄÅÄÄÄÄ´      ÀÄÄÄÄÁÄÄÄÄÄÙ      ÃÄÄÄÄÅÄÄÄÄÅÄÄÄÄ´
+³4 4³1 2³11 9³                        ³11 5³11 3³11 9³
+ÀÄÄÄÁÄÄÄÁÄÄÄÄÙ                        ÀÄÄÄÄÁÄÄÄÄÁÄÄÄÄÙ</font>
+
+   a =: 2 3 4 $ 'abcdefghijklmnopqrstuvwx'
+
+   a                   mat a             $a
+abcd                abcd              2 3 4
+efgh                efgh
+ijkl                ijkl                 $ mat a
+                                      7 4
+mnop                mnop
+qrst                qrst
+uvwx                uvwx
+
+   
+   topleft 3 4$'a'<font size=2 face="ISIJ">
+ÅÄÄÄÄ
+³aaaa
+³aaaa
+³aaaa</font>
+   (2 3;4 5) perim 6 10$'a'<font size=2 face="ISIJ">
+ÚÄÄÄÄÂÄÄÄÄÄ¿
+³aaaaaaaaaa³
+³aaaaaaaaaa³
+Ãaaaaaaaaaa´
+³aaaaaaaaaa³
+³aaaaaaaaaa³
+³aaaaaaaaaa³
+ÀÄÄÄÄÁÄÄÄÄÄÙ</font>
+   
+   ] t=: ({rc x) inside@:(take&.>)"2 x<font size=2 face="ISIJ">
+0 1 2³abc³0        
+3 4 5³   ³1        
+     ³   ³2        
+     ³   ³3        
+ÄÄÄÄÄÅÄÄÄÅÄÄÄÄÄÄÄÄÄ
+ÚÄÄ¿ ³12 ³ÚÄÂÄÄÂÄÄ¿
+³us³ ³   ³³0³1 ³2 ³
+³sr³ ³   ³ÃÄÅÄÄÅÄÄ´
+ÀÄÄÙ ³   ³³3³4 ³5 ³
+     ³   ³ÀÄÁÄÄÁÄÄÙ
+     ³   ³         
+     ³   ³ÚÄÂÄÄÂÄÄ¿
+     ³   ³³6³7 ³8 ³
+     ³   ³ÃÄÅÄÄÅÄÄ´
+     ³   ³³9³10³11³
+     ³   ³ÀÄÁÄÄÁÄÄÙ</font>
+   (rc x) perim t<font size=2 face="ISIJ">
+ÚÄÄÄÄÄÂÄÄÄÂÄÄÄÄÄÄÄÄÄ¿
+³0 1 2³abc³0        ³
+³3 4 5³   ³1        ³
+³     ³   ³2        ³
+³     ³   ³3        ³
+ÃÄÄÄÄÄÅÄÄÄÅÄÄÄÄÄÄÄÄÄ´
+³ÚÄÄ¿ ³12 ³ÚÄÂÄÄÂÄÄ¿³
+³³us³ ³   ³³0³1 ³2 ³³
+³³sr³ ³   ³ÃÄÅÄÄÅÄÄ´³
+³ÀÄÄÙ ³   ³³3³4 ³5 ³³
+³     ³   ³ÀÄÁÄÄÁÄÄÙ³
+³     ³   ³         ³
+³     ³   ³ÚÄÂÄÄÂÄÄ¿³
+³     ³   ³³6³7 ³8 ³³
+³     ³   ³ÃÄÅÄÄÅÄÄ´³
+³     ³   ³³9³10³11³³
+³     ³   ³ÀÄÁÄÄÁÄÄÙ³
+ÀÄÄÄÄÄÁÄÄÄÁÄÄÄÄÄÄÄÄÄÙ</font>
+</pre>
+<br>
+
+<a name="Formatted"></a><p><font size="5"><b>Formatted Display</b></font><br><br>
+
+<tt>x":y </tt> is a literal representation of<tt> y </tt>specified
+by<tt> x</tt>.<tt> </tt>Positive elements of<tt> x </tt>specify 
+fixed-point notation, while negative
+elements specify exponential notation.  The left and right ranks are one;
+that is, lists in the arguments are independently formatted.
+The computation can be modelled as follows:<br>
+
+<pre>
+fmtexp   =: {&'++-'@* , _3&{.@('00'&,)@":@|
+cexp     =: >:@(i.&'e') ({. , fmtexp@".@}.) ]
+cminus   =: '-'&((e.&'_' # i.@#)@]})
+larg     =: (+_20&*@(0&=))@-@(1&|)@|@".@(-.&' %e')
+nsprintf =: larg@[ cexp@cminus@":"1 ]
+psprintf =: ".@(-.&' %f')@[ ($&' '@(0&=)@<.@[ , cminus@":"1) ]
+sprintf  =: nsprintf`psprintf@.('f'&e.@[)
+
+wd       =: <.@|
+npstr    =: ' %- '&,@(,&'e')@(0.1&":)@(-1&<)@|
+ppstr    =: *@wd }. ' %'&,@(,&'f')@(0.1&":)
+pstr     =: npstr`ppstr@.(0&<:)
+
+jexp     =: >:@(i.&'e') ({. , ":@".@(-.&' +')@}.) ]
+jminus   =: '_'&((e.&'-' # i.@#)@]})
+stars    =: ]`{.@.(*@[)`($&'*'@[)@.(*@[*.(<#))
+c2j      =: stars ]`jexp@.('e'&e.)@jminus
+
+lb       =: (0&=@wd *. 0&<:)@{.
+thcell   =: (wd@[ <@c2j pstr@[ sprintf ])"0
+thorn2   =: (lb@[ }. ;@:thcell) " 1
+</pre>
+
+The model is divided into groups of verbs.<br><br>
+
+<tt>sprintf </tt>is a limited model of<tt> sprintf </tt>in the C library,
+applying to a string containing a single<tt> %e </tt>or<tt> %f </tt>conversion
+specification and to a single number. 
+Thus, if<tt> embrace=:('{'&,)@(,&'}')</tt>,<tt> </tt>then:<br>
+<pre>
+   embrace ' %0.3f' sprintf ^5            { 148.413}
+   embrace '%9.3f' sprintf ^_5            {    0.007}
+   embrace ' %- 0.3e' sprintf ^_5         {  6.738e-003}
+   embrace ' %- 9.3e' sprintf -^5         { -1.484e+002}
+   embrace ' %- 6.3e' sprintf -^_5        { -6.738e-003}
+</pre>
+<tt>pstr </tt>applies to the left argument of<tt> ": </tt>and produces
+the necessary left argument to<tt> sprintf</tt>.<tt> </tt>For example:
+<pre>
+    x          embrace pstr x
+
+   _12         { %- 11.0e}
+   _7.3        { %- 6.3e}
+   _0.3        { %- 0.3e}
+   0           { %0.0f}
+   0.3         { %0.3f}
+   7.3         {%7.3f}
+   12          {%12.0f}
+</pre>
+<tt>c2j </tt>and its constituents transform the result of<tt> sprintf </tt>
+to follow J conventions, in the treatment of signs (<tt>jminus</tt>),
+exponential notation (<tt>jexp</tt>), and overflow (<tt>stars</tt>).<br><br>
+
+<tt>thorn2 </tt>is a model of the dyad<tt> ":</tt>.<tt> </tt>It works by
+applying<tt> thcell </tt>to corresponding atoms of the arguments,
+producing a list of boxes; the leading blank of the razed result is then
+dropped or not, according to the value of<tt> lb </tt>on 
+the left argument.<br><br>
+
+<br>
+<hr>
+
+<a href="iojComp.htm">Next</a>
+ &#149; 
+<a href="iojRep.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

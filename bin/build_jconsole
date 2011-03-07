@@ -1,0 +1,12 @@
+#!/bin/bash
+source bin/jconfig
+make jconsole
+
+if [ -x jconsole ]
+then
+cp jconsole  j/bin/.
+echo success: jconsole created and copied to j/bin
+else
+echo failed: jconsole NOT created
+fi
+
