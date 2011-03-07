@@ -1,0 +1,109 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Introduction</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Introduction</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<hr>
+
+<tt>
+<ul>
+<li>main
+    <ul>
+    <li>jinit2
+    <li>immloop
+        <ul>
+        <li>prompt
+        <li>jgets
+        <li>immex
+            <ul>
+            <li>tokens
+                <ul>
+                <li>wordil
+                <li>enqueue
+                </ul>
+            <li>parse
+                <ul>
+                <li>monad
+                <li>dyad
+                <li>adv
+                <li>conj
+                <li>trident
+                <li>bident
+                <li>is
+                <li>punc
+                <li>move
+                </ul>
+            <li>jpr
+            </ul>
+        <li>tpop
+        </ul>
+    </ul>
+</ul>
+</tt>
+The system is organized as diagrammed above. The main 
+function<tt> main </tt>calls<tt> jinit2 </tt>for initializations,
+then<tt> immloop </tt>("immediate execution" loop), which repeats the 
+following steps:<br><br>
+
+<tt>prompt </tt>and<tt> jgets </tt>prompt and accept an input sentence.<br><br>
+
+<tt>immex </tt>is the heart of the execution loop.  The argument is a 
+string of the input sentence.  The processing is divided into three parts:
+
+<ul>
+<li><tt>tokens </tt>&#151; word formation &#151; applies the rhematic rules to
+partition the sentence into words.
+<li><tt>parse </tt>interprets the sentence according to the parsing rules.
+Parsing is controlled by a table of (pattern,action) pairs; the eleven possible
+actions are embodied as the function listed under<tt> parse </tt> in the diagram.
+<li><a name="jpr"></a><tt>jpr </tt>displays the result of the sentence.
+</ul>
+
+Finally,<a name="tpop"></a><tt> tpop </tt>frees the temporary storage used in an iteration.<br><br>
+
+The fundamental data structure is the APL array (an object of
+data type<tt> A</tt>), used to represent all the possible objects in J.
+Most functions in the implementation accepts arrays as argument and return
+them as result.  Functions tend to be short and compact, and functions
+which implement J primitives are used freely.  Extensive use is made of
+C preprocessor definitions and macros.  Although the implementation
+language is C, the programming style is unmistakably APL.<br><br>
+
+This document is organized along the lines of the dictionary:
+Chapter 1 describes the 
+<a href="iojSent.htm">interpretation of a sentence</a>. 
+Chapters 2, 3, and 4 describe
+<a href="iojNoun.htm">nouns</a>, 
+<a href="iojVerb.htm">verbs</a>, and
+<a href="iojAdv.htm">adverbs and conjunctions</a>.
+Chapter 5 presents alternative <a href="iojRep.htm">representations</a>.
+Chapter 6 describes <a href="iojDisp.htm">display</a>.
+Chapter 7, the final chapter, describes 
+<a href="iojComp.htm">comparisons</a>.<br><br>
+
+The remainder of the document contains various useful bits. 
+In particular, the Appendix contains a 
+<a href="iojSumm.htm">system summary</a>, 
+a means of quickly locating a primitive
+in the program files.<br><br>
+
+<br>
+<hr>
+
+<a href="iojSent.htm">Next</a>
+ &#149; 
+<a href="ioj.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

@@ -1,0 +1,517 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Nouns</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Nouns</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<a href="#Arrays"           >Arrays</a><br>
+<a href="#Types"            >Types</a><br>
+<a href="#Memory Management">Memory Management</a><br>
+<a href="#Global Variables" >Global Variables</a><br><br>
+
+<hr>
+<br>
+
+<a name="Arrays"></a><font size="5"><b>Arrays</b></font><br><br>
+
+The fundamental data structure is the array, that is, an object of
+the C data type<a name="A"></a><tt> A </tt>defined in file jtype.h:<br>
+
+<pre>
+   typedef long I;
+   typedef struct {I k,flag,m,t,c,n,r,s[1];}* A;
+</pre>
+
+All objects, whether numeric, literal, or boxed, whether
+noun, verb, adverb, or conjunction, are represented by arrays.  
+For example, the string<tt> 'Cogito, ergo sum.'</tt>,<tt> </tt>the 
+atom<tt> 1.61803</tt>,<tt> </tt>and the table<tt> 11+i.3 4 </tt>are
+represented thus:<br><br>
+<pre>
+     k   flag  m    t    c    n    r   s[0]<font face="ISIJ">
+   ÚÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄ¿
+   ³  32³   0³  20³CHAR³   2³  17³   1³  17³Cogi³to, ³ergo³ sum³.   ³
+   ÀÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÙ</font>
+
+     k   flag  m    t    c    n    r<font face="ISIJ">
+   ÚÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄ¿
+   ³  28³   0³   8³  FL³   2³   1³   0³  1.61803³
+   ÀÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÙ</font>
+
+     k   flag  m    t    c    n    r   s[0] s[1]<font face="ISIJ">
+   ÚÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂ
+   ³  36³   0³  48³ INT³   2³  12³   2³   3³   4³  11³  12³  13³
+   ÀÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁ
+                       ÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄÂÄÄÄÄ¿
+                       ³  14³  15³  16³  17³  18³  19³  20³  21³  22³
+                       ÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÁÄÄÄÄÙ</font>
+</pre>
+
+<a name="APart"></a>The parts of an array, and macros for manipulating them, 
+are as follows:<br><br>
+<table>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td> 
+    <td>Part&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td> 
+    <td>Macro&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td> 
+    <td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Description</td>
+</tr>
+
+<tr><td> </td> <td><tt>k</tt>   </td> <td><tt>AK</tt>   </td> <td>offset of ravel with respect to byte 0 of the array</td> </tr>
+<tr><td> </td> <td><tt>flag</tt></td> <td><tt>AFLAG</tt></td> <td>flag</td> </tr>
+<tr><td> </td> <td><tt>m</tt>   </td> <td><tt>AM</tt>   </td> <td>maximum # of bytes in ravel</td> </tr>
+<tr><td> </td> <td><tt>t</tt>   </td> <td><tt>AT</tt>   </td> <td>type</td> </tr>
+<tr><td> </td> <td><tt>c</tt>   </td> <td><tt>AC</tt>   </td> <td>reference count</td> </tr>
+<tr><td> </td> <td><tt>n</tt>   </td> <td><tt>AN</tt>   </td> <td># of atoms in ravel</td> </tr>
+<tr><td> </td> <td><tt>r</tt>   </td> <td><tt>AR</tt>   </td> <td>rank</td> </tr>
+<tr><td> </td> <td><tt>s</tt>   </td> <td><tt>AS</tt>   </td> <td>pointer to shape</td> </tr>
+<tr><td> </td> <td>             </td> <td><tt>AV</tt>   </td> <td><a name="ravel"></a>"ravel" or <a name="value"></a>"value", pointer to atoms in ravelled order</td> </tr>
+</table><br>
+
+An array has a <a name="header"></a>"header" and a "value".  The header are the 
+parts<tt> k</tt>,<tt> flag</tt>,<tt> m</tt>,<tt> t</tt>,<tt> </tt>and so forth,
+including the shape<tt> s</tt>,<tt> </tt>which consists of<tt> r </tt>
+integers whose product equals<tt> n</tt>.<tt> </tt> 
+The value, the atoms of the array in ravelled (row major) order, 
+usually follow immediately after<tt> s</tt>,<tt> </tt>but can be
+separate from the header, according to the value in the<tt> k </tt>part.
+Setting the parts of an array incorrectly, or exceeding the bounds
+of the array specified by these parts, almost always lead to 
+erratic behaviour and catastrophic failure.<br><br>
+
+The macros<tt> AK</tt>,<tt> AFLAG</tt>,<tt> AM</tt>,<tt> AT</tt>,<tt> </tt>
+<tt> AC</tt>,<tt> AN</tt>,<tt> </tt>and<tt> AR </tt>denote "fullword"
+integers and may occur on the left or right of an assignment 
+(<i>i.e.</i> they are "lvalues".)<tt> AS </tt>is an integer 
+pointer.<tt> AV </tt>is also an integer pointer, and must be <i>cast</i> 
+to a C data type appropriate to the type of array. 
+(See <a href="#Types">Types</a>.)<br><br>
+
+All arrays are created using the macro<tt> <a name="GA">GA</a> </tt>in file j.h.
+The statement<br>
+<pre>
+   GA(xyz,t,n,r,s);
+</pre>
+creates an array named<tt> xyz </tt>of type<tt> t </tt>and 
+rank<tt> r</tt>,<tt> </tt>having<tt> n </tt>atoms and shape<tt> s</tt>.<tt> </tt>
+If the rank is 0,<tt> s </tt>is ignored; if the rank is 1, again<tt> s </tt>
+is ignored, and the shape is set to<tt> n</tt>.<tt> </tt>Otherwise,
+if<tt> s </tt>is nonzero,<tt> GA </tt>initializes the shape from
+the<tt> r </tt>integers pointed to by<tt> s</tt>,<tt> </tt>and
+if<tt> s </tt>is 0, the shape is not initialized 
+and must be initialized subsequently.<tt> GA </tt>returns zero
+if the array can not be created.<br><br>
+
+For example, the arrays diagrammed above can be created as follows,
+under the names<tt> ces</tt>,<tt> phi</tt>,<tt> </tt>and<tt> m</tt>:<br>
+
+<pre>
+   typedef char   C;
+   typedef double D;
+
+   A ces,m,phi; I j,*s,*v;
+
+   GA(ces,CHAR,17,1,0);
+   memcpy((C*)AV(ces),"Cogito, ergo sum.",(size_t)17);
+
+   GA(phi,FL,1,0,0);
+   *(D*)AV(phi)=1.61803;
+
+   GA(m,INT,12,2,0);
+   s=AS(m); *s=3; *(1+s)=4;
+   v=AV(m); for(j=11;23>j;++j)*v++=j;
+</pre>
+
+The following <a name="arrayutil"></a>utilities (file u.c) and
+array <a name="constants">constants</a> (file i.c) are 
+convenient for working with simple arrays. 
+The frequency of use gives a sense of their utility.<br><br>
+
+<table>
+<tr valign=top>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;Facility</td>
+<td>Freq.&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;Description</td>
+</tr>
+
+<tr valign=top> <td>&nbsp;</td> </tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>sc(I k)</tt></td>
+<td>217&nbsp;&nbsp;&nbsp;</td>
+<td>An integer atom with value<tt> k </tt>(equivalent to<tt> sc4(INT,k)</tt>)</td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>sc4(I t,I k)</tt></td>
+<td>5</td>
+<td>An atom of <a href="#types">type</a><tt> t </tt>with 4-byte value<tt> k </tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>scf(D x)</tt></td>
+<td>26</td>
+<td>A floating point atom with value <tt> x </tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>scc(C x)</tt></td>
+<td>17</td>
+<td>A literal atom with value <tt> c </tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>apv(I n,I b,I m)</tt></td>
+<td>96</td>
+<td>The arithmetic progression vector<tt> b+m*i.n </tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>str(I n,C*s)</tt></td>
+<td>52</td>
+<td>A string (literal list) of length<tt> n </tt>with value the characters 
+pointed to by<tt> s </tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>cstr(C*s)</tt></td>
+<td>93</td>
+<td>A string with value the characters in the 0-terminated string<tt> s </tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>v2(I a,I b)</tt></td>
+<td>72</td>
+<td>The integer vector<tt> a,b</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>v1(I k)</tt></td>
+<td>15</td>
+<td>The integer vector<tt> ,k</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>vec(I t,I n,void*v)&nbsp;&nbsp;</tt></td>
+<td>81</td>
+<td>A vector of length<tt> n </tt>of <a href="#types">type</a><tt> t</tt>,<tt> </tt> 
+with values pointed to by<tt> v</tt></td>
+</tr>
+
+<tr valign=top> <td>&nbsp;</td> </tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>zero</tt></td>
+<td>129</td>
+<td><tt>0</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>one</tt></td>
+<td>98</td>
+<td><tt>1</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>two</tt></td>
+<td>24</td>
+<td><tt>2</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>neg1</tt></td>
+<td>22</td>
+<td><tt>_1</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>pie</tt></td>
+<td>5</td>
+<td><tt>1p1 </tt>(<tt>pi </tt>conflicts with C usage)</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>a0j1</tt></td>
+<td>9</td>
+<td><tt>0j1</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>ainf</tt></td>
+<td>14</td>
+<td><tt>_</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>iv0</tt></td>
+<td>17</td>
+<td><tt>,2-2</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>iv1</tt></td>
+<td>18</td>
+<td><tt>,2-1</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>mtv</tt></td>
+<td>73</td>
+<td><tt>i.0</tt></td>
+</tr>
+
+<tr valign=top>
+<td> </td>
+<td><tt>mtm</tt></td>
+<td>44</td>
+<td><tt>i.0 0</tt></td>
+</tr>
+
+</table><br>
+
+For example, the arrays diagrammed above
+can be created by<tt> str(17L,"Cogito,&nbsp;ergo&nbsp;sum.") </tt>
+or<tt> cstr("Cogito,&nbsp;ergo&nbsp;sum.")</tt>,<tt> </tt>
+<tt>scf(1.61803)</tt>,<tt> </tt>and<tt> </tt>
+<tt>reshape(v2(3L,4L),apv(12L,11L,1L))</tt>.<br><br>
+
+<br>
+
+<a name="Types"></a><p><font size="5"><b>Types</b></font><br><br>
+
+If<tt> x </tt>is an array, its <i>type</i><tt> AT(x) </tt>specifies
+how the atoms starting at<tt> AV(x) </tt>are to be interpreted.
+In C programming terms,<tt> AV(x) </tt>must be <i>cast</i> to a 
+pointer of the appropriate C type:<br>
+<pre>
+           <font size=3 face="Times New Roman">C Data</font>
+   AT(x)    <font size=3 face="Times New Roman">Type                    Description</font>
+
+   B01       B          <font size=3 face="Times New Roman">Boolean</font> <font size=3 face="Times New Roman">(</font>BOOL <font size=3 face="Times New Roman">has a name conflict)</font>                    
+   LIT       C          <font size=3 face="Times New Roman">literal (character;</font> CHAR <font size=3 face="Times New Roman">has a name conflict)</font>        
+   INT       I          <font size=3 face="Times New Roman">integer</font>                     
+   FL        D          <font size=3 face="Times New Roman">double (IEEE floating point)</font>
+   CMPX      Z          <font size=3 face="Times New Roman">complex</font>                   
+   BOX       A          <font size=3 face="Times New Roman">boxed</font>                      
+   XNUM      X          <font size=3 face="Times New Roman">extended precision integer</font>
+   RAT       Q          <font size=3 face="Times New Roman">rational number</font>          
+
+   SB01      P          <font size=3 face="Times New Roman">sparse boolean</font>        
+   SLIT      P          <font size=3 face="Times New Roman">sparse literal (character)</font>
+   SINT      P          <font size=3 face="Times New Roman">sparse integer</font>       
+   SFL       P          <font size=3 face="Times New Roman">sparse floating point</font>
+   SCMPX     P          <font size=3 face="Times New Roman">sparse complex</font>        
+   SBOX      P          <font size=3 face="Times New Roman">sparse boxed</font>             
+
+   VERB      V          <font size=3 face="Times New Roman">verb</font>                    
+   ADV       V          <font size=3 face="Times New Roman">adverb</font>                  
+   CONJ      V          <font size=3 face="Times New Roman">conjunction</font>   
+         
+   ASGN      I          <font size=3 face="Times New Roman">assignment</font>              
+   MARK      I          <font size=3 face="Times New Roman">marker</font>     
+   SYMB      L          <font size=3 face="Times New Roman">locale (symbol table)</font>     
+   CONW      CW         <font size=3 face="Times New Roman">control word</font>             
+   NAME      NM         <font size=3 face="Times New Roman">name</font>                     
+   LPAR      I          <font size=3 face="Times New Roman">left  parenthesis</font>        
+   RPAR      I          <font size=3 face="Times New Roman">right parenthesis</font>       
+</pre>
+For example, if<tt> x </tt>is literal and<tt> s=(C*)AV(x)</tt>,<tt> </tt>
+then<tt> s[i] </tt>is character<tt> i </tt>of<tt> x</tt>. The C data types
+in the table are all<tt> typedef</tt>'s<tt> </tt>found in file jtype.h;
+the data type<tt> V </tt>is explained in the 
+<a href="iojVerb.htm">Verbs</a> section.<br><br>
+
+Types are fullword integers, and are powers of 2 to permit convenient
+tests for "composite" types.  For example, if:<br>
+
+<pre>
+   #define NUMERIC (B01+INT+FL+CMPX+XNUM+RAT+SB01+SINT+SFL+SCMPX)
+   #define NOUN    (NUMERIC+LIT+SLIT+BOX+SBOX)
+</pre>
+Then the phrase<tt> NUMERIC&AT(x) </tt>tests for numeric arrays,
+and the phrase<tt> NOUN&AT(x) </tt>tests for nouns. Such comparisons
+play a key role in the <a href="iojSent.htm#Parsing">parser</a>.<br><br>
+
+A numeric array is accepted as argument by a primitive,
+regardless of its type, if it is mathematically within the domain
+of the primitive.  For example, a primitive with integral domain
+would accept integers in an array of type<tt> FL</tt>,<tt> CMPX</tt>,<tt> </tt>
+and<tt> B01</tt>,<tt> </tt>and of course<tt> INT</tt>.<tt> </tt>
+(This analytic property does not extend to functions internal to 
+the implementation.) Functions in the file k.c convert between numeric types.
+A converted result is an array of the target type equal to the
+argument within <a href="iojComp.htm#fuzz">fuzz</a>. 
+The following functions are available:<br><br>
+
+<table>
+<tr><td><tt>&nbsp;&nbsp;&nbsp;</tt></td>
+    <td><tt>cvt(t,x) &nbsp;&nbsp;&nbsp;</tt></td>
+    <td>Convert<tt> x </tt>to type<tt> t</tt>;<tt> </tt>signal error if not possible</td>
+</tr>
+<tr><td> </td>
+    <td><tt>pcvt(t,x)</tt></td>
+    <td>Convert<tt> x </tt>to type<tt> t</tt>;<tt> </tt>return<tt> x </tt>if not possible</td>
+</tr>
+<tr><td> </td>
+    <td><tt>icvt(t,x)</tt></td>
+    <td>Convert floating<tt> x </tt>to<tt> INT </tt>if the values are in range;
+        otherwise just return<tt> x</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>bcvt(t,x)</tt></td>
+    <td>Convert<tt> x </tt>to the "lowest" type</td>
+</tr>
+</table><br>
+
+The utility<a name="bp"></a><tt> bp </tt>in file u.c applies to a type,
+and returns the number of bytes per atom of that type.  Thus<tt> bp(INT) </tt>
+is 4;<tt> bp(AT(x)) </tt>is the number of bytes per atom of<tt> x</tt>;<tt> </tt>
+and<tt> 28+(4*AR(x))+AN(x)*bp(AT(x)) </tt>is the number of bytes
+required by<tt> x </tt>&#151; 4 bytes each 
+for<tt> k</tt>,<tt>flag</tt>,<tt>m</tt>,<tt>t</tt>,<tt>c</tt>,<tt>n</tt>,<tt>r</tt>;<tt> </tt>
+4 bytes each for the<tt> AR(x) </tt>elements of the shape; 
+and<tt> bp(AT(x)) </tt>bytes each for<tt> AN(x) </tt>atoms.<br><br>
+
+The atoms of a boxed array are pointers to other arrays, and are
+accessible through<tt> (A*)AV(x)</tt>,<tt> </tt>as the following 
+example illustrates.<tt> aib </tt>applies to a boxed array<tt> x</tt>,<tt> </tt>
+and returns the number of atoms in each box of<tt> x</tt>:<br>
+
+<pre>
+   #define R  return<a name="R"></a>
+
+   A aib(A x){A*u,z;I j,*v;
+    GA(z,INT,AN(x),AR(x),AS(x));       /* 1 */
+    u=(A*)AV(x); v=AV(z);              /* 2 */
+    for(j=0;AN(x)>j;++j)*v++=AN(*u++); /* 3 */
+    R z;
+   }
+</pre>
+
+Line 1 creates an integer array<tt> z </tt>having the same rank 
+and shape as<tt> x</tt>.<tt> </tt>
+Line 2 initializes pointer values<tt> u </tt>and<tt> v </tt>
+for traversing<tt> x </tt>and<tt> z </tt>.<tt> </tt>
+Line 3 runs through the atoms of<tt> x</tt>,<tt> </tt>through<tt> u</tt>,<tt> </tt>
+and records the number of atoms in each.  Since the data type of<tt> u </tt>
+is<tt> A*</tt>,<tt> </tt>the data type of<tt> *u </tt>is<tt> A </tt>and
+are subject to<tt> AN</tt>,<tt> AT</tt>,<tt> AV</tt>,<tt> </tt>etc.<br><br>
+
+<br>
+
+<a name="Memory Management"></a><p><font size="5"><b>Memory Management</b></font><br><br>
+
+When an array is created,<a name="malloc"></a><tt> malloc </tt>is 
+called to obtain the requisite storage;
+when this storage is no longer needed,<a name="free"></a><tt> free </tt>is 
+called to return it to the
+underlying system. No "garbage collection" is done.  The performance
+of this strategy is adequate on modern virtual memory systems.
+To facilitate the implementation of alternative strategies,
+the use of<tt> malloc </tt>and<tt> free </tt>is limited to a single
+instance of each, in the file m.c.<br><br>
+
+The reference count of an array is incremented when it is assigned
+a name, directly or indirectly, and is decremented when the name is
+reassigned or erased; when the reference count of an array reaches 0,
+its storage is freed.<br><br>
+
+When an array is created, a pointer to it is entered in a "temp stack"<tt> </tt>
+(<a name="tstack"></a><tt>tstack </tt>in file m.c.)
+A <i>temp</i> is an array on this stack with a reference count of one.
+The temp stack plays an important role in the 
+<a href="iojIntro.htm">main execution loop</a>.
+In an iteration of the loop,<br><br>
+
+<tt>&nbsp;&nbsp;&nbsp;</tt>&#149; The top of the temp stack is recorded;<br>
+<tt>&nbsp;&nbsp;&nbsp;</tt>&#149; A line of user-input is executed; and<br>
+<tt>&nbsp;&nbsp;&nbsp;</tt>&#149; Temps from the current top-of-stack to the old top-of-stack
+recorded above, are freed.<br><br>
+
+This device permits functions to be written without explicit
+memory management code.  For example, the monad<tt> ~. </tt>is written:<br>
+
+<pre>
+   F1(jtnub){R repeat(nubsieve(w),w);}
+</pre>
+
+And<tt> nub </tt>need not be concerned with temps used
+in<tt> repeat </tt>or<tt> nubsieve</tt>,<tt> </tt>
+because they are accounted for in the main loop.<br><br>
+
+On the other hand, a function <i>may</i> account for temps:
+On entry into the function, the current top-of-stack is recorded;
+on exit, temps are freed down to the recorded point.
+(These actions are mediated by the 
+macros<a name="PROLOG"></a><tt> PROLOG </tt>and<a name="EPILOG"></a><tt> EPILOG</tt>.)<tt> </tt>
+Whether a function accounts for temps does not affect the logic of
+functions that it calls, nor functions that call it.<br><br>
+
+<br>
+
+<a name="Global Variables"></a><p><font size="5"><b>Global Variables</b></font><br><br>
+
+The only global variables used in the system are 
+constants which are assigned exactly once.
+(For example, the array constant<tt> zero </tt>and the internal complex
+number<tt> zeroZ</tt>.)<tt>  </tt>All other variables non-local to functions 
+are accessed through the parameter<a name="jt"></a><tt> jt</tt>.<br><br>
+
+<tt>jt </tt>has defined type<tt> <a name="J">J</a></tt>,<tt> </tt>a pointer to 
+a<tt> struct </tt>defined in file jt.h.
+Nearly all functions in the system has<tt> jt </tt>
+as its first function argument,
+and all such functions have the letters<tt> jt </tt>as a prefix in their names.
+The file ja.h defines aliases for these names, so that a call to a
+function<tt> jtxyz(jt,a,w,h) </tt>is 
+actually written as<tt> xyz(a,w,h)</tt>.<tt> </tt>  
+For example, the conjunction<tt> &</tt>,<tt> </tt>
+described in <a href="iojAdv.htm#amp">Adverbs and Conjunctions</a>, 
+is implemented by a function
+defined and declared as<tt> jtamp</tt>,<tt> </tt>
+having prototype<tt> A&nbsp;jtamp(J&nbsp;jt,A&nbsp;a,A&nbsp;w)</tt>,<tt> </tt>but calls to this 
+function are written as<tt> amp(a,w)</tt>,<tt> </tt>
+and discussions on this function refer to it as<tt> amp</tt>.<br><br>
+
+<tt>jt </tt>makes it possible to execute multiple instances
+of J in the same process.<br><br>
+
+<br>
+<hr>
+
+<a href="iojVerb.htm">Next</a>
+ &#149; 
+<a href="iojSent.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

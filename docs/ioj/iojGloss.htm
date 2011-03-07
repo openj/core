@@ -1,0 +1,329 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Glossary</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Glossary</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<hr>
+<br>
+
+An explanation is provided for significant names in the system.
+Names spelled with majuscules denote defined 
+types<tt> </tt>(<tt>typedef</tt>)<tt> </tt>or<tt> #define </tt>
+constants and macros; those spelled with minuscules denote
+C functions and variables.<br><br>
+
+Each entry has a name, its frequency of occurrence,
+and a brief description.<br>
+
+<table>
+<tr valign=top>
+<td>&nbsp;&nbsp;&nbsp;</td>
+<td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td> </td>
+</tr>
+
+<tr valign=top>
+<td><tt>A</tt></td>
+<td>1157</td>
+<td>The data type of an array; the data type of<tt> BOX </tt>array elements</td>
+</tr>
+
+<tr valign=top>
+<td><tt>a</tt></td>
+<td>1883</td>
+<td>The left argument of a verb</td>
+</tr>
+
+<tr valign=top>
+<td><tt>a0j1</tt></td>
+<td>9</td>
+<td>The complex atom<tt> 0j1</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>ainf</tt></td>
+<td>14</td>
+<td>The floating point atom<tt> _</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>AN(x)</tt></td>
+<td>759</td>
+<td>The<tt> n </tt>part of an array (the number of atoms in the value part)</td>
+</tr>
+
+<tr valign=top>
+<td><tt>apv(n,b,m)</tt></td>
+<td>96</td>
+<td>The arithmetic progression vector<tt> b+m*i.n </tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>AN(x)</tt></td>
+<td>759</td>
+<td>The<tt> n </tt>part of an array; the number of atoms in the value part</td>
+</tr>
+
+<tr valign=top>
+<td><tt>AR(x)</tt></td>
+<td>581</td>
+<td>The<tt> r </tt>part of an array; the rank of an array</td>
+</tr>
+
+<tr valign=top>
+<td><tt>AS(x)</tt></td>
+<td>477</td>
+<td>The<tt> s </tt>part of an array; the shape of an array</td>
+</tr>
+
+<tr valign=top>
+<td><tt>ASSERT(p,e)</tt></td>
+<td>822</td>
+<td>Signal error<tt> e </tt>if proposition<tt> p </tt>is <i>not</i> true</td>
+</tr>
+
+<tr valign=top>
+<td><tt>AT(x)</tt></td>
+<td>733</td>
+<td>The<tt> t </tt>part of an array; the type of an array</td>
+</tr>
+
+<tr valign=top>
+<td><tt>B</tt></td>
+<td>706</td>
+<td>The data type of<tt> B01 </tt>array elements</td>
+</tr>
+
+<tr valign=top>
+<td><tt>B01</tt></td>
+<td>160</td>
+<td>The type of a Boolean array</td>
+</tr>
+
+<tr valign=top>
+<td><tt>bp(t)</tt></td>
+<td>92</td>
+<td>The number of bytes per atom of type<tt> t </tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>C</tt></td>
+<td>566</td>
+<td>The data type of<tt> LIT </tt>array elements</td>
+</tr>
+
+<tr valign=top>
+<td><tt>cstr(s)</tt></td>
+<td>93</td>
+<td>A string with value the characters in the 0-terminated string<tt> s</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>DO(n,stmt)</tt></td>
+<td>905</td>
+<td>Execute<tt> n </tt>times the statement<tt> stmt</tt>,<tt> </tt> 
+with local variable<tt> i </tt>running from<tt> 0 </tt>to<tt> n-1</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>EPILOG(x)</tt></td>
+<td>82</td>
+<td>Free all temporary storage used since the 
+last<tt> PROLOG</tt>,<tt> </tt>then return<tt> x </tt>as a result</td>
+</tr>
+
+<tr valign=top>
+<td><tt>F1(f)</tt></td>
+<td>705</td>
+<td>Define<tt> f </tt>as a monadic verb or an adverb</td>
+</tr>
+
+<tr valign=top>
+<td><tt>F2(f)</tt></td>
+<td>326</td>
+<td>Define<tt> f </tt>as a dyadic verb or a conjunction</td>
+</tr>
+
+<tr valign=top>
+<td><tt>GA(t,n,r,s)</tt></td>
+<td>583</td>
+<td>Create an array of type<tt> t </tt>of rank<tt> r </tt>and 
+shape<tt> s</tt>,<tt> </tt>with<tt> n </tt>atoms</td>
+</tr>
+
+<tr valign=top>
+<td><tt>I</tt></td>
+<td>1537</td>
+<td>The data type in C of a full-word integer</td>
+</tr>
+
+<tr valign=top>
+<td><tt>iv0</tt></td>
+<td>17</td>
+<td><tt>,2-2</tt>,<tt> </tt>the integer vector 0</td>
+</tr>
+
+<tr valign=top>
+<td><tt>iv1</tt></td>
+<td>18</td>
+<td><tt>,2-1</tt>,<tt> </tt>the integer vector 1</td>
+</tr>
+
+<tr valign=top>
+<td><tt>jt</tt></td>
+<td>2557</td>
+<td>Points to a structure of all the global variables for a J instance</td>
+</tr>
+
+<tr valign=top>
+<td><tt>LIT</tt></td>
+<td>566</td>
+<td>The type of a literal (character) array 
+<tt> </tt>(<tt>CHAR </tt>conflicts with C usage)</td>
+</tr>
+
+<tr valign=top>
+<td><tt>mtm</tt></td>
+<td>44</td>
+<td>The empty matrix<tt> i.0 0</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>mtv</tt></td>
+<td>73</td>
+<td>The empty vector<tt> i.0</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>neg1</tt></td>
+<td>22</td>
+<td>The integer atom<tt> _1</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>one</tt></td>
+<td>98</td>
+<td>The Boolean atom<tt> 1</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>pie</tt></td>
+<td>5</td>
+<td>The floating point atom <font face=Symbol>p</font><tt> </tt>
+(<tt>pi </tt>conflicts with C usage)</td>
+</tr>
+
+<tr valign=top>
+<td><tt>PROLOG</tt></td>
+<td>85</td>
+<td>Establish a checkpoint for temporary storage usage</td>
+</tr>
+
+<tr valign=top>
+<td><tt>RE(x)</tt></td>
+<td>220</td>
+<td>Return 0 if an error is signalled in executing<tt> x</tt>
+</td>
+</tr>
+
+<tr valign=top>
+<td><tt>RZ(x)</tt></td>
+<td>1537</td>
+<td>Return 0 if<tt> x </tt>is 0</td>
+</tr>
+
+<tr valign=top>
+<td><tt>sc(k)</tt></td>
+<td>217&nbsp;&nbsp;&nbsp;</td>
+<td>An integer atom with value<tt> k </tt>(equivalent to<tt> sc4(INT,k)</tt>)</td>
+</tr>
+
+<tr valign=top>
+<td><tt>sc4(t,k)</tt></td>
+<td>5</td>
+<td>An atom of type<tt> t </tt>with 4-byte value<tt> k </tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>scc(c)</tt></td>
+<td>17</td>
+<td>A literal atom with value <tt> c </tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>scf(x)</tt></td>
+<td>26</td>
+<td>A floating point atom with value<tt> x </tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>str(n,s)</tt></td>
+<td>52</td>
+<td>A string (literal list) of length<tt> n </tt>with value the characters 
+pointed to by<tt> s </tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>two</tt></td>
+<td>24</td>
+<td>The integer atom<tt> 2</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>v1(k)</tt></td>
+<td>15</td>
+<td>The integer vector<tt> ,k</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>v2(a,b)</tt></td>
+<td>72</td>
+<td>The integer vector<tt> a,b</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>vec(t,n,v)&nbsp;&nbsp;</tt></td>
+<td>81</td>
+<td>A vector of length<tt> n </tt>of type<tt> t</tt>,<tt> </tt> 
+with values pointed to by<tt> v</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>vi(x)</tt></td>
+<td>45</td>
+<td>"Verify integer", convert<tt> x </tt>to integer</td>
+</tr>
+
+<tr valign=top>
+<td><tt>w</tt></td>
+<td>3207</td>
+<td>The right argument of a verb</td>
+</tr>
+
+<td><tt>zero</tt></td>
+<td>129</td>
+<td>The Boolean atom<tt> 0</tt></td>
+</tr>
+
+</table><br>
+
+<br>
+<hr>
+
+<a href="iojIndex.htm">Next</a>
+ &#149; 
+<a href="iojBib.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

@@ -1,0 +1,526 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Representation</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Representation</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<a href="#Atomic">Atomic Representation</a><br>
+<a href="#Boxed" >Boxed Representation</a><br>
+<a href="#Tree"  >Tree Representation</a><br>
+<a href="#Linear">Linear Representation</a><br><br>
+
+<hr>
+<br>
+
+<a name="Atomic"></a><font size="5"><b>Atomic Representation</b></font><br><br>
+
+<tt>5!:1 </tt>is a verb that applies to a boxed name, and produces
+the <i>atomic representation</i> of the named object. 
+<a name="gerund">Gerunds (results of the<tt> ` </tt>conjunction) 
+are arrays of atomic representations.
+The adverb<tt> 5!:0 </tt>defines an object from its representation.<br><br>
+
+The atomic representation is a boxed list of two boxes:<br>
+
+<table>
+<tr><td><tt>&nbsp;&nbsp;&nbsp;</tt></td><td>noun       </td><td>symbol value    </td></tr>
+<tr><td> </td><td>verb       </td><td>symbol arguments</td></tr>
+<tr><td> </td><td>adverb     </td><td>symbol arguments</td></tr>
+<tr><td> </td><td>conjunction&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td><td>symbol arguments</td></tr>
+</table><br>
+
+The symbol is a string computed by 
+function<tt> <a href="iojSent.htm#spellout">spellout</a> </tt>in file ws.c.
+For a primitive with an assigned symbol 
+(for example<tt> + </tt>or<tt> /.</tt>),<tt> </tt>
+the symbol is simply that word; for those without, the symbol is 
+one of the following:<br><br>
+
+<pre>
+   '0'           <font size=3 face="Times New Roman">noun</font>
+   '2'           <font size=3 face="Times New Roman">hook</font>
+   '3'           <font size=3 face="Times New Roman">fork</font>
+   '4'           <font size=3 face="Times New Roman">bonded conjunction</font>
+   '5'           <font size=3 face="Times New Roman">2-element a-train or c-train</font>
+   '6'           <font size=3 face="Times New Roman">3-element a-train or c-train</font>
+</pre>
+
+The "value" in the representation of a noun is just the noun itself;
+arguments in the representation of a verb, adverb, or conjunction are
+themselves atomic representations. If an object is uniquely identified
+by the symbol alone, then the second box is elided, and the representation
+is the boxed symbol alone.<br><br>
+
+The following examples illustrate atomic representation:<br><br>
+<pre>
+   ar=: 5!:1
+
+   plus=: +          sum=: +/          mean=: +/ % #
+   ar <'plus'        ar <'sum'         ar <'mean'<font face="ISIJ">
+ÚÄ¿               ÚÄÄÄÄÄÄÄ¿         ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³+³               ³ÚÄÂÄÄÄ¿³         ³ÚÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄ¿³
+ÀÄÙ               ³³/³ÚÄ¿³³         ³³3³ÚÄÄÄÄÄÄÄÂÄÂÄ¿³³
+                  ³³ ³³+³³³         ³³ ³³ÚÄÂÄÄÄ¿³%³#³³³
+                  ³³ ³ÀÄÙ³³         ³³ ³³³/³ÚÄ¿³³ ³ ³³³
+                  ³ÀÄÁÄÄÄÙ³         ³³ ³³³ ³³+³³³ ³ ³³³
+                  ÀÄÄÄÄÄÄÄÙ         ³³ ³³³ ³ÀÄÙ³³ ³ ³³³
+                                    ³³ ³³ÀÄÁÄÄÄÙ³ ³ ³³³
+                                    ³³ ³ÀÄÄÄÄÄÄÄÁÄÁÄÙ³³
+                                    ³ÀÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÙ³
+                                    ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ</font>
+   +`(+/)`(+/ % #)<font face="ISIJ">
+ÚÄÂÄÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³+³ÚÄÂÄÄÄ¿³ÚÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄ¿³
+³ ³³/³ÚÄ¿³³³3³ÚÄÄÄÄÄÄÄÂÄÂÄ¿³³
+³ ³³ ³³+³³³³ ³³ÚÄÂÄÄÄ¿³%³#³³³
+³ ³³ ³ÀÄÙ³³³ ³³³/³ÚÄ¿³³ ³ ³³³
+³ ³ÀÄÁÄÄÄÙ³³ ³³³ ³³+³³³ ³ ³³³
+³ ³       ³³ ³³³ ³ÀÄÙ³³ ³ ³³³
+³ ³       ³³ ³³ÀÄÁÄÄÄÙ³ ³ ³³³
+³ ³       ³³ ³ÀÄÄÄÄÄÄÄÁÄÁÄÙ³³
+³ ³       ³ÀÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÙ³
+ÀÄÁÄÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ</font>
+   a=: 5             xenos=: !:
+   ar <'a'           ar <'xenos'       ar <'ar'<font face="ISIJ">
+ÚÄÄÄÄÄ¿           ÚÄÄ¿              ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ÚÄÂÄ¿³           ³!:³              ³ÚÄÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄ¿³
+³³0³5³³           ÀÄÄÙ              ³³!:³ÚÄÄÄÄÄÂÄÄÄÄÄ¿³³
+³ÀÄÁÄÙ³                             ³³  ³³ÚÄÂÄ¿³ÚÄÂÄ¿³³³
+ÀÄÄÄÄÄÙ                             ³³  ³³³0³5³³³0³1³³³³
+                                    ³³  ³³ÀÄÁÄÙ³ÀÄÁÄÙ³³³
+                                    ³³  ³ÀÄÄÄÄÄÁÄÄÄÄÄÙ³³
+                                    ³ÀÄÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÙ³
+                                    ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ</font>
+   lgamma=: ^.@!@<:
+   ar <'lgamma'<font face="ISIJ">
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿
+³ÚÄÂÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄ¿³
+³³@³ÚÄÄÄÄÄÄÄÄÄÄÂÄÄ¿³³
+³³ ³³ÚÄÂÄÄÄÄÄÄ¿³<:³³³
+³³ ³³³@³ÚÄÄÂÄ¿³³  ³³³
+³³ ³³³ ³³^.³!³³³  ³³³
+³³ ³³³ ³ÀÄÄÁÄÙ³³  ³³³
+³³ ³³ÀÄÁÄÄÄÄÄÄÙ³  ³³³
+³³ ³ÀÄÄÄÄÄÄÄÄÄÄÁÄÄÙ³³
+³ÀÄÁÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÙ</font>
+</pre>
+<br>
+
+<a name="Boxed"></a><font size="5"><b>Boxed Representation</b></font><br><br>
+
+<tt>5!:2 </tt>is a verb that applies to a boxed name, and produces
+the <i>boxed representation</i> of the named object. The representation
+can be modelled as follows:<br><br>
+
+<pre>
+ar     =: 5!:1
+boxed  =: 32&=@(3!:0)
+oarg   =: >@(1&{)
+
+bxroot =: (<1 0)&C.@,`] @. (e.&(,&.>'0123456789')@[)
+
+bxx    =: {. bxroot bx&.>@oarg
+bxgl   =: {. bxroot (bxx&.>@{. , bx &.>@}.)@oarg
+bxgr   =: {. bxroot (bx &.>@{. , bxx&.>@}.)@oarg
+bxg    =: bxgr`bxgl`bxx @. (i.&(<,'`')@oarg)
+bxtil  =: bxx`(oarg@>@{.@oarg) @. ((<,'0')&=@{.@>@{.@oarg)
+bxcase =: oarg`bxgl`bxgl`bxg`bxtil`bxx @. ((;:'0@.`:4~')&i.@{.)
+bx     =: ]`bxcase @. boxed
+
+brep   =: ,@<`[ @. boxed @ bx @ > @ ar
+
+   brep <'brep'<font face="ISIJ">
+ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÂÄÄ¿
+³ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÂÄ¿³@³ar³
+³³ÚÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÂÄÂÄÄ¿³@³>³³ ³  ³
+³³³ÚÄÄÄÄÄÄÄÄÄÄÄÂÄÄÂÄÄÄÄÄ¿³@³bx³³ ³ ³³ ³  ³
+³³³³ÚÄÄÄÄÄÄÄÂÄ¿³@.³boxed³³ ³  ³³ ³ ³³ ³  ³
+³³³³³ÚÄÂÄÂÄ¿³[³³  ³     ³³ ³  ³³ ³ ³³ ³  ³
+³³³³³³,³@³<³³ ³³  ³     ³³ ³  ³³ ³ ³³ ³  ³
+³³³³³ÀÄÁÄÁÄÙ³ ³³  ³     ³³ ³  ³³ ³ ³³ ³  ³
+³³³³ÀÄÄÄÄÄÄÄÁÄÙ³  ³     ³³ ³  ³³ ³ ³³ ³  ³
+³³³ÀÄÄÄÄÄÄÄÄÄÄÄÁÄÄÁÄÄÄÄÄÙ³ ³  ³³ ³ ³³ ³  ³
+³³ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÁÄÄÙ³ ³ ³³ ³  ³
+³ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÁÄÙ³ ³  ³
+ÀÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÄÁÄÁÄÄÙ</font>
+</pre>
+
+The model is divided into groups of verbs.  
+The first group are utilities: <br>
+
+<table>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td><tt>ar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td>
+    <td>atomic representation</td>
+</tr>
+<tr><td> </td>
+    <td><tt>boxed</tt></td>
+    <td>1 if boxed</td></tr>
+<tr><td> </td>
+    <td><tt>oarg</tt></td>
+    <td>open the second element of the list argument</td>
+</tr>
+</table>
+<br>
+
+<tt>bxroot </tt>produces an infix representation from a 
+root<tt> r </tt>and its list of arguments<tt> a</tt>.<tt> </tt>  
+If<tt> r </tt>is a digit, it denotes a primitive without an assigned word 
+(e.g.<tt> '3' </tt>denotes a fork; 
+see <a href="#Atomic">Atomic Representation</a>), 
+and the result of<tt> bxroot </tt>is<tt> a</tt>;<tt> </tt>
+otherwise,<tt> r&nbsp;bxroot&nbsp;a </tt>produces:<br>
+
+<table>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td><tt>a,r</tt></td>
+    <td>if one argument</td>
+</tr>
+<tr><td> </td>
+    <td><tt>({.a),r,(}.a)&nbsp;&nbsp;</tt></td>
+    <td>if two arguments</td>
+</tr>
+<tr><td> </td>
+    <td><tt>r</tt></td>
+    <td>if no arguments (primitive)</td>
+</tr>
+</table>
+<br>
+
+The other verbs named with the<tt> bx </tt>prefix apply to the 
+opened atomic representation, and embody logic to effect "nice" 
+displays for various special cases.  The agenda items 
+in<tt> bxcase </tt>are:<br><br>
+
+<table>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td><td>ID</td><td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Agenda</td></tr>
+<tr><td> </td>
+    <td><tt>0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td>
+    <td><tt>oarg&nbsp;&nbsp;&nbsp;</tt></td>
+    <td>noun (leaf)</td>
+</tr>
+<tr><td> </td>
+    <td><tt>@.</tt></td>
+    <td><tt>bxgl</tt></td>
+    <td>gerundial left subtree</td>
+</tr>
+<tr><td> </td>
+    <td><tt>`:</tt></td>
+    <td><tt>bxgl</tt></td>
+    <td>gerundial left subtree</td>
+</tr>
+<tr><td> </td>
+    <td><tt>4</tt></td>
+    <td><tt>bxg</tt></td>
+    <td>bonded conjunction; gerundial left or right subtree</td>
+</tr>
+<tr><td> </td>
+    <td><tt>~</tt></td>
+    <td><tt>bxtil</tt></td>
+    <td>possible instance of<i> evoke</i></td>
+</tr>
+<tr><td> </td>
+    <td>other</td>
+    <td><tt>bxx</tt></td>
+    <td>none of the above</td>
+</tr>
+</table>
+<br>
+
+<tt>brep </tt>is a model of<tt> 5!:2</tt>.<br><br>
+
+<br>
+
+<a name="Tree"></a><p><font size="5"><b>Tree Representation</b></font><br><br>
+
+<tt>5!:4 </tt>is a verb that applies to a boxed name, and produces a literal
+table of the <i>tree representation</i> of the named object. Thus:<br><br>
+
+<pre>
+   tree=: connect @ > @ (,.&.>/) @ ('0'&root ; ]) @ (tr@>@ar)
+   5!:4 <'tree'<font face="ISIJ">
+                        ÚÄ connect     
+                  ÚÄ @ ÄÁÄ >           
+            ÚÄ @ Ä´               ÚÄ ,.
+            ³     ÀÄ / ÄÄÄ &. ÄÄÄÄÁÄ > 
+            ³                          
+      ÚÄ @ Ä´           ÚÄ '0'         
+      ³     ³     ÚÄ & ÄÁÄ root        
+      ³     ÀÄÄÄÄÄÅÄ ;                 
+      ³           ÀÄ ]                 
+ÄÄ @ Ä´                                
+      ³           ÚÄ tr                
+      ³     ÚÄ @ ÄÁÄ >                 
+      ÀÄ @ ÄÁÄ ar </font>                     
+</pre>
+
+The tree representation can be modelled as follows:<br><br>
+
+<pre>
+ar      =: 5!:1
+lr      =: 3 : '5!:5 <''y.'''
+boxed   =: 32&= @ (3!:0)
+mt      =: 0&e.@$
+oarg    =: >@(1&{)
+shr     =: |.!.''
+shl     =: 1&(|.!.'')
+mat     =: (1 1&}.)@(_1 _1&}.)@":@<
+boxc    =: {. 9!:6 ''
+dash    =: 10{boxc
+
+extent  =: (+./\ *. +./\.) @ (' '&~:) @: ({."1)
+limb1   =: 1&|.@$ 1&~: }. (10 6 0{boxc)&,@($&(9{boxc))
+limb    =: -@(i.&1)@[ |. #@[ {. limb1@]
+pfx     =: (limb +/)@extent ,. ]
+pad     =: [ {. ] ,. dash&=@({:"1)@] {  ' '&,:@($&dash)@(-&{: $)
+take    =: pad`($&' '@[) @. (mt@])
+rc      =: #@>@{."1 ; >./@:({:@$@>)
+kernt   =: (0{boxc)&=@shl@[ *. ' '&~:@]
+kernb   =: (6{boxc)&=@] *. ' '&~:@shl@[
+kern    =: (<0 0)&{&>"2 (kernt +./"1@:+. kernb) (<_1 0)&{&>"2
+gap     =: ,&.>"_1 {&((0 1$' ');1 1$' ')@kern
+graft   =: (pfx&.>@{. 0} ]) @ (,&.>/) @ gap @ ({@rc take&.> ])
+
+lab     =: ,: @ (2&|.) @ ((' ',dash,dash,' ')&,)
+label   =: lab`((,.dash)&[) @. (e.&'0123456789'@{.)
+center  =: ((i.&1) -@+ <.@-:@(+/))@] |. #@] {. [
+root    =: label@[ center extent@>@{.@]
+
+leaf    =: ,@<@(((,:dash,' ')&[ center $&1@#) ,. ])@mat@":
+
+trx     =: >@{. (root ; ]) graft@:(tr@>)@oarg
+trgl    =: >@{. (root ; ]) graft@:(trx@>@{. , tr @>@}.)@oarg
+trgr    =: >@{. (root ; ]) graft@:(tr @>@{. , trx@>@}.)@oarg
+trg     =: trgr`trgl`trx @. (i.&(<,'`')@oarg)
+trtil   =: trx`(leaf@oarg@>@{.@oarg) @. ((<,'0')&=@{.@>@{.@oarg)
+trnoun  =: leaf @ lr @ oarg
+trcase  =: trnoun`trgl`trgl`trg`trtil`trx @. ((;:'0@.`:4~')&i.@{.)
+tr      =: leaf`trcase @. boxed
+
+rep     =: [. & (((# i.@#)@,@) (@])})
+right   =: (5{boxc) rep (e.&(9{boxc) *. shr"1@(e.&dash))
+cross   =: (4{boxc) rep (e.&(5{boxc) *. shl"1@(e.&dash))
+left    =: (3{boxc) rep (e.&(9{boxc) *. shl"1@(e.&dash))
+bot     =: (7{boxc) rep (e.&(6{boxc) *. shr"1@(e.&dash))
+connect =: bot @ left @ cross @ right
+
+tree    =: connect @ > @ (,.&.>/) @ ('0'&root ; ]) @ (tr@>@ar)
+</pre>
+
+The model is divided into groups of definitions 
+(which are verbs unless indicated otherwise).  
+The first group are utilities:<br>
+
+<table>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td><tt>ar&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td>
+    <td>atomic representation</td>
+</tr>
+<tr><td> </td>
+    <td><tt>boxed</tt></td>
+    <td>1 if boxed</td>
+</tr>
+<tr><td> </td>
+    <td><tt>mt</tt></td>
+    <td>1 if empty</td>
+</tr>
+<tr><td> </td>
+    <td><tt>oarg</tt></td>
+    <td>open the second element of the list argument</td>
+</tr>
+<tr><td> </td>
+    <td><tt>shr</tt></td>
+    <td>shift right</td>
+</tr>
+<tr><td> </td>
+    <td><tt>shl</tt></td>
+    <td>shift left</td>
+</tr>
+<tr><td> </td>
+    <td><tt>mat</tt></td>
+    <td>a literal matrix image of the argument</td>
+</tr>
+<tr><td> </td>
+    <td><tt>boxc</tt></td>
+    <td>(noun) box drawing characters</td>
+</tr>
+<tr><td> </td>
+    <td><tt>dash</tt></td>
+    <td>(noun) the "dash" in the set of box drawing characters</td>
+</tr>
+</table><br>
+
+A "generational tree" (GT) is a list of boxed literal 
+tables having the same number of rows, such that nodes at the same depth 
+are in the same box.  For example, the GT for tree 
+is:<pre><font face="ISIJ">   ÚÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÂÄÄÄÄÄÄÄÄÄÄÂÄÄÄÄÄ¿
+   ³      ³      ³      ³      ³ÚÄ connect³     ³
+   ³      ³      ³      ³ÚÄ @ Ä³ÀÄ >      ³     ³
+   ³      ³      ³ÚÄ @ Ä³³     ³          ³ÚÄ ,.³
+   ³      ³      ³³     ³ÀÄ / Ä³ÄÄ &. ÄÄÄÄ³ÀÄ > ³
+   ³      ³      ³³     ³      ³          ³     ³
+   ³      ³ÚÄ @ Ä³³     ³      ³ÚÄ '0'    ³     ³
+   ³      ³³     ³³     ³ÚÄ & Ä³ÀÄ root   ³     ³
+   ³      ³³     ³ÀÄÄÄÄÄ³³Ä ;  ³          ³     ³
+   ³      ³³     ³      ³ÀÄ ]  ³          ³     ³
+   ³ÄÄ @ Ä³³     ³      ³      ³          ³     ³
+   ³      ³³     ³      ³ÚÄ tr ³          ³     ³
+   ³      ³³     ³ÚÄ @ Ä³ÀÄ >  ³          ³     ³
+   ³      ³ÀÄ @ Ä³ÀÄ ar ³      ³          ³     ³
+   ÀÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÁÄÄÄÄÄÄÄÄÄÄÁÄÄÄÄÄÙ</font>
+</pre>
+
+<tt>graft </tt>is the main verb in the next group.  
+The argument is a table whose rows are GTs 
+for the nodes at the same depth.  
+The result is a GT.<br><br>
+
+<tt>root </tt>accepts a string left argument and a GT right argument.  
+The result is a literal matrix 
+with the string centered relative to the GT.<br><br>
+
+<tt>leaf </tt>computes a unitary (single-element) GT from its argument.<br><br>
+
+<tt>tr </tt>applies to the opened atomic representation of an object 
+and produces a GT.  The verbs named with the<tt> tr </tt>prefix embody 
+logic to effect "nice" displays for various special cases.  
+The agenda items in<tt> trcase </tt>are:<br>
+
+<table>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td> </td>
+</tr>
+<tr><td> </td>
+    <td>ID</td>
+    <td colspan=2>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Agenda</td>
+</tr>
+<tr><td> </td>
+    <td><tt>0&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td>
+    <td><tt>leaf@oarg&nbsp;&nbsp;&nbsp;</tt></td>
+    <td>noun (leaf)</td>
+</tr>
+<tr><td> </td>
+    <td><tt>@.</tt></td>
+    <td><tt>trgl</tt></td>
+    <td>gerundial left subtree</td>
+</tr>
+<tr><td> </td>
+    <td><tt>`:</tt></td>
+    <td><tt>trgl</tt></td>
+    <td>gerundial left subtree</td>
+</tr>
+<tr><td> </td>
+    <td><tt>4</tt></td>
+    <td><tt>trg</tt></td>
+    <td>bonded conjunction; gerund left or right</td>
+</tr>
+<tr><td> </td>
+    <td><tt>~</tt></td>
+    <td><tt>trtil</tt></td>
+    <td>possible instance of <i>evoke</i></td>
+</tr>
+<tr><td> </td>
+    <td>other</td>
+    <td><tt>trx</tt></td>
+    <td>none of the above</td>
+</tr>
+</table><br>
+
+<tt>rep </tt>is a conjunction whose left argument is 
+a single literal<tt> c </tt>and whose right argument is 
+a proposition<tt> p</tt>,<tt> </tt> 
+deriving a verb such that the phrase<tt> c rep p y </tt> 
+replaces with<tt> c </tt>the positions 
+in<tt> y </tt>marked by<tt> p y</tt>.<tt> </tt>  
+<tt>connect </tt>substitutes<tt> </tt>
+<font face="ISIJ">Á</font> (bot),<tt> </tt>
+<font face="ISIJ">Ã</font> (left),<tt> </tt>
+<font face="ISIJ">Å</font> (cross), and<tt> </tt>
+<font face="ISIJ">´</font> (right) 
+at nexuses of the tree.<br><br>
+
+<tt>tree </tt>is a model of<tt> 5!:4</tt>.<br><br>
+<br>
+
+<a name="Linear"></a><p><font size="5"><b>Linear Representation</b></font><br><br>
+
+<tt>5!:5 </tt>is a verb that applies to a boxed name, and produces a literal list
+of the <i>linear representation</i> of the named object. Thus:<br><br>
+
+<pre>
+   lrep=: lr @ > @ ar
+
+   5!:5 <'lrep'
+lr@>@ar
+   $ 5!:5 <'lrep'
+7
+</pre>
+
+The linear representation can be modelled as follows:<br><br>
+
+<pre>
+ar     =: 5!:1
+boxed  =: 32&= @ (3!:0)
+oarg   =: >@(1&{)
+mtv    =: i.@0:
+paren  =: ('('&,)@(,&')')
+symb   =: $&' '@(e.&'.:')@{. , ]
+quote  =: ''''
+alp    =: (,65 97+/i.26){a.
+dig    =: '0123456789'
+
+slist  =: $&','@(1&=)
+shape  =: mtv`slist`(,&'$'@":)@.(2&<.@#)`('i.'&,@":) @. (0&e.) @ $
+vchar  =: >:@(quote&=)@, quote&,@(,&quote)@# ,
+vbox   =: }. @ ; @: (','&,@paren@('<'&,)@lnoun&.>)
+value  =: vchar`vbox`(":!.18@,) @. (2 32&i.@(type * *@(*/)@$))
+lnoun  =: shape , value
+
+dotco  =: 2&=@# *. e.&'.:'@{:
+name   =: e.&alp@{. *. *./@(e.&(alp,dig,'_'))@}: *. e.&(alp,dig,'_.:')@{:
+num    =: e.&(dig,'_')@{. *. *./@(e.&(dig,'_ .ejdr'))
+qstr   =: mtv -: -.@(~:/\)@(e.&quote) -.&quote@# ]
+pstr   =: -.@(0&e.)@}:@(+/\)@({&1 _1 0)@('()'&i.)
+nopar  =: 1&=@# +. dotco +. name +. num +. qstr +. pstr
+cp     =: paren`] @. nopar
+
+bp     =: ]`cp@.(' '&e.)
+hfork  =: }.@;@:(' '&,@bp&.>)@]
+left   =: bp@>@{.
+right  =: mtv`(cp@>@{:)@.(1&<@#)
+ins    =: left@] , symb@>@[ , right@]
+act    =: ;@:(cp&.>)@]
+insert =: hfork`hfork`act`act`act`ins @. ('23456'&i.@{.@>@[)
+
+lx     =: {. insert lr&.>@oarg
+ltie   =: lr`(}.@;@:('`'&,@cp@lr&.>)@oarg) @. ((<,'0')&=@{.)
+lgl    =: {. insert (ltie&.>@{. , lr  &.>@}.)@oarg
+lgr    =: {. insert (lr  &.>@{. , ltie&.>@}.)@oarg
+lg     =: lgr`lgl`lx @. (i.&(<,'`')@oarg)
+ltil   =: lx`(oarg@>@{.@oarg) @. ((<,'0')&=@{.@>@{.@oarg)
+lcase  =: (cp@lnoun@oarg)`lgl`lgl`lg`ltil`lx @. ((;:'0@.`:4~')&i.@{.)
+lr     =: symb`lcase@.boxed
+
+lrep   =: lr @ > @ ar
+</pre>
+
+<br>
+<hr>
+
+<a href="iojDisp.htm">Next</a>
+ &#149; 
+<a href="iojAdv.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

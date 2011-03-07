@@ -1,0 +1,135 @@
+<stdio.h>
+#ifdef _WIN32
+<winsock.h>
+#else
+<stdlib.h>
+<sys/socket.h>
+#ifdef sun
+<inet/tcp.h>
+#endif
+<netdb.h>
+<netinet/in.h>
+<arpa/inet.h>
+<sys/ioctl.h>
+#endif
+<sys/types.h>
+
+
+; Networking-related definitions.
+; (Keep "strongly-POSIX-related" definitions in unixsyms.sym, though.)
+;
+
+i FIONBIO FIONREAD FD_SETSIZE
+
+#ifdef _WIN32
+i SD_RECEIVE SD_SEND SD_BOTH
+#endif
+
+st struct sockaddr
+f	sa_family
+f	sa_data
+
+st struct sockaddr_in
+f	sin_family
+f	sin_port
+f	sin_addr
+
+st struct in_addr
+f	s_addr
+
+st struct hostent
+f	h_name
+f	h_aliases
+f	h_addrtype
+f	h_length
+f	h_addr_list
+
+; Provide just a tiny tiny subset of socket ioctls:
+
+i SIOCATMARK
+
+; The following are all "classic" Well Known Numbers as delivered
+; with BSD4.3.  The official reference today would be a look at
+; the IANA lists, most notably RFC 1700.
+; All the constants should probably better _not_ be used.
+; getprotobyname etc. are they way to go.
+;
+; Having said that:
+; We will restrict ourselves only to those constants listed with
+; every netinet/in.h on any platform.
+
+i IPPROTO_IP IPPROTO_ICMP IPPROTO_IGMP IPPROTO_TCP
+i IPPROTO_PUP IPPROTO_UDP IPPROTO_IDP
+i IPPROTO_RAW IPPROTO_MAX
+
+; IMP link numbers?  whoa, they lost their relevance in the late 70s...
+; I doubt there's still _any_ of the  (four?) IMP nodes is still running.
+; Solaris has them, Linux not.  Trash these entries.
+; i IMPLINK_IP IMPLINK_LOWEXPER IMPLINK_HIGHEXPER
+
+i INADDR_ANY INADDR_LOOPBACK INADDR_BROADCAST
+; INADDR_NONE is referring to the (deprecated) return value of
+; the deprecated function inet_addr.  The value is usually -1
+; (even though Solaris' inet_addr() return an unsigned long...) and
+; actually clashes with the valid address INADDR_BROADCAST.  Sigh...
+#ifdef INADDR_NONE
+i INADDR_NONE
+#else
+J INADDR_NONE=: _1
+#endif
+
+#ifndef _WIN32
+i INADDR_UNSPEC_GROUP INADDR_ALLHOSTS_GROUP INADDR_MAX_LOCAL_GROUP
+i IN_LOOPBACKNET
+#endif
+
+i SOCK_STREAM SOCK_DGRAM SOCK_RAW SOCK_RDM SOCK_SEQPACKET
+
+i SOL_SOCKET
+i SO_DEBUG SO_REUSEADDR SO_KEEPALIVE SO_DONTROUTE
+i SO_BROADCAST SO_LINGER SO_OOBINLINE
+
+i SO_SNDBUF SO_RCVBUF SO_SNDLOWAT SO_RCVLOWAT SO_SNDTIMEO SO_RCVTIMEO
+i SO_ERROR SO_TYPE
+
+st struct linger
+f	l_onoff
+f	l_linger
+
+; Again, only the common subset:
+i AF_UNSPEC AF_UNIX AF_INET AF_SNA AF_DECnet AF_APPLETALK AF_IPX AF_MAX
+i PF_UNSPEC PF_UNIX PF_INET PF_SNA PF_DECnet PF_APPLETALK PF_IPX PF_MAX
+
+i SOMAXCONN
+i MSG_OOB MSG_PEEK MSG_DONTROUTE
+
+#ifndef _WIN32
+st struct msghdr
+f	msg_name
+f	msg_namelen
+f	msg_iov
+f	msg_iovlen
+#if defined(linux) || defined(Darwin)
+f	msg_control
+f	msg_controllen
+f	msg_flags
+#else
+f	msg_accrights
+f	msg_accrightslen
+#endif
+#endif
+
+#ifdef _WIN32
+i SOCKET_ERROR 
+i FD_READ FD_WRITE FD_OOB FD_ACCEPT FD_CONNECT FD_CLOSE
+i WSABASEERR WSAEINTR WSAEBADF WSAEACCES WSAEFAULT WSAEINVAL WSAEMFILE WSAEWOULDBLOCK
+i WSAEINPROGRESS WSAEALREADY WSAENOTSOCK WSAEDESTADDRREQ WSAEMSGSIZE WSAEPROTOTYPE
+i WSAENOPROTOOPT WSAEPROTONOSUPPORT WSAESOCKTNOSUPPORT WSAEOPNOTSUPP WSAEPFNOSUPPORT
+i WSAEAFNOSUPPORT WSAEADDRINUSE WSAEADDRNOTAVAIL WSAENETDOWN WSAENETUNREACH
+i WSAENETRESET WSAECONNABORTED WSAECONNRESET WSAENOBUFS WSAEISCONN WSAENOTCONN
+i WSAESHUTDOWN WSAETOOMANYREFS WSAETIMEDOUT WSAECONNREFUSED WSAELOOP WSAENAMETOOLONG
+i WSAEHOSTDOWN WSAEHOSTUNREACH WSAENOTEMPTY WSAEPROCLIM WSAEUSERS WSAEDQUOT WSAESTALE
+i WSAEREMOTE WSASYSNOTREADY WSAVERNOTSUPPORTED WSANOTINITIALISED WSAHOST_NOT_FOUND
+i HOST_NOT_FOUND WSATRY_AGAIN TRY_AGAIN WSANO_RECOVERY NO_RECOVERY WSANO_DATA
+i NO_DATA WSANO_ADDRESS NO_ADDRESS WM_USER
+#endif

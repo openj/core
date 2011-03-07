@@ -1,0 +1,321 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Special Code</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Special Code</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<hr>
+<br>
+
+Many primitives contain special code for certain arguments
+to effect time and/or space savings not available to 
+general arguments.
+Moreover, some phrases are <a name="recognized phrase"></a>"recognized"
+and are supported by special code.  
+For example, the dyad of the hook<tt> ($,) </tt>
+is exactly the reshape of APL (denoted by <font face="Symbol">r</font>);
+its implementation avoids actually ravelling the right argument, 
+and in so doing saves both time and space:<br><br>
+
+<pre>
+   ts=: 6!:2 , 7!:2@]
+   x=: 11 13 17 19 23
+   y=: 29 7 23 11 19$'sesquipedalian'
+
+   (x ($,) y) -: x $, y
+1
+
+   ts 'x ($,) y'
+0.00773981 2.09818e6
+   ts 'x $, y'
+0.0170125 3.14662e6
+</pre>
+
+Instances of such special code are listed below:<br>
+
+<table>
+
+<tr valign=top>
+<td><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </td>
+<td><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td>
+<td> </td>
+</tr>
+
+<tr valign=top>
+<td><tt>=</tt></td>
+<td>dyad</td>
+<td><a name="word-parallel">word-parallel</a> operation 
+on Boolean arguments for the following verbs:<br>
+<tt>= &lt; &lt;. &lt;: > >. >: +. +: * *. *: ^ ~: | !</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>&lt;.@f</tt></td>
+<td>both</td>
+<td>avoids non-integer intermediate results on extended precision integers</td>
+</tr>
+
+<tr valign=top>
+<td><tt>&gt;.@f</tt></td>
+<td>both</td>
+<td>avoids non-integer intermediate results on extended precision integers</td>
+</tr>
+
+<tr valign=top>
+<td><tt>+</tt></td>
+<td>dyad</td>
+<td>also<tt> * </tt>and<tt> -</tt>;<tt> </tt>on Windows, 
+<a name="assembly code">assembly code</a> for integer arguments 
+for the vector-vector,
+vector-scalar, and scalar-vector cases</td>
+</tr>
+
+<tr valign=top>
+<td><tt>^</tt></td>
+<td>dyad</td>
+<td><tt>x^y </tt>works by repeated multiplication if<tt> x </tt>is real 
+and<tt> y </tt>is integral
+</tr>
+
+<tr valign=top>
+<td><tt>m&|@^</tt></td>
+<td>dyad</td>
+<td>avoids exponentiation for extended precision arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>m&|@(n&^)</tt></td>
+<td>monad</td>
+<td>avoids exponentiation for extended precision arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>+/ .*</tt></td>
+<td>dyad</td>
+<td>special code</td>
+</tr>
+
+<tr valign=top>
+<td><tt>-/ .*</tt></td>
+<td>monad</td>
+<td>special code in general; special code for square matrices; 
+special code for arrays of 2-by-2 matrices</td>
+</tr>
+
+<tr valign=top>
+<td><tt>$,</tt></td>
+<td>dyad</td>
+<td>also<tt> ($,)"r</tt>;<tt> </tt>avoids ravel</td>
+</tr>
+
+<tr valign=top>
+<td><tt>f;.1</td>
+<td>both</td>
+<td>also<tt> f;._1 f;.2 f;._2</tt>;<tt> </tt>
+avoids building argument cells for several verbs:<tt> &lt; $ , # [ ] {. {:
+&lt;@}. &lt;@}: </tt>; also<tt> &lt;&}. &lt;@:}. </tt>etc.</td>
+</tr>
+
+<tr valign=top>
+<td><tt>f;.3</td>
+<td>both</td>
+<td>also<tt> f;._3</tt>;<tt> </tt>
+special code for matrix right arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>#</td>
+<td>dyad</td>
+<td>special code for Boolean left arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt># i.@#</td>
+<td>monad</td>
+<td>also<tt> (# i.&#)</tt>,<tt> </tt>etc.;<tt> </tt>
+avoids<tt> i. </tt>on Boolean arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>#: i.@(*/)</td>
+<td>monad</td>
+<td>also<tt> (#: i.&(*/))</tt>,<tt> </tt>etc.;<tt> </tt>
+special code for non-negative integer vectors</td>
+</tr>
+
+<tr valign=top>
+<td><tt>=/</tt></td>
+<td>monad</td>
+<td>also<tt> < <: > >: +. +: * *. *: ~:</tt>;<tt> </tt>
+word-parallel operations on Boolean arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>+/</tt></td>
+<td>monad</td>
+<td>also<tt> * </tt>and<tt> -</tt>;<tt> </tt>on Windows, 
+assembly code for integer arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>,/</tt></td>
+<td>monad</td>
+<td>linear time</td>
+</tr>
+
+<tr valign=top>
+<td><tt>,./</tt></td>
+<td>monad</td>
+<td>linear time</td>
+</tr>
+
+<tr valign=top>
+<td><tt>,.&.&gt;/</tt></td>
+<td>monad</td>
+<td>linear time</td>
+</tr>
+
+<tr valign=top>
+<td><tt>;/</tt></td>
+<td>monad</td>
+<td>linear time</td>
+</tr>
+
+<tr valign=top>
+<td><tt>f/@,</tt></td>
+<td>monad</td>
+<td>also<tt> f/@:, f/&, f/&:,</tt>;<tt> </tt>avoids ravel</td>
+</tr>
+
+<tr valign=top>
+<td><tt>#/.</tt></td>
+<td>dyad</td>
+<td>avoids building argument cells</td>
+</tr>
+
+<tr valign=top>
+<td><tt>/:</tt></td>
+<td>both</td>
+<td>also<tt> \:</tt>;<tt> </tt>special code for several data types; 
+special code for arguments with 5 items or less</td>
+</tr>
+
+<tr valign=top>
+<td><tt>=/\</tt></td>
+<td>monad</td>
+<td>also<tt> +. *. ~:</tt>;<tt> </tt> 
+word-parallel operations on Boolean arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>+/\</tt></td>
+<td>monad</td>
+<td>also<tt> * </tt>and<tt> -</tt>;<tt> </tt>on Windows, 
+assembly code for integer arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>=/\.</tt></td>
+<td>monad</td>
+<td>also<tt> < <: > >: +. +: *. *: ~:</tt>;<tt> </tt> 
+word-parallel operations on Boolean arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>+/\.</tt></td>
+<td>monad</td>
+<td>also<tt> * </tt>and<tt> -</tt>;<tt> </tt>on Windows, 
+assembly code for integer arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>{</tt></td>
+<td>dyad</td>
+<td>special code for right arguments of several data types;
+special code for integer left arguments;
+special code for indexing first two axes</td>
+</tr>
+
+<tr valign=top>
+<td><tt><"1@[ { ]</tt></td>
+<td>dyad</td>
+<td>avoids<tt> &lt;"1 </tt>if left argument is integer array</td>
+</tr>
+
+<tr valign=top>
+<td><tt>a=: c}x,y,:z</tt></td>
+<td>-</td>
+<td>avoids catenation and lamination;
+<a name="in-place">in-place</a> if<tt> c </tt>is Boolean 
+and<tt> a </tt>is<tt> x </tt>or<tt> y</tt></td>
+</tr>
+
+<tr valign=top>
+<td><tt>y=: x i}y</tt></td>
+<td>-</td>
+<td>in-place</td>
+</tr>
+
+<tr valign=top>
+<td><tt>f"r</tt></td>
+<td>both</td>
+<td>numerous verbs have integrated rank support:<br>
+<tt>= &lt; &lt;. &lt;: &gt; &gt;. &gt;: + +. +: * *. *: - -: % ^ ~: | |. |: $ , ,. ,: # ! 
+[ ] { {. {: }. }: / /: \ \. \: e. i. i: o. p. p: </tt>
+</td>
+</tr>  
+ 
+<tr valign=top>
+<td><tt>?</tt></td>
+<td>monad</td>
+<td>also<tt> ?.</tt>;<tt> </tt>special code if argument is identically 2</td>
+</tr>
+
+<tr valign=top>
+<td><tt>?</tt></td>
+<td>dyad</td>
+<td>also<tt> ?.</tt>;<tt> </tt>special code if left argument is much smaller 
+than right argument</td>
+</tr>
+
+<tr valign=top>
+<td><tt>E.</tt></td>
+<td>monad</td>
+<td>special code for Boolean and literal vector arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>i.</tt></td>
+<td>monad</td>
+<td>also<tt> i:</tt>;<tt> </tt>special case for length-1 arguments</td>
+</tr>
+
+<tr valign=top>
+<td><tt>i.</tt></td>
+<td>dyad</td>
+<td>also<tt> e. </tt>and<tt> i:</tt>;<tt> </tt>special code for several data types;
+special code for<tt> i.!.0</tt>;<tt> </tt>
+special code for arguments with many identical columns</td>
+</tr>
+
+</table><br>
+
+<br>
+<hr>
+
+<a href="iojTest.htm">Next</a>
+ &#149; 
+<a href="iojATW.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

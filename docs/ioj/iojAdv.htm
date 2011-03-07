@@ -1,0 +1,263 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Adverbs and Conjunctions</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Adverbs and Conjunctions</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<hr>
+<br>
+
+An adverb is monadic, applying to a noun or verb argument on its <i>left</i>;
+a conjunction is dyadic, applying to noun or verb arguments on its
+<i>left and right</i>.  The result is usually a verb, but can also
+be a noun, adverb, or conjunction.<br><br>
+
+The conjunction<tt> & </tt>is used here to illustrate the relationship
+between relevant system components.  
+(The implementation of adverbs is similar.)<tt> </tt>
+<tt>& </tt>derives a verb depending on whether the arguments are
+nouns<tt> </tt>(<tt>m </tt>and<tt> n</tt>)<tt> </tt>or 
+verbs<tt> </tt>(<tt>u </tt>and<tt> v</tt>):<br><br>
+
+<pre>
+   m&n       <font size=3 face="Times New Roman">gerund join</font>
+   m&v       m&v y <font size=3 face="Times New Roman">is</font> m v y
+   u&n       u&n y <font size=3 face="Times New Roman">is</font> y v n
+   u&v       u&v y <font size=3 face="Times New Roman">is</font> u v y<font size=3 face="Times New Roman">;</font>   x u&v y <font size=3 face="Times New Roman">is</font> (v x) u (v y)
+</pre>
+
+A verb defined from<tt> & </tt>is (internally) an <a name="array"></a>
+array of type<tt> VERB </tt>
+whose value is interpreted according to the defined 
+type<a name="V"></a><tt> V </tt>in file jtype.h:<br><br>
+
+<pre>
+   typedef struct {AF f1,f2;A f,g,h;I flag,mr,lr,rr;C id;} V;</pre>
+
+<table>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td> 
+               <td><tt>f1&nbsp;&nbsp;&nbsp;&nbsp;</tt></td> <td>monad</td> </tr>
+<tr><td> </td> <td><tt>f2  </tt></td> <td>dyad </td> </tr>
+<tr><td> </td> <td><tt>f   </tt></td> <td>left conjunction argument or adverb argument</td> </tr>
+<tr><td> </td> <td><tt>g   </tt></td> <td>right conjunction argument</td> </tr>
+<tr><td> </td> <td><tt>h   </tt></td> <td>auxiliary argument</td> </tr>
+<tr><td> </td> <td><tt>flag</tt></td> <td>bit flags</td> </tr>
+<tr><td> </td> <td><tt>mr  </tt></td> <td>monadic rank</td> </tr>
+<tr><td> </td> <td><tt>lr  </tt></td> <td>left rank</td> </tr>
+<tr><td> </td> <td><tt>rr  </tt></td> <td>right rank</td> </tr>
+<tr><td> </td> <td><tt>id  </tt></td> <td><a href="iojSent.htm#ID">ID</a> byte</td> </tr>
+</table><br>
+
+If<tt> fn=: %.&|:</tt>,<tt> </tt>the arrays would be:<br><br>
+
+<pre>
+         k   flag    m     t     c     n     r<font face="ISIJ">
+      ÚÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂ
+   fn ³   28³    0³    8³ VERB³    3³    1³    0³...
+      ÀÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁ
+            ÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄ¿
+         ...³  on1³  on2³   %.³   |:³    0³    0³    _³    _³    _³&    ³
+            ÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÙ</font>
+               f1    f2    f     g     h   flag    mr    lr    rr   id
+
+         k   flag    m     t     c     n     r<font face="ISIJ">
+      ÚÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂ
+   %. ³   28³    0³    8³ VERB³    _³    1³    0³...
+      ÀÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁ
+            ÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄ¿
+         ...³ minv³ mdiv³    0³    0³    0³    0³    2³    _³    2³%.   ³
+            ÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÙ</font>
+               f1    f2    f     g     h   flag    mr    lr    rr   id
+
+         k   flag    m     t     c     n     r<font face="ISIJ">
+      ÚÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂ
+   |: ³   28³    0³    8³ VERB³    _³    1³    0³...
+      ÀÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁ
+            ÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄÂÄÄÄÄÄ¿
+         ...³cant1³cant2³    0³    0³    0³    0³    _³    1³    _³|:   ³
+            ÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÁÄÄÄÄÄÙ</font>
+               f1    f2    f     g     h   flag    mr    lr    rr   id
+</pre>
+
+Access to the parts of<tt> fn </tt>is by name and by macros defined in files jt.h
+and a.h, and <i>never</i> by offsets and indices.
+Thus<tt> AV(fn) </tt>points to the value part of<tt> fn</tt>.<tt> </tt>
+And if<tt> sv=(V*)AV(fn)</tt>,<tt> </tt>
+then<tt> sv->f1 </tt>is<tt> on1</tt>;<tt> </tt>
+<tt>sv->f2 </tt>is<tt> on2</tt>;<tt> </tt>
+<tt>sv->f </tt>is the array for<tt> %.</tt>;<tt> </tt>
+<tt>sv->g </tt>is the array for<tt> |: </tt> 
+(that is,<tt> sv->f </tt>and<tt> sv->g </tt>are 
+arrays similar to<tt> fn</tt>);<tt> </tt>
+<tt>sv->mr </tt>is<tt> _ </tt>(indicating 
+that<tt> fn </tt>has infinite monadic rank); and so on.  
+The macro<tt> <a name="VAV">VAV(f)</a></tt>,<tt> </tt>defined 
+as<tt> ((V*)AV(f))</tt>,<tt> </tt>
+is useful for working with adverbs and conjunctions.<br><br>
+
+<a name="amp"></a>To introduce<tt> & </tt>into the system, functions which 
+implement<tt> & </tt>are added
+to file c.c (or one of the c*.c files), and declarations of
+global objects are added to file je.h:<br>
+
+<pre>
+<font size=3 face="Times New Roman">File c.c:</font>
+   static CS1(on1,  CALL2(f1,CALL2(g1,w,gs),fs))
+   static CS2(on2,  CALL3(f2,CALL2(g1,a,gs),CALL2(g1,w,gs),fs))
+
+   static DF1(withl){DECLFG; R jt->rank?irs2(fs,w,gs,AR(fs),jt->rank[1],g2):CALL3(g2,fs,w,gs);}
+   static DF1(withr){DECLFG; R jt->rank?irs2(w,gs,fs,jt->rank[1],AR(gs),f2):CALL3(f2,w,gs,fs);}
+
+   F2(jtamp){I m;
+    RZ(a&&w);
+    switch(CONJCASE(a,w)){
+     default: ASSERTSYS(0,"amp");
+     case NN: R gjoin(CAMP,a,w);
+     case NV: R CDERIV(CAMP,withl,0L,RMAX,RMAX,RMAX);
+     case VN: R CDERIV(CAMP,withr,0L,RMAX,RMAX,RMAX);
+     case VV: m=mr(w); R CDERIV(CAMP,ID(a)==CSLASH&&ID(w)==CCOMMA?jtredravel:on1,on2,m,m,m);
+   }}
+
+<font size=3 face="Times New Roman">File je.h:</font>
+   extern F2(jtamp);
+</pre>
+
+Corresponding to the four possibilities,<tt> amp </tt>defines
+four cases.  (The impossible<tt> default </tt>case is to
+obviate a spurious C compiler warning.)  
+The functions<tt> withl</tt>,<tt> withr</tt>,<tt> on1</tt>,<tt> </tt>
+and<tt> on2 </tt>are applied when a verb derived from<tt> & </tt>is applied.
+The<tt> VV </tt>case also recognizes<tt> u/&, </tt>as a special case, 
+whereby<tt> redravel </tt>is applied instead of<tt> on1</tt>.<br><br>
+
+For the example in question,<tt> %.&|: m=: ?4 4$100 </tt>first 
+branches to the<tt> case VV </tt>in<tt> amp</tt>,<tt> </tt>and 
+subsequently applies<tt> on1 </tt>to<tt> m</tt>.<tt> </tt>
+Consider a partial macro expansion of<tt> on1 </tt>and the
+values of its local variables:<br><br>
+
+<pre>
+<font size=3 face="Times New Roman">Macro Expansion:</font>
+   static A on1(J jt,A w,A self){PROLOG;V*sv=VAV(self);
+    A fs=sv->f;AF f1=fs?VAV(fs)->f1:0,f2=fs?VAV(fs)->f2:0;
+    A gs=sv->g;AF g1=gs?VAV(gs)->f1:0,g2=gs?VAV(gs)->f2:0; A z;
+    PREF1(on1); 
+    z=f1(jt,g1(jt,w,gs),fs);
+    EPILOG(z);
+   }
+</pre>
+Local Variables:
+<table>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td><tt>w&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</tt></td>
+    <td>the matrix<tt> m</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>self</tt></td>
+    <td>the verb<tt> fn</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>sv</tt></td>
+    <td>pointer to the value part of<tt> fn </tt>as an array</td>
+</tr>
+<tr><td> </td>
+    <td><tt>fs</tt></td>
+    <td>left argument to<tt> &</tt>,<tt> </tt>that is<tt> %.</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>f1</tt></td>
+    <td>monad of<tt> %.</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>f2</tt></td>
+    <td>dyad of<tt> %.</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>gs</tt></td>
+    <td>right argument to<tt> &</tt>,<tt> </tt>that is<tt> |:</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>g1</tt></td>
+    <td>monad of<tt> |:</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>g2</tt></td>
+    <td>dyad of<tt> |:</tt></td>
+</tr>
+</table><br>
+
+The initialization of<tt> sv</tt>,<tt> fs</tt>,<tt> f1</tt>,<tt> </tt>
+and so on are the same 
+for all adverbs and conjunctions; the details of such 
+initialization are normally suppressed by the use of macros.  
+If an argument to<tt> & </tt>(<i>i.e.</i><tt> fs </tt>or<tt> gs</tt>) </tt>
+is itself a result
+of adverbs and conjunctions, expressions such as<tt> g1(jt,w,gs) </tt>
+or<tt> f1(jt,xxx,gs) </tt>engender further executions 
+as occurs in<tt> on1</tt>.<tt> </tt>
+The macro<tt> <a name="PREF1">PREF1</a> </tt>implements 
+<a href="iojVerb.htm#rank">rank</a>, 
+and the macros<tt> <a href="iojNoun.htm#PROLOG">PROLOG</a> </tt>
+and<tt> <a href="iojNoun.htm#EPILOG">EPILOG</a> </tt>manage memory.<br><br>
+
+The association between<tt> & </tt>and<tt> amp </tt>is established in the 
+table<tt> <a href="iojVerb.htm#pst">pst</a> </tt>
+in file t.c, exactly the way such associations are done for verbs.
+In particular,<tt> CAMP </tt>is the ID for<tt> & </tt>
+and<tt> ds(CAMP) </tt>is<tt> & </tt>as an array 
+(that is,<tt> ds(CAMP) </tt> is<tt> &</tt>).<br><br>
+
+The utilities<tt> <a name="df1">df1</a> </tt>
+and<tt> <a name="df2">df2</a> </tt>in file au.c 
+apply the monad or the dyad
+of a verb. For example:<br><br>
+
+<table>
+<tr><td>&nbsp;&nbsp;&nbsp;&nbsp;</td>
+    <td><tt>ds(CPOUND)</tt></td>
+    <td><tt>#</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>ds(COPE)</tt></td>
+    <td><tt>&gt;</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>amp(ds(CPOUND),ds(COPE))</tt></td>
+    <td><tt>#&&gt;</tt></td>
+</tr>
+
+<tr><td>&nbsp;</td> <td> </td> <td> </td> </tr>
+
+<tr><td> </td>
+    <td><tt>df1(w,ds(CPOUND))</tt></td>
+    <td><tt># w</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>df1(&nbsp;&nbsp;w,amp(ds(CPOUND),ds(COPE)))</tt></td>
+    <td><tt>#&&gt; w</tt></td>
+</tr>
+<tr><td> </td>
+    <td><tt>df2(a,w,amp(ds(CPOUND),ds(COPE)))&nbsp;&nbsp;&nbsp;</tt></td>
+    <td><tt>a #&&gt; w</tt></td>
+</tr>
+</table><br>
+
+<br>
+<hr>
+
+<a href="iojRep.htm">Next</a>
+ &#149; 
+<a href="iojVerb.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

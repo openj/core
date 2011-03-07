@@ -1,0 +1,331 @@
+<html>
+
+<head>
+<title>An Implementation of J -- Interpreting a Sentence</title>
+</head>
+
+<body>
+
+<p align=center><font size="6"><b>Interpreting a Sentence</b></font><br>
+<font size="4"><b><a href="ioj.htm">An Implementation of J</a></b></font></p>
+
+<a href="#Word Formation" >Word Formation</a><br>
+<a href="#Parsing"        >Parsing</a><br>
+<a href="#Trains"         >Trains</a><br>
+<a href="#Name Resolution">Name Resolution</a><br><br>
+
+<hr>
+<br>
+
+<a name="Word Formation"></a><font size="5"><b>Word Formation</b></font><br><br>
+
+Words are expressed in the standard ASCII alphabet.
+Primitive words are spelled with one or two letters;
+two letter words end with a period or a colon.
+The entire spelling scheme is shown in the <a href="iojSumm.htm">system summary</a>.
+The verb<tt> ;: </tt>facilitates exploration of the rhematic rules. Thus:<br><br>
+
+<pre>
+   ;: 'sum =:+/_6.95*i.3 4'<font size=2 face="ISIJ">
+ÚÄÄÄÂÄÄÂÄÂÄÂÄÄÄÄÄÂÄÂÄÄÂÄÄÄ¿
+³sum³=:³+³/³_6.95³*³i.³3 4³
+ÀÄÄÄÁÄÄÁÄÁÄÁÄÄÄÄÄÁÄÁÄÄÁÄÄÄÙ</font></pre>
+The source code for word formation is in the files w*.c.
+The process is controlled by the function<tt> wordil </tt>(word index and length)
+and the table<tt> state</tt>.<tt> </tt>Rows of<tt> state </tt>correspond
+to 10 states; columns to 9 character classes.
+Each table entry is a (new&nbsp;state,&nbsp;function) pair.
+Starting at state<tt> S</tt>,<tt> </tt>a sentence is scanned from left to right
+one character at a time; the table entry corresponding to the 
+current state and character class is applied.<br><br>
+
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;New State/Function
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;States
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Character Classes
+<pre>
+XN  S   AN  NN  AN  9N  XN  XN  QN     S  Space              X  Other
+XI  SI  AI  NI  AI  9I  X   X   QI     X  Other              S  Space
+XI  SI  A   A   A   A   X   X   QI     A  Alphanumeric       A  Letters excl. NB
+XI  SI  A   A   NB  A   X   X   QI     N  N                  N  The letter N
+XI  SI  A   A   A   A   NZ  X   QI     NB NB                 B  The letter B
+Z   Z   Z   Z   Z   Z   X   X   Z      NZ NB.                9  Digits and _
+XI  SI  9   9   9   9   9   X   QI     9  Numeric            D  . Period
+Q   Q   Q   Q   Q   Q   Q   Q   QQ     Q  Quote              C  : Colon
+XI  SI  AI  NI  AI  9I  XI  XI  Q      QQ Even Quotes        Q  ' Quote
+Z   Z   Z   Z   Z   Z   Z   Z   Z      Z  Trailing Comment
+
+X   S   A   N   B   9   D   C   Q       <font size=3 face="Times New Roman">Function</font>
+                                       I  j=:i [ Emit(j,i-1)
+                                       N  j=:i
+</pre>
+
+<tt>Emit(j,i-1) </tt>produces a pair of indices delimiting a word
+in the string.<tt> i </tt>is the current index, and<tt> j </tt>is an internal
+register; if the current word is a number immediately following a numeric
+list (one or more numbers),<tt> Emit </tt>combines their indices to form
+a single word. At the end of the string,<tt> Emit(j,i-1) </tt>is executed.<br><br>
+
+As an example, this process is applied 
+to<tt> sum =:+/_6.95*i.3&nbsp;4</tt>,<tt> </tt>the sentence used above.  
+In the following table, the columns are:
+index, character in the string, 
+the (current&nbsp;state,&nbsp;character&nbsp;class) pair,
+the (new&nbsp;state,&nbsp;function) pair,
+and the action.  For example, the first step is step 0,
+the letter is<tt> s</tt>,<tt> </tt>the current (and initial) state 
+is<tt> S</tt>,<tt> </tt>and the character class is<tt> A</tt>.<tt> </tt>From
+the table, the entry in row<tt> S </tt>and 
+column<tt> A </tt>is<tt> AN</tt>,<tt> </tt>meaing the new state
+is<tt> A </tt>and the function code is<tt> N</tt>.<tt> </tt>The action
+assigns 0 to<tt> j</tt>.<br><br>
+
+<table>
+<tr>
+<td>&nbsp;</td>
+<td>&nbsp;</td>
+<td align=center>State /</td>
+<td align=center>New State /</td>
+<td>&nbsp;</td>
+</tr>
+
+<tr>
+<td>i&nbsp;&nbsp;&nbsp;&nbsp;</td>
+<td align=center>Char</td>
+<td align=center>Char Class</td>
+<td align=center>Function</td>
+<td align=center>Action</td>
+</tr>
+
+<tr> <td>0 </td> <td align=center><tt>s</tt></td> <td align=center><tt>S A</tt></td> <td align=center><tt>AN     </tt></td> <td><tt>j=:0</tt>               </td> </tr>
+<tr> <td>1 </td> <td align=center><tt>u</tt></td> <td align=center><tt>A A</tt></td> <td align=center><tt>A&nbsp;</tt></td> <td>                            </td> </tr>
+<tr> <td>2 </td> <td align=center><tt>m</tt></td> <td align=center><tt>A A</tt></td> <td align=center><tt>A&nbsp;</tt></td> <td>                            </td> </tr>
+<tr> <td>3 </td> <td align=center><tt> </tt></td> <td align=center><tt>A S</tt></td> <td align=center><tt>SI     </tt></td> <td><tt>j=:3 [ Emit(0,2)   </tt></td> <td><tt>&nbsp;&nbsp;sum</tt></td> </tr>
+<tr> <td>4 </td> <td align=center><tt>=</tt></td> <td align=center><tt>S X</tt></td> <td align=center><tt>XN     </tt></td> <td><tt>j=:4               </tt></td> </tr>
+<tr> <td>5 </td> <td align=center><tt>:</tt></td> <td align=center><tt>X C</tt></td> <td align=center><tt>X&nbsp;</tt></td> <td>                            </td> </tr>
+<tr> <td>6 </td> <td align=center><tt>+</tt></td> <td align=center><tt>X X</tt></td> <td align=center><tt>XI     </tt></td> <td><tt>j=:6 [ Emit(4,5)   </tt></td> <td><tt>&nbsp;&nbsp;=:</tt></td> </tr>
+<tr> <td>7 </td> <td align=center><tt>/</tt></td> <td align=center><tt>X X</tt></td> <td align=center><tt>XI     </tt></td> <td><tt>j=:7 [ Emit(6,6)   </tt></td> <td><tt>&nbsp;&nbsp;+</tt></td> </tr>
+<tr> <td>8 </td> <td align=center><tt>_</tt></td> <td align=center><tt>X 9</tt></td> <td align=center><tt>9I     </tt></td> <td><tt>j=:8 [ Emit(7,7)   </tt></td> <td><tt>&nbsp;&nbsp;/</tt></td> </tr>
+<tr> <td>9 </td> <td align=center><tt>6</tt></td> <td align=center><tt>9 9</tt></td> <td align=center><tt>9&nbsp;</tt></td> <td>                            </td> </tr>
+<tr> <td>10</td> <td align=center><tt>.</tt></td> <td align=center><tt>9 D</tt></td> <td align=center><tt>9&nbsp;</tt></td> <td>                            </td> </tr>
+<tr> <td>11</td> <td align=center><tt>9</tt></td> <td align=center><tt>9 9</tt></td> <td align=center><tt>9&nbsp;</tt></td> <td>                            </td> </tr>
+<tr> <td>12</td> <td align=center><tt>5</tt></td> <td align=center><tt>9 9</tt></td> <td align=center><tt>9&nbsp;</tt></td> <td>                            </td> </tr>
+<tr> <td>13</td> <td align=center><tt>*</tt></td> <td align=center><tt>9 X</tt></td> <td align=center><tt>XI     </tt></td> <td><tt>j=:13 [ Emit(8,12) </tt></td> <td><tt>&nbsp;&nbsp;_6.95</tt></td> </tr>
+<tr> <td>14</td> <td align=center><tt>i</tt></td> <td align=center><tt>X A</tt></td> <td align=center><tt>AI     </tt></td> <td><tt>j=:14 [ Emit(13,13)</tt></td> <td><tt>&nbsp;&nbsp;*</tt></td> </tr>
+<tr> <td>15</td> <td align=center><tt>.</tt></td> <td align=center><tt>A D</tt></td> <td align=center><tt>X&nbsp;</tt></td> <td>                            </td> </tr>
+<tr> <td>16</td> <td align=center><tt>3</tt></td> <td align=center><tt>X 9</tt></td> <td align=center><tt>9I     </tt></td> <td><tt>j=:16 [ Emit(14,15)</tt></td> <td><tt>&nbsp;&nbsp;i.</tt></td> </tr>
+<tr> <td>17</td> <td align=center><tt> </tt></td> <td align=center><tt>9 S</tt></td> <td align=center><tt>SI     </tt></td> <td><tt>j=:17 [ Emit(16,16)</tt></td> <td><tt>&nbsp;&nbsp;3</tt></td> </tr>
+<tr> <td>18</td> <td align=center><tt>4</tt></td> <td align=center><tt>S 9</tt></td> <td align=center><tt>9N     </tt></td> <td><tt>j=:18              </tt></td> </tr>
+<tr> <td>19</td> <td align=center><tt> </tt></td> <td align=center><tt>   </tt></td> <td align=center><tt>       </tt></td> <td><tt>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Emit(18,18)</tt></td> <td><tt>&nbsp;&nbsp;4</tt></td> </tr>
+</table><br>
+
+<a name="ID"></a>Every primitive word has an ID (a unique byte value) 
+defined in file jc.h.
+The ID for the first 128 ASCII characters are simply the byte values 0 to 127;
+other IDs are arbitrary assignments in "dictionary order".
+
+<pre>
+    ...
+   #define CLPAR      '('          /*  40 050 28       */
+   #define CRPAR      ')'          /*  41 051 29       */
+   #define CSTAR      '*'          /*  42 052 2a       */
+   #define CPLUS      '+'          /*  43 053 2b       */
+    ...
+   #define CASGN      '\200'       /* 128 200 80 =.    */
+   #define CGASGN     '\201'       /* 129 201 81 =:    */
+   #define CFLOOR     '\202'       /* 130 202 82 <.    */
+   #define CMIN       '\202'       /* 130 202 82 <.    */
+   #define CLE        '\203'       /* 131 203 83 <:    */
+   #define CCEIL      '\204'       /* 132 204 84 >.    */
+   #define CMAX       '\204'       /* 132 204 84 >.    */
+   #define CGE        '\205'       /* 133 205 85 >:    */
+    ...
+</pre>
+
+Using mnemonics such as<tt> CPLUS </tt>and<tt> CASGN </tt>instead
+of<tt> '+' </tt>and<tt> '\200' </tt>makes the source code more readable
+and more amenable to automatic manipulation.<br><br>
+
+The 3-row table<tt> <a name="spell">spell</a> </tt>in file ws.c associates letter 
+sequences with IDs.
+The rows correspond to letters in the range ASCII 32 to 127, 
+those letters <a name="inflect">inflected</a> by a period, 
+and those letters inflected by a colon;
+table entries are IDs.  Thus:<br><br>
+
+<pre>
+   static C spell[3][68]={
+    '=',     '<',     '>',     '_',     '+',     '*',      ...,
+    CASGN,   CFLOOR,  CCEIL,   1,       CPLUSDOT,CSTARDOT, ...,
+    CGASGN,  CLE,     CGE,     CFCONS,  CPLUSCO, CSTARCO,  ...,
+   };
+</pre>
+
+For example, the first column specifies that<tt> =. </tt>has the
+ID<tt> CASGN </tt>(assignment) and<tt> =: </tt>the ID<tt> CGASGN </tt>
+(global assignment).<br><br>
+
+<tt>spell </tt>is used by functions<tt> <a name="spellin">spellin</a> </tt>
+and<tt> <a name="spellout">spellout</a></tt>:<tt> </tt>
+given a string (e.g.<tt> =:</tt>),<tt> spellin </tt>computes the 
+ID (<tt>CASGN</tt>); given the ID,<tt> spellout </tt>computes the
+corresponding string.<br><br>
+
+Using the information computed by<tt> wordil</tt>,<tt> </tt>
+functions<a name="tokens"></a><tt> tokens 
+</tt>and<a name="enqueue"></a><tt> enqueue </tt>transform a string into a list of nouns, verbs,
+adverbs, conjunctions, etc. The next step is to parse this "tokenized"
+form of the sentence.<br><br>
+
+<br>
+
+<a name="Parsing"></a><p><font size="5"><b>Parsing</b></font><br><br>
+
+Parsing occurs after word formation and is controlled by
+function<tt> parse </tt>and table<tt> cases </tt> in file p.c.<tt> cases </tt>
+is a direct translation of the parse table in Section II E of the dictionary:
+
+<pre>
+   #define AVN   (     ADV+VERB+NOUN)
+   #define CAVN  (CONJ+ADV+VERB+NOUN)
+   #define EDGE  (MARK+ASGN+LPAR)
+
+   PT cases[] = {
+    EDGE,      VERB,      NOUN, ANY,       monad,   ..., 1,2, ...,
+    EDGE+AVN,  VERB,      VERB, NOUN,      monad,   ..., 2,3, ...,
+    EDGE+AVN,  NOUN,      VERB, NOUN,      dyad,    ..., 1,3, ...,
+    EDGE+AVN,  VERB+NOUN, ADV,  ANY,       adv,     ..., 1,2, ...,
+    EDGE+AVN,  VERB+NOUN, CONJ, VERB+NOUN, conj,    ..., 1,3, ...,
+    EDGE+AVN,  VERB,      VERB, VERB,      trident, ..., 1,3, ...,
+    EDGE,      CAVN,      CAVN, CAVN,      trident, ..., 1,3, ...,
+    EDGE,      CAVN,      CAVN, ANY,       bident,  ..., 1,2, ...,
+    NAME+NOUN, ASGN,      CAVN, ANY,       is,      ..., 0,2, ...,
+    LPAR,      CAVN,      RPAR, ANY,       punc,    ..., 0,2, ...,
+   };
+</pre>
+
+The sentence to be parsed is prefaced with a marker and placed on a queue,
+and as parsing proceeds words are moved from the right end of
+the queue onto a stack. The classes of the first four words on the stack
+are compared to the patterns in columns 0 to 3 of<tt> cases</tt>.<tt> </tt>
+The first row matching in all four columns is selected;
+the action in column 4 is applied to the words on the stack indicated by
+the inclusive indices in columns 8 and 9, with the result replacing
+those words. If none of the rows match, the word at the end of the queue
+is moved onto the stack by the function<tt> move</tt>.<tt> </tt>
+Scanning for a matching pattern then begins anew.
+The process terminates when the queue is empty and none of the rules
+are applicable.
+At that time, the stack should have exactly two words:
+the marker and a noun, verb, adverb, or conjunction;
+anything else signals syntax error.<br><br>
+
+This parsing method was first described in 
+<a href="iojBib.htm#Iverson1983">Iverson</a> [1983].
+The parse table is a compact representation of a large amount
+of information; it has guided both the evolution of the language
+and its implementation.  The following example illustrates parsing
+on the sentence<tt> ((i.#y)=i.~y)#y </tt>where<tt> y=:'abc'</tt>.
+(<a name="Marker"></a><tt>&#167; </tt>denotes the marker.)<br><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Rule/<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Queue 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Stack   
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Action 
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Comment
+<pre>
+&#167;((i.#y)=i.~y)#y                               original sentence
+&#167;((i.#y)=i.~y)#            'aba'   13 move
+&#167;((i.#y)=i.~y)            #'aba'   13 move
+&#167;((i.#y)=i.~y            )#'aba'   13 move
+&#167;((i.#y)=i.~        'aba')#'aba'   13 move
+
+&#167;((i.#y)=i.        ~'aba')#'aba'   13 move
+&#167;((i.#y)=        i.~'aba')#'aba'   13 move
+&#167;((i.#y)        =i.~'aba')#'aba'   13 move
+&#167;((i.#y)        =v0 'aba')#'aba'    3 adv      v0=: i.~
+&#167;((i.#y        )=v0 'aba')#'aba'   13 move
+
+&#167;((i.#    'aba')=v0 'aba')#'aba'   13 move
+&#167;((i.    #'aba')=v0 'aba')#'aba'   13 move
+&#167;((    i.#'aba')=v0 'aba')#'aba'   13 move
+&#167;(    (i.#'aba')=v0 'aba')#'aba'   13 move
+&#167;(         (i.3)=v0 'aba')#'aba'    1 monad    3 -: #'aba'
+
+&#167;(       (0 1 2)=v0 'aba')#'aba'    0 monad    0 1 2 -: i.3
+&#167;(         0 1 2=v0 'aba')#'aba'   12 punc
+&#167;(            0 1 2=0 1 0)#'aba'    1 monad    0 1 0 -: v0 'aba'
+&#167;            (0 1 2=0 1 0)#'aba'   13 move
+&#167;                  (1 1 0)#'aba'    2 dyad     1 1 0 -: 0 1 2=0 1 0
+
+&#167;                    1 1 0#'aba'   12 punc
+                    &#167;1 1 0#'aba'   13 move
+                           &#167;'ab'    2 dyad
+</pre>
+<br>
+
+<a name="Trains"></a><p><font size="5"><b>Trains</b></font><br><br>
+
+A <i>train</i> is an isolated phrase not interpreted by the parsing
+rules pertaining to verbs, adverbs, and conjunctions, and 
+(as a matter of language design) may be assigned any meaning whatsoever.
+<a href="iojBib.htm#Iverson1989">Iverson and McDonnell</a> [1989]
+defined a train of three verbs as a 
+<a name="fork"></a><i>fork</i> and a train of
+two verbs as a <a name="hook"></a><i>hook</i>. That is, 
+if<tt> f</tt>,<tt> g</tt>,<tt> </tt>and<tt> h </tt>are verbs, then
+so are<tt> (f g h) </tt>and<tt> (g h)</tt>,<tt> </tt>and:<br>
+
+<pre>
+         <font size=3 face="Times New Roman">Fork</font>                      <font size=3 face="Times New Roman">Hook</font>
+     g          g              g          g
+    / \        / \            / \        / \
+   f   h      f   h          y   h      x   h
+   |   |     /\   /\             |          |
+   y   y    x  y x  y            y          y
+</pre>
+
+Parsing rules 5, 6, and 7 deal with trains.  
+(See <a href="#Parsing">Parsing</a>.)
+A consequence of the rules is that a train of verbs is resolved
+by repeated forming a fork from the <i>rightmost</i> three verbs, with a
+final hook if the train is of even length.  Likewise, a train
+of adverbs and conjunctions is assigned a meaning, and is 
+resolved by repeatedly forming a
+group from the <i>leftmost</i> three adverbs or conjunctions,
+with a final group of two if the train is of even length.
+Trains are implemented by functions and variables of file cf.c. 
+The main functions are<tt> <a name="folk"></a>folk </tt>
+and<tt> hook</tt>.<tt> </tt>(<tt>fork </tt>conflicts with UNIX usage.)<br><br>
+
+<br>
+
+<a name="Name Resolution"></a><p><font size="5"><b>Name Resolution</b></font><br><br>
+
+During parsing, words are moved from the queue to the stack.
+Suppose a name<tt> xyz </tt>is being moved.
+If<tt> xyz </tt>is immediately to the left of a copula, it (as a name)
+is put on the stack.  Otherwise, if<tt> xyz </tt>denotes a noun,
+that noun is put on the stack; if<tt> xyz </tt>denotes a verb,
+adverb, or conjunction,<tt> 'xyz'~ </tt>is put on the stack,
+to be evaluated when the verb, adverb, or conjunction is applied.<br><br>
+
+Names and their assigned values are stored in symbol tables.
+A symbol table is an <a href="iojNoun.htm#Arrays">array</a> of type<tt> SYMB </tt>whose atoms
+are pairs (name,value). Functions and variables in the files s*.c work with
+symbols tables.  In particular,<tt> symbis(a,w,symb) </tt>assigns
+the name<tt> a </tt>to<tt> w </tt>in the symbol table<tt> symb</tt>,<tt> </tt>
+and<tt> symbrd(w) </tt>"reads" the value of the name<tt> w</tt>.<br><br>
+
+<br>
+<hr>
+
+<a href="iojNoun.htm">Next</a>
+ &#149; 
+<a href="iojIntro.htm">Previous</a>
+ &#149; 
+<a href="iojIndex.htm">Index</a>
+ &#149; 
+<a href="ioj.htm#TOC">Table of Contents</a>
+<br>
+
+</body>
+</html>

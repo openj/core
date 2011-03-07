@@ -1,0 +1,29 @@
+#!/bin/bash
+# compiles and runs c programs built by sym2ijs
+# creates netdefs.ijs from netdefs.c
+# creates hostdefs.ijs from hostdefs.c
+
+source bin/jconfig
+
+if [ $bits == 32 ]
+then
+suffix=".ijs"
+else
+suffix="_64.ijs"
+fi
+ 
+rm -f defs/netdefs.ijs defs/hostdefs.ijs defs/temp
+cc $M32 -D$un defs/netdefs.c -o defs/temp
+defs/temp >defs/netdefs.ijs
+cc $M32 -D$un defs/hostdefs.c -o defs/temp
+defs/temp >defs/hostdefs.ijs
+rm -f defs/temp
+
+if [ -e defs/hostdefs.ijs ] && [ -e defs/netdefs.ijs ]
+then
+cp defs/hostdefs.ijs  j/system/defs/hostdefs_$lcun$suffix
+cp defs/netdefs.ijs    j/system/defs/netdefs_$lcun$suffix
+echo success: new netdefs and hostdefs copied to j/system/defs
+else
+echo failed: build netdefs and/or hostdefs failed
+fi

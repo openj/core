@@ -1,0 +1,73 @@
+# configuration for build shell scripts - edit to configure
+
+# bits 32 or 64
+bits=32
+
+# readline 0 or 1 to enable jconsole line recall
+readline=0
+LIBREADLINE=""
+
+# readline should be enabled if possible
+
+# remove # from next 2 lines to enable readline
+# readline=1
+# LIBREADLINE=" -lreadline "
+
+# if link fails install readline or try one of next lines
+# LIBREADLINE=" -ledit -lncurses "
+# LIBREADLINE=" -ledit64 -lnccurses " 
+
+# be careful with changes after this line
+
+un=`uname`
+lcun=$( echo "$un" | tr -s  '[:upper:]'  '[:lower:]' )
+
+if [ $un != Linux ] && [ $un != Darwin ]
+then
+echo jconfig: not Linux or Darwin - changes to jconfig and other files required
+exit 1
+fi
+
+if [ $bits != 32 ] && [ $bits != 64 ]
+then
+echo jconfig:  bits must be 32 or 64
+exit 1
+fi
+
+if [ $readline != 0 ] && [ $readline != 1 ]
+then
+echo jconfig:  readline must be 0 or 1
+exit 1
+fi
+
+COMP=" -fPIC -O3 -fno-strict-aliasing -DNOASM "
+
+if [ $un == Linux ]
+then
+SOLINK="  -shared -W1,soname,libj.so -lm -ldl -o "
+SOSUFFIX=so
+fi
+
+if [ $un == Darwin ]
+then
+SOLINK=" -dynamiclib -lm -ldl -o "
+SOSUFFIX=dylib
+fi
+
+if [ $bits == 32 ]
+then
+COMP=" -m32 $COMP "
+SOLINK=" -m32 $SOLINK "
+M32=" -m32 "
+else
+COMP=" -D_UNIX64 $COMP "
+M32=""
+fi
+
+if [ $readline == 1 ]
+then
+COMP="-DREADLINE $COMP "
+fi
+
+SOLINK=" $SOLINK $TARGET.$SOSUFFIX "
+export COMP SOLINK M32 LIBREADLINE
