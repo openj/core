@@ -1,7 +1,7 @@
 # configuration for build shell scripts - edit to configure
 
 # bits 32 or 64
-bits=32
+bits=64
 
 # readline 0 or 1 to enable jconsole line recall
 readline=0
@@ -22,7 +22,7 @@ LIBREADLINE=""
 un=`uname`
 lcun=$( echo "$un" | tr -s  '[:upper:]'  '[:lower:]' )
 
-if [ $un != Linux ] && [ $un != Darwin ]
+if [ $un != Linux ] && [ $un != Darwin ] && [ $un != FreeBSD ]
 then
 echo jconfig: not Linux or Darwin - changes to jconfig and other files required
 exit 1
