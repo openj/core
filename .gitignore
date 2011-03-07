@@ -3,3 +3,4 @@ make.txt
 *.swp
 *.o
 *.so
+jconsole
