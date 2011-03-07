@@ -1,3 +1,5 @@
 esum.txt
 make.txt
 *.swp
+*.o
+*.so
