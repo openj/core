@@ -165,7 +165,6 @@ static F1(jtdiffamp0){A f,g,h,x,y;B nf,ng;C id;V*v;
      case 1:   R amp(num[2],h);
      case 2:   R atop(ds(CMINUS),amp(one,h));
      case 3:   R atop(atop(ds(CDIV),ds(CSTARCO)),amp(num[2],h));
-     case 4:   R hook(ds(CDIV),w);
      case 5:   R amp(num[6],h);
      case 6:   R amp(num[5],h);
      case 7:   R atop(atop(ds(CDIV),ds(CSTARCO)),amp(num[6],h));
