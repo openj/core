@@ -1,7 +1,7 @@
 # configuration for build shell scripts - edit to configure
 
 # bits 32 or 64
-bits=64
+bits=32
 
 # readline 0 or 1 to enable jconsole line recall
 readline=0
@@ -10,8 +10,8 @@ LIBREADLINE=""
 # readline should be enabled if possible
 
 # remove # from next 2 lines to enable readline
-readline=1
-LIBREADLINE=" -lreadline "
+# readline=1
+# LIBREADLINE=" -lreadline "
 
 # if link fails install readline or try one of next lines
 # LIBREADLINE=" -ledit -lncurses "
@@ -22,7 +22,7 @@ LIBREADLINE=" -lreadline "
 un=`uname`
 lcun=$( echo "$un" | tr -s  '[:upper:]'  '[:lower:]' )
 
-if [ $un != Linux ] && [ $un != Darwin ] && [ $un != FreeBSD ]
+if [ $un != Linux ] && [ $un != Darwin ]
 then
 echo jconfig: not Linux or Darwin - changes to jconfig and other files required
 exit 1
@@ -45,12 +45,6 @@ COMP=" -fPIC -O3 -fno-strict-aliasing -DNOASM "
 if [ $un == Linux ]
 then
 SOLINK="  -shared -W1,soname,libj.so -lm -ldl -o "
-SOSUFFIX=so
-fi
-
-if [ $un == FreeBSD ]
-then
-SOLINK="  -shared -W1,soname,libj.so -lm -o "
 SOSUFFIX=so
 fi
 
@@ -77,8 +71,3 @@ fi
 
 SOLINK=" $SOLINK $TARGET.$SOSUFFIX "
 export COMP SOLINK M32 LIBREADLINE
-
-echo "comp:$COMP"
-echo "solink:$SOLINK"
-echo "m32:$M32"
-echo "libreadline:$LIBREADLINE"
