@@ -2,6 +2,7 @@
 
 <head>
 <title>An Implementation of J -- Display</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
 
 <body>
@@ -105,7 +106,7 @@ such that:<br>
 &nbsp;&#149; The rank of<tt> d </tt>is the greater of 2 or the rank of<tt> b</tt>.<br>
 &nbsp;&#149; Excluding the last two axes, the shape of<tt> d </tt>matches 
 the shape of<tt> b</tt>.<br>
-&nbsp;&#149; The frame (formed by<font size=2 face="ISIJ"> Ú Â ¿Ã Å ´À Á Ù ³ Ä</font>)
+&nbsp;&#149; The frame (formed by â”Œ â”¬ â”â”œ â”¼ â”¤â”” â”´ â”˜ â”‚ â”€)
 is the same in all the planes.<br><br>
 
 Boxed display can be modelled as follows:<br>
@@ -148,10 +149,10 @@ unless indicated otherwise). The first group are utilities:<br><br>
 <tt>boxed &nbsp; &nbsp; </tt>1 if boxed<br>
 <tt>mt &nbsp; &nbsp;&nbsp; &nbsp; </tt>1 if empty<br>
 <tt>boxc &nbsp; &nbsp; &nbsp;</tt>(noun) box drawing characters<br>
-<tt>tcorn &nbsp; &nbsp; </tt>(noun) the characters<font size=2 face="ISIJ"> ¿ Ú</font><br>
-<tt>tint &nbsp; &nbsp; &nbsp;</tt>(noun) the characters<font size=2 face="ISIJ"> Â Ä</font><br>
-<tt>bcorn &nbsp; &nbsp; </tt>(noun) the characters<font size=2 face="ISIJ"> Ù À</font><br>
-<tt>bint &nbsp; &nbsp; &nbsp;</tt>(noun) the characters<font size=2 face="ISIJ"> Á Ä</font><br>
+<tt>tcorn &nbsp; &nbsp; </tt>(noun) the characters â” â”Œ<br>
+<tt>tint &nbsp; &nbsp; &nbsp;</tt>(noun) the characters â”¬ â”€<br>
+<tt>bcorn &nbsp; &nbsp; </tt>(noun) the characters â”˜ â””<br>
+<tt>bint &nbsp; &nbsp; &nbsp;</tt>(noun) the characters â”´ â”€<br>
 <br>
 
 <tt>mat </tt>is the main verb of the next group of definitions.
@@ -161,13 +162,13 @@ the array &#151; a literal table that "looks like" the argument array.<br><br>
 <tt>perim </tt>draws a perimeter around each plane of the right argument:
 According to the information in the left argument (a result 
 of<tt> rc</tt>),<tt> perim </tt>puts
-<font size=2 face="ISIJ"> ¿ Ú Â Ä </font>(<tt>top</tt>),
-<font size=2 face="ISIJ"> Ù À Á Ä </font>(<tt>bot</tt>),
-<font size=2 face="ISIJ"> Ã ³ </font>(<tt>left</tt>), or
-<font size=2 face="ISIJ"> ´ ³ </font>(<tt>right</tt>) at
+ â” â”Œ â”¬ â”€ (<tt>top</tt>),
+ â”˜ â”” â”´ â”€ (<tt>bot</tt>),
+ â”œ â”‚ (<tt>left</tt>), or
+ â”¤ â”‚ (<tt>right</tt>) at
 appropriate positions on the perimeter of each plane.<br><br>
 
-<tt>topleft </tt>catenates the characters<font size=2 face="ISIJ"> Å ³ Ä </font>
+<tt>topleft </tt>catenates the characters â”¼ â”‚ â”€ 
 on the top and left edges of a literal table.<tt> inside </tt>produces
 the inside (excluding perimeter) of a plane of the display.<tt> take </tt>
 is<tt> {. </tt>if the right argument is non-empty, and is an array
@@ -183,12 +184,12 @@ The following examples illustrate the inner workings of the model:<br>
    y=: 2 3$(i.2 3);'abc';(i.4 1);(<2 2$'ussr');12;<+&.>i.2 2 3
    x=: mat@thorn1&.>y
 
-   $&.> x              rc x              { rc x<font size=2 face="ISIJ">
-ÚÄÄÄÂÄÄÄÂÄÄÄÄ¿      ÚÄÄÄÄÂÄÄÄÄÄ¿      ÚÄÄÄÄÂÄÄÄÄÂÄÄÄÄ¿
-³2 5³1 3³4 1 ³      ³4 11³5 3 9³      ³4 5 ³4 3 ³4 9 ³
-ÃÄÄÄÅÄÄÄÅÄÄÄÄ´      ÀÄÄÄÄÁÄÄÄÄÄÙ      ÃÄÄÄÄÅÄÄÄÄÅÄÄÄÄ´
-³4 4³1 2³11 9³                        ³11 5³11 3³11 9³
-ÀÄÄÄÁÄÄÄÁÄÄÄÄÙ                        ÀÄÄÄÄÁÄÄÄÄÁÄÄÄÄÙ</font>
+   $&.> x              rc x              { rc x
+â”Œâ”€â”€â”€â”¬â”€â”€â”€â”¬â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”      â”Œâ”€â”€â”€â”€â”¬â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”
+â”‚2 5â”‚1 3â”‚4 1 â”‚      â”‚4 11â”‚5 3 9â”‚      â”‚4 5 â”‚4 3 â”‚4 9 â”‚
+â”œâ”€â”€â”€â”¼â”€â”€â”€â”¼â”€â”€â”€â”€â”¤      â””â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”˜      â”œâ”€â”€â”€â”€â”¼â”€â”€â”€â”€â”¼â”€â”€â”€â”€â”¤
+â”‚4 4â”‚1 2â”‚11 9â”‚                        â”‚11 5â”‚11 3â”‚11 9â”‚
+â””â”€â”€â”€â”´â”€â”€â”€â”´â”€â”€â”€â”€â”˜                        â””â”€â”€â”€â”€â”´â”€â”€â”€â”€â”´â”€â”€â”€â”€â”˜
 
    a =: 2 3 4 $ 'abcdefghijklmnopqrstuvwx'
 
@@ -202,57 +203,57 @@ qrst                qrst
 uvwx                uvwx
 
    
-   topleft 3 4$'a'<font size=2 face="ISIJ">
-ÅÄÄÄÄ
-³aaaa
-³aaaa
-³aaaa</font>
-   (2 3;4 5) perim 6 10$'a'<font size=2 face="ISIJ">
-ÚÄÄÄÄÂÄÄÄÄÄ¿
-³aaaaaaaaaa³
-³aaaaaaaaaa³
-Ãaaaaaaaaaa´
-³aaaaaaaaaa³
-³aaaaaaaaaa³
-³aaaaaaaaaa³
-ÀÄÄÄÄÁÄÄÄÄÄÙ</font>
+   topleft 3 4$'a'
+â”¼â”€â”€â”€â”€
+â”‚aaaa
+â”‚aaaa
+â”‚aaaa
+   (2 3;4 5) perim 6 10$'a'
+â”Œâ”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”
+â”‚aaaaaaaaaaâ”‚
+â”‚aaaaaaaaaaâ”‚
+â”œaaaaaaaaaaâ”¤
+â”‚aaaaaaaaaaâ”‚
+â”‚aaaaaaaaaaâ”‚
+â”‚aaaaaaaaaaâ”‚
+â””â”€â”€â”€â”€â”´â”€â”€â”€â”€â”€â”˜
    
-   ] t=: ({rc x) inside@:(take&.>)"2 x<font size=2 face="ISIJ">
-0 1 2³abc³0        
-3 4 5³   ³1        
-     ³   ³2        
-     ³   ³3        
-ÄÄÄÄÄÅÄÄÄÅÄÄÄÄÄÄÄÄÄ
-ÚÄÄ¿ ³12 ³ÚÄÂÄÄÂÄÄ¿
-³us³ ³   ³³0³1 ³2 ³
-³sr³ ³   ³ÃÄÅÄÄÅÄÄ´
-ÀÄÄÙ ³   ³³3³4 ³5 ³
-     ³   ³ÀÄÁÄÄÁÄÄÙ
-     ³   ³         
-     ³   ³ÚÄÂÄÄÂÄÄ¿
-     ³   ³³6³7 ³8 ³
-     ³   ³ÃÄÅÄÄÅÄÄ´
-     ³   ³³9³10³11³
-     ³   ³ÀÄÁÄÄÁÄÄÙ</font>
-   (rc x) perim t<font size=2 face="ISIJ">
-ÚÄÄÄÄÄÂÄÄÄÂÄÄÄÄÄÄÄÄÄ¿
-³0 1 2³abc³0        ³
-³3 4 5³   ³1        ³
-³     ³   ³2        ³
-³     ³   ³3        ³
-ÃÄÄÄÄÄÅÄÄÄÅÄÄÄÄÄÄÄÄÄ´
-³ÚÄÄ¿ ³12 ³ÚÄÂÄÄÂÄÄ¿³
-³³us³ ³   ³³0³1 ³2 ³³
-³³sr³ ³   ³ÃÄÅÄÄÅÄÄ´³
-³ÀÄÄÙ ³   ³³3³4 ³5 ³³
-³     ³   ³ÀÄÁÄÄÁÄÄÙ³
-³     ³   ³         ³
-³     ³   ³ÚÄÂÄÄÂÄÄ¿³
-³     ³   ³³6³7 ³8 ³³
-³     ³   ³ÃÄÅÄÄÅÄÄ´³
-³     ³   ³³9³10³11³³
-³     ³   ³ÀÄÁÄÄÁÄÄÙ³
-ÀÄÄÄÄÄÁÄÄÄÁÄÄÄÄÄÄÄÄÄÙ</font>
+   ] t=: ({rc x) inside@:(take&.>)"2 x
+0 1 2â”‚abcâ”‚0        
+3 4 5â”‚   â”‚1        
+     â”‚   â”‚2        
+     â”‚   â”‚3        
+â”€â”€â”€â”€â”€â”¼â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€
+â”Œâ”€â”€â” â”‚12 â”‚â”Œâ”€â”¬â”€â”€â”¬â”€â”€â”
+â”‚usâ”‚ â”‚   â”‚â”‚0â”‚1 â”‚2 â”‚
+â”‚srâ”‚ â”‚   â”‚â”œâ”€â”¼â”€â”€â”¼â”€â”€â”¤
+â””â”€â”€â”˜ â”‚   â”‚â”‚3â”‚4 â”‚5 â”‚
+     â”‚   â”‚â””â”€â”´â”€â”€â”´â”€â”€â”˜
+     â”‚   â”‚         
+     â”‚   â”‚â”Œâ”€â”¬â”€â”€â”¬â”€â”€â”
+     â”‚   â”‚â”‚6â”‚7 â”‚8 â”‚
+     â”‚   â”‚â”œâ”€â”¼â”€â”€â”¼â”€â”€â”¤
+     â”‚   â”‚â”‚9â”‚10â”‚11â”‚
+     â”‚   â”‚â””â”€â”´â”€â”€â”´â”€â”€â”˜
+   (rc x) perim t
+â”Œâ”€â”€â”€â”€â”€â”¬â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚0 1 2â”‚abcâ”‚0        â”‚
+â”‚3 4 5â”‚   â”‚1        â”‚
+â”‚     â”‚   â”‚2        â”‚
+â”‚     â”‚   â”‚3        â”‚
+â”œâ”€â”€â”€â”€â”€â”¼â”€â”€â”€â”¼â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¤
+â”‚â”Œâ”€â”€â” â”‚12 â”‚â”Œâ”€â”¬â”€â”€â”¬â”€â”€â”â”‚
+â”‚â”‚usâ”‚ â”‚   â”‚â”‚0â”‚1 â”‚2 â”‚â”‚
+â”‚â”‚srâ”‚ â”‚   â”‚â”œâ”€â”¼â”€â”€â”¼â”€â”€â”¤â”‚
+â”‚â””â”€â”€â”˜ â”‚   â”‚â”‚3â”‚4 â”‚5 â”‚â”‚
+â”‚     â”‚   â”‚â””â”€â”´â”€â”€â”´â”€â”€â”˜â”‚
+â”‚     â”‚   â”‚         â”‚
+â”‚     â”‚   â”‚â”Œâ”€â”¬â”€â”€â”¬â”€â”€â”â”‚
+â”‚     â”‚   â”‚â”‚6â”‚7 â”‚8 â”‚â”‚
+â”‚     â”‚   â”‚â”œâ”€â”¼â”€â”€â”¼â”€â”€â”¤â”‚
+â”‚     â”‚   â”‚â”‚9â”‚10â”‚11â”‚â”‚
+â”‚     â”‚   â”‚â””â”€â”´â”€â”€â”´â”€â”€â”˜â”‚
+â””â”€â”€â”€â”€â”€â”´â”€â”€â”€â”´â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
 </pre>
 <br>
 
