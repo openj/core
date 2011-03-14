@@ -2,6 +2,7 @@
 
 <head>
 <title>An Implementation of J -- Verbs</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
 </head>
 
 <body>
@@ -136,7 +137,7 @@ required a<tt> case </tt>in<tt> fit</tt>.<br><br>
 
 <a name="Rank"></a><p><font size="5"><b>Rank</b></font><br><br>
 
-Verb (function) rank was introduced by Iverson [1978 §6], 
+Verb (function) rank was introduced by Iverson [1978 Â§6], 
 further developed in Iverson [1983, 1987, 1995], 
 and implemented in SHARP APL, SHARP APL/HP, SAX, A, and J 
 (see Bernecky <i>et al</i>. [1983, 1987], Hodgkinson [1986], 
@@ -155,7 +156,7 @@ to lower-rank arrays, subsuming and superseding
 the anomalous bracket-axis operator.<br><br>
 
 Various aspects of rank are here discussed in terms of a model in J, 
-updated from Hui [1987 §A.2].<br><br>  
+updated from Hui [1987 Â§A.2].<br><br>  
 
 <b>Frames and Cells.</b> A rank<tt> r </tt>splits the argument shape into 
 the frame and the cell shape; a positive<tt> r </tt>specifies the number
@@ -198,10 +199,10 @@ the atoms (scalars) of<tt> x </tt>times the items of<tt> y</tt>:<br><br>
 3                        3
    0 cs x                   _1 cs y
                          2
-   0 cells x                _1 cells y<font face="ISIJ">
-ÚÄÂÄÂÄ¿                  ÚÄÄÄÂÄÄÄÂÄÄÄ¿
-³1³2³3³                  ³0 1³2 3³4 5³
-ÀÄÁÄÁÄÙ                  ÀÄÄÄÁÄÄÄÁÄÄÄÙ</font>
+   0 cells x                _1 cells y
+â”Œâ”€â”¬â”€â”¬â”€â”                  â”Œâ”€â”€â”€â”¬â”€â”€â”€â”¬â”€â”€â”€â”
+â”‚1â”‚2â”‚3â”‚                  â”‚0 1â”‚2 3â”‚4 5â”‚
+â””â”€â”´â”€â”´â”€â”˜                  â””â”€â”€â”€â”´â”€â”€â”€â”´â”€â”€â”€â”˜
 </pre>
 
 <b>Agreement.</b>  In the dyad<tt> v"r</tt>,<tt> </tt>commonly the left and 
@@ -241,14 +242,14 @@ In the continuing example, rag and lag have no effect because
 the left and right frames match.<br><br>
 
 <pre>
-   [xc=.0 cells x           [yc=._1 cells y<font face="ISIJ">
-ÚÄÂÄÂÄ¿                  ÚÄÄÄÂÄÄÄÂÄÄÄ¿
-³1³2³3³                  ³0 1³2 3³4 5³
-ÀÄÁÄÁÄÙ                  ÀÄÄÄÁÄÄÄÁÄÄÄÙ</font>
-   [xa=.xc lag yc           [ya=.xc rag yc<font face="ISIJ">
-ÚÄÂÄÂÄ¿                  ÚÄÄÄÂÄÄÄÂÄÄÄ¿
-³1³2³3³                  ³0 1³2 3³4 5³
-ÀÄÁÄÁÄÙ                  ÀÄÄÄÁÄÄÄÁÄÄÄÙ</font>
+   [xc=.0 cells x           [yc=._1 cells y
+â”Œâ”€â”¬â”€â”¬â”€â”                  â”Œâ”€â”€â”€â”¬â”€â”€â”€â”¬â”€â”€â”€â”
+â”‚1â”‚2â”‚3â”‚                  â”‚0 1â”‚2 3â”‚4 5â”‚
+â””â”€â”´â”€â”´â”€â”˜                  â””â”€â”€â”€â”´â”€â”€â”€â”´â”€â”€â”€â”˜
+   [xa=.xc lag yc           [ya=.xc rag yc
+â”Œâ”€â”¬â”€â”¬â”€â”                  â”Œâ”€â”€â”€â”¬â”€â”€â”€â”¬â”€â”€â”€â”
+â”‚1â”‚2â”‚3â”‚                  â”‚0 1â”‚2 3â”‚4 5â”‚
+â””â”€â”´â”€â”´â”€â”˜                  â””â”€â”€â”€â”´â”€â”€â”€â”´â”€â”€â”€â”˜
 </pre>
 
 <b>Assembly.</b> After agreement, the phrase<tt> v&.> </tt>applies<tt> v </tt>
@@ -286,10 +287,10 @@ is reshaped from the right to exactly 3 numbers
 and assigned to<tt> m</tt>,<tt> l</tt>,<tt> </tt>and<tt> r</tt>.<br><br>
 
 <pre>
-   [ za=. xa *&.> ya<font face=ISIJ>
-ÚÄÄÄÂÄÄÄÂÄÄÄÄÄ¿
-³0 1³4 6³12 15³
-ÀÄÄÄÁÄÄÄÁÄÄÄÄÄÙ</font>
+   [ za=. xa *&.> ya
+â”Œâ”€â”€â”€â”¬â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”
+â”‚0 1â”‚4 6â”‚12 15â”‚
+â””â”€â”€â”€â”´â”€â”€â”€â”´â”€â”€â”€â”€â”€â”˜
    asm za
  0  1
  4  6
