@@ -176,6 +176,7 @@ int jefirst(int type,char* arg)
 		*q++=*p++;
 	}
 	*q=0;
+	strcat(input,q);
 	strcat(input,"'");
 	r=jedo(input);
 	free(input);

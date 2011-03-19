@@ -4,7 +4,7 @@ NB. add your sentences in startup.ijs
 
 systype=. 9!:12''
 jpathsep_z_=: '/'&(('\' I.@:= ])}) NB. convert to / separator
-BINPATH_z_=: jpathsep BINPATH_z_
+BINPATH=: jpathsep BINPATH_z_
 
 NB. create SystemFolders
 bin=.     BINPATH
