@@ -4,3 +4,4 @@ make.txt
 *.o
 *.so
 jconsole
+Makefile
