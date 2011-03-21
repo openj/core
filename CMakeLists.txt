@@ -18,25 +18,58 @@ set(jconsole_SRCS
 set(jconsole_LIBS
     m)
 
-add_definitions("-DNOASM")
+if (NOT DATA_INSTALL_PREFIX)
+    if (UNIX)
+        set(DATA_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/share/j")
+    elseif (WIN32)
+        set(DATA_INSTALL_PREFIX "${APPDATA}/j")
+    endif ()
+endif ()
+configure_file(cmake/profile.ijs.cmake profile.ijs)
+
+add_definitions(-DNOASM)
+
+if (DATA_INSTALL_PREFIX)
+    add_definitions(-DPROFILE_PATH="${DATA_INSTALL_PREFIX}/profile.ijs")
+endif ()
 
 if (UNIX AND CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
     add_definitions("-D_UNIX64")
-endif (UNIX AND CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+endif ()
 
 check_library_exists(dl dlopen "" HAVE_DL)
 if (HAVE_DL)
     set(jconsole_LIBS ${jconsole_LIBS} dl)
-endif (HAVE_DL)
+endif ()
 
 check_library_exists(readline readline "" HAVE_READLINE)
 if (HAVE_READLINE)
     set(jconsole_LIBS ${jconsole_LIBS} readline)
     add_definitions("-DREADLINE")
-endif (HAVE_READLINE)
+endif ()
 
 add_library(j SHARED ${libj_SRCS})
 set_target_properties(j PROPERTIES COMPILE_FLAGS "-fPIC -O3 -fno-strict-aliasing")
 
 add_executable(jconsole ${jconsole_SRCS})
 target_link_libraries(jconsole ${jconsole_LIBS})
+
+install(TARGETS j
+        LIBRARY DESTINATION lib)
+
+install(TARGETS jconsole
+        RUNTIME DESTINATION bin)
+
+file(GLOB j_SYSTEM
+     "j/system/*")
+
+if (DATA_INSTALL_PREFIX)
+    install(FILES ${CMAKE_CURRENT_BINARY_DIR}/profile.ijs
+            DESTINATION ${DATA_INSTALL_PREFIX})
+
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/j/system
+            DESTINATION ${DATA_INSTALL_PREFIX})
+
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/j/addons
+            DESTINATION ${DATA_INSTALL_PREFIX})
+endif ()
