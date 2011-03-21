@@ -158,9 +158,15 @@ int jefirst(int type,char* arg)
 	*input=0;
 	if(0==type)
 	{
+        #ifdef PROFILE_PATH
+		strcat(input,"(3 : '0!:0 y')<'");
+        strcat(input,PROFILE_PATH);
+        strcat(input,"'");
+        #else
 		strcat(input,"(3 : '0!:0 y')<BINPATH,'");
 		strcat(input,filesepx);
 		strcat(input,"profile.ijs'");
+        #endif
 	}
 	else if(1==type)
 		strcat(input,"(3 : '0!:0 y')2{ARGV");
