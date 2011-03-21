@@ -11,7 +11,7 @@
 #else
  #define GETPROCADDRESS(h,p) GetProcAddress(h,p)
 #endif
- #define JDLLNAME "\\j.dll"
+ #define JDLLNAME "j.dll"
  #define filesep '\\'
  #define filesepx "\\"
 // setfocus e required for pocketpc and doesn't hurt others
@@ -25,9 +25,9 @@
  #define filesepx "/"
  #define ijx "11!:0'pc ijx closeok;xywh 0 0 300 200;cc e editijx rightmove bottommove ws_vscroll ws_hscroll;setfont e monospaced 12;pas 0 0;pgroup jijx;pshow;'[18!:4<'base'"
  #ifdef __MACH__ 
-  #define JDLLNAME "/libj.dylib"
+  #define JDLLNAME "libj.dylib"
  #else
-  #define JDLLNAME "/libj.so"
+  #define JDLLNAME "libj.so"
  #endif
 #endif
 #include "j.h"
@@ -58,10 +58,12 @@ J jeload(void* callbacks)
  WCHAR wpath[PLEN];
  MultiByteToWideChar(CP_UTF8,0,pathdll,1+(int)strlen(pathdll),wpath,PLEN);
  hjdll=LoadLibraryW(wpath);
+ if (!hjdll) hjdll = LoadLibraryA(JDLLNAME);
 #else
  hjdll=dlopen(pathdll,RTLD_LAZY);
+ if (!hjdll) hjdll = dlopen(JDLLNAME,RTLD_LAZY);
 #endif
- if(!hjdll)return 0;
+ if(!hjdll) return 0;
  jt=((JInitType)GETPROCADDRESS(hjdll,"JInit"))();
  if(!jt) return 0;
  ((JSMType)GETPROCADDRESS(hjdll,"JSM"))(jt,callbacks);
@@ -131,6 +133,7 @@ void jepath(char* arg)
  if('/'==*snk) *snk=0;
 #endif
  strcpy(pathdll,path);
+ strcat(pathdll,filesepx);
  strcat(pathdll,JDLLNAME);
  // fprintf(stderr,"arg4 %s\n",path);
 }
