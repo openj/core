@@ -26,7 +26,10 @@ AC_PROG_CC
 AC_CHECK_LIB([dl], [dlopen])
 AC_CHECK_LIB([m], [log])
 #AC_CHECK_LIB([ncurses], [setterm])
-AC_CHECK_LIB([readline], [readline], [readline="yes"], [readline="no"])
+AC_CHECK_LIB([readline], [readline], [
+	      LIBS+="-lreadline"
+	      readline="yes"
+	      ], [readline="no"])
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h fcntl.h fenv.h float.h limits.h malloc.h memory.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h unistd.h])
