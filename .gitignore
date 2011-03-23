@@ -28,3 +28,8 @@ ltmain.sh
 make.txt
 missing
 stamp-h1
+CMakeCache.txt
+CMakeFiles/*
+autom4te.cache/*
+cmake_install.cmake
+profile.ijs
