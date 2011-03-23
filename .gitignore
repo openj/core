@@ -1,4 +1,3 @@
-#.gitignore
 *.lo
 *.o
 *.o
@@ -22,8 +21,6 @@ esum.txt
 install-sh
 j/bin/jconsole
 j/bin/libj.so
-jconsole
-Makefile
 jconsole
 libj.la
 libtool
