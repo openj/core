@@ -33,8 +33,10 @@ if (DATA_INSTALL_PREFIX)
     add_definitions(-DPROFILE_PATH="${DATA_INSTALL_PREFIX}/profile.ijs")
 endif ()
 
-if (UNIX AND CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
-    add_definitions("-D_UNIX64")
+if (UNIX)
+    if (CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+        add_definitions("-D_UNIX64")
+    endif ()
 endif ()
 
 check_library_exists(dl dlopen "" HAVE_DL)
