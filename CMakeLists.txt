@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 include(CheckLibraryExists)
 
 project(openj)
+add_definitions(-DOPENJ)
 
 set (libj_SRCS
      a.c ab.c af.c ai.c am.c am1.c amn.c ao.c ap.c ar.c as.c au.c c.c ca.c cc.c cd.c cf.c cg.c ch.c cip.c cl.c cp.c cpdtsp.c cr.c crs.c ct.c cu.c cv.c cx.c d.c dc.c dss.c 
@@ -11,12 +12,18 @@ set (libj_SRCS
      viix.c visp.c vm.c vo.c vp.c vq.c vrand.c vrep.c vs.c vsb.c vt.c vu.c vx.c vz.c w.c wc.c wn.c ws.c x.c x15.c xa.c xb.c xc.c xcrc.c xd.c xf.c xfmt.c xh.c xi.c xl.c xo.c xs.c 
      xt.c xu.c)
 
+if(WIN32)
+    set(libj_SRCS ${libj_SRCS} win/jdll.c win/jdllcomx.cpp)
+endif()
+
 set(jconsole_SRCS
     jconsole.c
     jeload.c)
 
-set(jconsole_LIBS
-    m)
+if(!WIN32)
+    set(jconsole_LIBS
+        m)
+endif()
 
 if (NOT DATA_INSTALL_PREFIX)
     if (UNIX)
@@ -51,7 +58,13 @@ if (HAVE_READLINE)
 endif ()
 
 add_library(j SHARED ${libj_SRCS})
-set_target_properties(j PROPERTIES COMPILE_FLAGS "-fPIC -O3 -fno-strict-aliasing")
+if(UNIX)
+    set_target_properties(j PROPERTIES 
+                          COMPILE_FLAGS "-fPIC -O3 -fno-strict-aliasing")
+else()
+    add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+    set_target_properties(j PROPERTIES COMPILE_FLAGS "-D_JDLL")
+endif()
 
 add_executable(jconsole ${jconsole_SRCS})
 target_link_libraries(jconsole ${jconsole_LIBS})
