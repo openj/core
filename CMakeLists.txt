@@ -13,7 +13,7 @@ set (libj_SRCS
      xt.c xu.c)
 
 if(WIN32)
-    set(libj_SRCS ${libj_SRCS} win/jdll.c win/jdllcomx.cpp)
+    set(libj_SRCS ${libj_SRCS} win/jdll.c win/jdllcomx.cpp win/jdll.def)
 endif()
 
 set(jconsole_SRCS
@@ -69,11 +69,19 @@ endif()
 add_executable(jconsole ${jconsole_SRCS})
 target_link_libraries(jconsole ${jconsole_LIBS})
 
+if(WIN32)
+    set(LIBDEST ".")
+    set(EXEDEST ".")
+else()
+    set(LIBDEST lib)
+    set(EXEDEST	bin)
+endif()
+
 install(TARGETS j
-        DESTINATION lib)
+        DESTINATION ${LIBDEST})
 
 install(TARGETS jconsole
-        RUNTIME DESTINATION bin)
+        RUNTIME DESTINATION ${EXEDEST})
 
 file(GLOB j_SYSTEM
      "j/system/*")
