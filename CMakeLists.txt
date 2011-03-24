@@ -57,7 +57,7 @@ add_executable(jconsole ${jconsole_SRCS})
 target_link_libraries(jconsole ${jconsole_LIBS})
 
 install(TARGETS j
-        LIBRARY DESTINATION lib)
+        DESTINATION lib)
 
 install(TARGETS jconsole
         RUNTIME DESTINATION bin)
