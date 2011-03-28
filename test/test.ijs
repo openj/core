@@ -7,7 +7,7 @@ load testpath,'tsu.ijs'
 
 9!:21[1e8       NB. limit error rather than long memory thrash (g400)
 threshold=: 0.1 NB. timer threshold failures less likely
-libtsdll=: jpath ' ',~(1!:43''),'/libtsdll.',>(UNAME-:'Darwin'){'so';'dylib'
+libtsdll=: jpath ' ',~(1!:43''),'/.libs/libtsdll.',>(UNAME-:'Darwin'){'so';'dylib'
 
 LOGFILE=: 2     NB. log to console (2) or file (jpath'~temp\log.log')
 LOGIT=: 3 : 'y[(>y)1!:2<LOGFILE'

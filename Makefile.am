@@ -13,8 +13,10 @@ endif
 jconsole_SOURCES = jconsole.c \
 		   jeload.c
 
-lib_LTLIBRARIES = libj.la
+lib_LTLIBRARIES = libj.la libtsdll.la
 libj_la_LDFLAGS = -avoid-version
+
+libtsdll_la_SOURCES = tsdll.c
 
 libj_la_SOURCES = a.c \
 		  ab.c \

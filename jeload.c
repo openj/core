@@ -3,6 +3,7 @@
 // utilities for JFE to load JE, initiallize, and run profile sentence
 // JFEs are jconsole, jwdw, and jwdp
 #define PLEN 1000 // path length
+#include <unistd.h>
 #ifdef _WIN32
  #include <windows.h>
 
@@ -38,8 +39,8 @@ static JDoType jdo;
 static JFreeType jfree;
 static JgaType jga;
 static JGetLocaleType jgetlocale;
-static char path[PLEN];
-static char pathdll[PLEN];
+static char path[PLEN];    //directory holding the exe
+static char pathdll[PLEN]; //filename of the j library (DLL/so)
 
 int jedo(char* sentence)
 {
@@ -51,18 +52,23 @@ char* jegetlocale(){return jgetlocale(jt);}
 A jega(I t, I n, I r, I*s){return jga(jt,t,n,r,s);}
 void* jehjdll(){return hjdll;}
 
-// load JE, Jinit, getprocaddresses, JSM
-J jeload(void* callbacks)
+static void* dlload(char*path)
 {
 #ifdef _WIN32
  WCHAR wpath[PLEN];
- MultiByteToWideChar(CP_UTF8,0,pathdll,1+(int)strlen(pathdll),wpath,PLEN);
- hjdll=LoadLibraryW(wpath);
- if (!hjdll) hjdll = LoadLibraryA(JDLLNAME);
+ MultiByteToWideChar(CP_UTF8,0,path,1+(int)strlen(path),wpath,PLEN);
+ return LoadLibraryW(wpath);
 #else
- hjdll=dlopen(pathdll,RTLD_LAZY);
- if (!hjdll) hjdll = dlopen(JDLLNAME,RTLD_LAZY);
+ return dlopen(path,RTLD_LAZY);
 #endif
+}
+// load JE, Jinit, getprocaddresses, JSM
+J jeload(void* callbacks)
+{
+ char*search[]={pathdll,JDLLNAME,0};int path=0;
+ for(hjdll=0;!hjdll&&search[path];path++)
+  if(hjdll=dlload(search[path]))
+   strcpy(pathdll,search[path]);
  if(!hjdll) return 0;
  jt=((JInitType)GETPROCADDRESS(hjdll,"JInit"))();
  if(!jt) return 0;
@@ -74,15 +80,13 @@ J jeload(void* callbacks)
  return jt;
 }
 
-// set path and pathdll (wpath also set for win)
-// WIN arg is 0, Unix arg is argv[0]
-void jepath(char* arg)
+static int exepath(char* path,int z)//path buffer, z is buflen, returns strlen(path)
 {
 #ifdef _WIN32
  WCHAR wpath[PLEN];
  GetModuleFileNameW(0,wpath,_MAX_PATH);
  *(wcsrchr(wpath, '\\')) = 0;
- WideCharToMultiByte(CP_UTF8,0,wpath,1+(int)wcslen(wpath),path,PLEN,0,0);
+ WideCharToMultiByte(CP_UTF8,0,wpath,1+(int)wcslen(wpath),path,z,0,0);
 #else
 
 #define sz 4000
@@ -107,7 +111,8 @@ void jepath(char* arg)
   strcpy(path,arg3);
  else
  {
-  getcwd(path,sizeof(path));
+  if(!getcwd(path,z))
+   perror("getcwd");
   strcat(path,"/");
   strcat(path,arg3);
  }
@@ -132,12 +137,23 @@ void jepath(char* arg)
  snk=path+strlen(path)-1;
  if('/'==*snk) *snk=0;
 #endif
- strcpy(pathdll,path);
- strcat(pathdll,filesepx);
- strcat(pathdll,JDLLNAME);
- // fprintf(stderr,"arg4 %s\n",path);
+ return strlen(path);
 }
 
+// set path and pathdll (wpath also set for win)
+// WIN arg is 0, Unix arg is argv[0]
+#define PSEP filesepx
+void jepath(char* arg)
+{
+ char b[PLEN];
+ exepath(path,PLEN);
+ snprintf(b,PLEN,"%s/.libs/"JDLLNAME,path);
+ if(!access(b,F_OK))
+   strcpy(pathdll,b);
+ else
+   snprintf(pathdll,PLEN,"%s"PSEP JDLLNAME,path);
+ // fprintf(stderr,"arg4 %s\n",path);
+}
 // called by jwdp (java jnative.c) to set path
 void jesetpath(char* arg)
 {
@@ -146,39 +162,60 @@ void jesetpath(char* arg)
 	*(strrchr(path,filesep)) = 0;
 }
 
+#define PIJS "profile.ijs"
+static char* find_profile()
+{
+  if(!access(path,F_OK))
+  { 
+#define NSEARCH 4
+    char* p,s[NSEARCH][PLEN];int i,n=0;
+#define NSADD(fmt,a) snprintf(s[n++],PLEN,fmt,a)
+    NSADD("%s",getenv("HOME"));
+    NSADD("%s",path);
+    NSADD("%s"PSEP"j"PSEP"bin",path);
+    NSADD("%s"PSEP".."PSEP"share",path);
+    p=malloc(PLEN);
+    for(i=0;i<n;i++)
+    { 
+      snprintf(p,PLEN,"%s"PSEP"%s",s[i],PIJS);
+      if(!access(p,F_OK)) return p;
+    }
+  }
+  return 0;
+}
 // build and run first sentence to set BINPATH, ARGV, and run profile
 // arg is command line ready to set in ARGV_z_
 // type is 0 normal, 1 -jprofile xxx, 2 ijx basic, 3 nothing
 // profile[ARGV_z_=:...[BINPATH=:....
 // profile is from BINPATH, ARGV, ijx basic, or nothing
+static int stmt(char*b,int z,char*e){snprintf(b,z,"(3 : '0!:0 y')%s",e);}
 int jefirst(int type,char* arg)
 {
-	int r; char* p,*q;
-	char* input=malloc(2000+strlen(arg));
+	int r,z; char* p,*q;
+	char* input=malloc(z=2000+strlen(arg));
+	char buf[PLEN*2];
 	*input=0;
 	if(0==type)
 	{
-        #ifdef PROFILE_PATH
-		strcat(input,"(3 : '0!:0 y')<'");
-        strcat(input,PROFILE_PATH);
-        strcat(input,"'");
-        #else
-		strcat(input,"(3 : '0!:0 y')<BINPATH,'");
-		strcat(input,filesepx);
-		strcat(input,"profile.ijs'");
-        #endif
+          char* p=find_profile();
+          if(!p) return -1;
+          sprintf(buf,"<'%s'",p);
+          stmt(input,z,buf);
+          free(p);
 	}
 	else if(1==type)
-		strcat(input,"(3 : '0!:0 y')2{ARGV");
+		stmt(input,z,"2{ARGV");
 	else if(2==type)
 		strcat(input,ijx);
 	else
 		strcat(input,"i.0 0");
-	strcat(input,"[ARGV_z_=:");
-	strcat(input,arg);
-	strcat(input,"[BINPATH_z_=:'");
-	p=path;
+	sprintf(buf,"[ARGV_z_=:%s[BINPATH_z_=:'",arg);
+	strcat(input,buf);
 	q=input+strlen(input);
+	p=path;
+	sprintf(buf,"%s/j/bin/profile.ijs",path);
+	if(!access(buf,F_OK))
+	  sprintf(buf,"%s/j/bin",path),p=buf;
 	while(*p)
 	{
 		if(*p=='\'') *q++='\'';	// 's doubled
