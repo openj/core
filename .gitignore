@@ -35,3 +35,4 @@ CMakeFiles/*
 autom4te.cache/*
 cmake_install.cmake
 profile.ijs
+install_manifest.txt

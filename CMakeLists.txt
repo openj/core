@@ -37,11 +37,12 @@ if(DATA_INSTALL_PREFIX)
 endif()
 
 if(UNIX)
-    if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
-        add_definitions("-m32")
-    elseif(CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+    set(bits 32)
+    if(CMAKE_SYSTEM_PROCESSOR STREQUAL "amd64" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "x86_64")
+        set(bits 64)
         add_definitions("-D_UNIX64")
     endif()
+    add_definitions("-m${bits}") #-m32/-m64
 endif()
 
 check_library_exists(dl dlopen "" HAVE_DL)
@@ -65,6 +66,9 @@ add_executable(jconsole ${jconsole_SRCS})
 target_link_libraries(jconsole ${jconsole_LIBS})
 
 install(TARGETS j
+        LIBRARY DESTINATION lib)
+
+install(TARGETS tsdll
         LIBRARY DESTINATION lib)
 
 install(TARGETS jconsole
