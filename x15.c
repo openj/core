@@ -197,6 +197,8 @@ static void double_trick(double*v, I n){I i=0;
   #define dtrick ;
  #elif SY_LINUX
   #define dtrick ;
+ #elif SY_FREEBSD
+  #define dtrick ;
  #elif SY_MACPPC
   #define dtrick double_trick(dd,dcnt);
  #elif SY_MAC
@@ -633,7 +635,7 @@ static B jtcdexec1(J jt,CCT*cc,C*zv0,C*wu,I wk,I wt,I wd){A*wv=(A*)wu,x,y,*zv;B 
 #if SY_MACPPC
 	         dd[dcnt++]=(float)*(D*)xv;
 #endif
-#if SY_64 && (SY_LINUX  || SY_MAC)
+#if SY_64 && (SY_LINUX  || SY_MAC || SY_FREEBSD)
 			  {f=(float)*(D*)xv; dd[dcnt]=0; *(float*)(dd+dcnt++)=f;}
 #else
              f=(float)*(D*)xv; *dv++=*(int*)&f;
