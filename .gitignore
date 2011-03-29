@@ -23,6 +23,8 @@ j/bin/jconsole
 j/bin/libj.so
 jconsole
 libj.la
+libj.dylib
+libtsdll.dylib
 libtool
 ltmain.sh
 make.txt
