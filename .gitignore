@@ -6,6 +6,7 @@
 *~
 .deps/
 .libs/
+.pc
 Makefile
 Makefile.in
 aclocal.m4
@@ -33,3 +34,4 @@ CMakeFiles/*
 autom4te.cache/*
 cmake_install.cmake
 profile.ijs
+patches
