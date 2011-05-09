@@ -21,8 +21,8 @@
 // 10. run jreg with new tlb files
 
 #include <windows.h>
-#include "..\jsrc\j.h"
-#include "..\jsrc\jlib.h"
+#include "../j.h"
+#include "../jlib.h"
 
 void wtom(US* src, I srcn, UC* snk);
 int valid(C* psrc, C* psnk);

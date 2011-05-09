@@ -1,0 +1,41 @@
+#!/bin/bash
+M=Makefile
+rm -f $M;touch $M
+
+CFLAGS="-fPIC -O3 -fno-strict-aliasing -DNOASM -w"
+LDFLAGS="-lm -ldl"
+
+case `uname` in
+Linux)
+  SO_LDFLAGS="-shared";SO_EXT=so
+  ;;
+Darwin)
+  SO_LDFLAGS="-dynamiclib";SO_EXT=dylib
+esac
+
+if uname -m |grep 64; then
+ CFLAGS="-D_UNIX64 $CFLAGS"
+fi
+
+echo CFLAGS $CFLAGS
+echo LINK $SO_LDFLAGS
+
+for x in CFLAGS LDFLAGS SO_LDFLAGS; do eval "echo $x=\$$x">>$M; done
+
+S="a ab af ai am am1 amn ao ap ar as au c ca cc cd cf cg ch cip cl cp \
+cpdtsp cr crs ct cu cv cx d dc dss dstop dsusp dtoa f f2 i io j \
+jdlllic k m mbx p pv px r rl rt s sc sl sn t u v v0 v1 v2 va1 va2 va2s \
+vamultsp vb vbang vbit vcant vchar vcat vcatsp vcomp vcompsc vd vdx ve \
+vf vfft vfrom vfromsp vg vgauss vgcomp vgranking vgsort vgsp vi viix \
+visp vm vo vp vq vrand vrep vs vsb vt vu vx vz w wc wn ws x x15 xa xb \
+xc xcrc xd xf xfmt xh xi xl xo xs xt xu"
+
+echo LIBOBJ=`echo $S| sed 's/\([a-z0-9]\+\)/\1.o/g'`>>$M
+echo OBJ=jconsole.o jeload.o>>$M
+
+cat >>$M <<EOF 
+libj.$SO_EXT: \$(LIBOBJ)
+	cc \$(LIBOBJ) \$(SO_LDFLAGS) \$(LDFAGS) -o \$@
+jconsole: \$(OBJ)
+	cc \$(OBJ) \$(LDFAGS) -o \$@
+EOF
