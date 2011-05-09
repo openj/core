@@ -23,7 +23,7 @@ set (jconsole_SRCS
 set (libtsdll_SRCS
     tsdll.c)
 
-if (!WIN32)
+if (UNIX)
     set (jconsole_LIBS
         m)
 endif()
