@@ -371,7 +371,11 @@ static C*dropl(I zn,C*zu,C*zv,I lb,I la,I m,C eo,C*eov){C*u,*v;I lc=0,n,p,q;
 }    /* drop excessive lines */
 
 static A jtjprx(J jt,I ieol,I maxlen,I lb,I la,A w){A y,z;B ch;C e,eo,*eov,*v,x,*zu,*zv;D lba;
+#ifdef OPENJ
+     I c,c1,h,i,j,k,lc,m,n,nbx=1,nq,p,q,r,*s,zn;S eol;
+#else
      I c,c1,h,i,j,k,lc,m,n,nbx,nq,p,q,r,*s,zn;S eol;
+#endif
      static C bdc[]="123456789_123456\214\254\220\234\274\244\224\264\230\202\200";
  RZ(y=thorn1(w));
  ch=1&&AT(w)&LIT+C2T+SBT;
