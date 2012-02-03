@@ -24,8 +24,7 @@ set(libtsdll_SRCS
     tsdll.c)
 
 if(UNIX)
-    set(jconsole_LIBS
-        m)
+    link_libraries(m)
 endif()
 
 if(NOT DATA_INSTALL_PREFIX)
