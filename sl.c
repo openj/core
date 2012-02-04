@@ -193,6 +193,7 @@ F2(jtloccre2){
 
 
 F1(jtlocswitch){A g; 
+ RZ(w); /* DM 111129 */
  ASSERT(!AR(w),EVRANK); 
  RZ(g=locale(1,w)); 
  jt->global=g; jt->stswitched=1;

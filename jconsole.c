@@ -146,7 +146,9 @@ int main(int argc, char* argv[])
 	 type=0;
  addargv(argc,argv,input+strlen(input));
 #ifndef READLINE
+#ifndef ANDROID
  _setmode( _fileno( stdin ), _O_TEXT ); //readline filters '\r' (so does this)
+#endif
 #endif
  jefirst(type,input);
  while(1){jedo(Jinput(jt,"   "));}
