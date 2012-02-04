@@ -15,7 +15,7 @@
 #define SYS_DEC5500         16L             /* GCC                         */
 #define SYS_IBMRS6000       32L             /* AIX XL C                    */
 #define SYS_MACINTOSH       64L             /* Think C                     */
-#define SYS_ANDROID         128L            /* ndk/gcc                     */
+#define SYS_ANDROID         128L            /* android-ntk/GCC             */
 #define SYS_NEXT            256L            /* GCC                         */
 #define SYS_OS2             512L
 #define SYS_PC              1024L           /* Turbo C                     */
