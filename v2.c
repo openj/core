@@ -633,7 +633,7 @@ static XF1(jtfac_ecm){A tt;I b1,b2,*b1b2,i,old,m;X a,b,g,q[3];
  }
  R xone;
 }
-
+/*
 static F1(jtxfactor){PROLOG;A z;B b=0;I m;X g,x;
  F1RANK(0,jtxfactor,0);
  if(!(XNUM&AT(w)))RZ(w=cvt(XNUM,w));
@@ -652,7 +652,28 @@ static F1(jtxfactor){PROLOG;A z;B b=0;I m;X g,x;
  if(1==xcompare(x,xone))RZ(z=over(z,factor(sc(xint(x)))));
  EPILOG(grade2(z,z));
 }
-
+*/
+static F1(jtxfactor){PROLOG;A st,z;B b=0;I k,m;X g,*sv,*sv0,x;
+ F1RANK(0,jtxfactor,0);
+ if(!(XNUM&AT(w)))RZ(w=cvt(XNUM,w));
+ x=*XAV(w); m=XDIG(x);
+ ASSERT(m!=XPINF&&m!=XNINF&&0<m,EVDOMAIN);
+ if(1>xcompare(x,xc(2147483647L)))R xco1(factor(sc(xint(x))));
+ RZ(smallprimes(1229L,x,&z,&x));
+ GA(st,XNUM,20,1,0); sv=sv0=XAV(st); *sv++=x;
+ while(sv-sv0){
+ x=*--sv;
+ if(2>(k=sv-sv0)){GA(st,XNUM,2*AN(st),1,0); memcpy(XAV(st),sv0,k*sizeof(A)); sv0=XAV(st); sv=k+sv0;}
+ if(1>xcompare(x,xc(2147483647L))){RZ(z=over(z,factor(sc(xint(x))))); continue;}
+ if(xprimeq(100L,x)){RZ(z=over(z,scx(x))); continue;}
+ RZ(g=pollard_p_1(x)); if(g!=xone){*sv++=g; RZ(*sv++=xdiv(x,g,XMFLR)); continue;}
+ RZ(g=pollard_rho(x)); if(g!=xone){*sv++=g; RZ(*sv++=xdiv(x,g,XMFLR)); continue;}
+ if(!b){b=1; RZ(rngseeds(sc(jt->rngS[jt->rng]))); RZ(roll(v2(m,m*m)));}
+ RZ(g=fac_ecm(x));     if(g!=xone){*sv++=g; RZ(*sv++=xdiv(x,g,XMFLR)); continue;}
+ ASSERT(0,EVNONCE);
+ }
+ EPILOG(grade2(z,z));
+}
 /* ---------------------------------------------------- */
 
 F1(test_ecm){A*wv,z;I wd;X*ab,n,*zv;

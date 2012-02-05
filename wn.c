@@ -5,7 +5,7 @@
 
 #include "j.h"
 
-#if (SYS & SYS_LINUX)
+#if (SYS & (SYS_LINUX|SYS_ANDROID))
 #include <stdlib.h>
 #endif
 
