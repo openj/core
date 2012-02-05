@@ -29,19 +29,19 @@ end.
 NB. =========================================================
 3 : 0''
 ndx=. ({."1 SystemFolders_j_) i. <'system'
-sys=. '/' ,~ > 1 { ndx { SystemFolders_j_
+]sys=. '/' ,~ > 1 { ndx { SystemFolders_j_
 
 NB. ---------------------------------------------------------
 NB. following assumes Displayload is set in immex, then
 NB. the profile loaded. No need for another ijx window
 if. 0=4!:0<'Displayload_j_' do.
   Displayload_j_=: 1
-  boot=. 3 : ('0!:0 <y[y 1!:2[2') @ jpathsep @ (sys&,)
+  boot=: 3 : ('0!:0 <y[y 1!:2[2') @ jpathsep @ (sys&,)
 else.
   Displayload_j_=: 0
-  boot=. 3 : '0!:0 <y' @ jpathsep @ (sys&,)
+  boot=: 3 : '0!:0 <y' @ jpathsep @ (sys&,)
 end.
-
+boot
 NB. ---------------------------------------------------------
 boot 'main/stdlib.ijs'
 load '~system/util/scripts.ijs'
@@ -50,7 +50,7 @@ load 'task'
 load '~system/util/configure.ijs'
 load '~system/main/ctag.ijs'
 load '~system/util/jadetag.ijs'
-startupide''
+NB. startupide''
 
 NB. ---------------------------------------------------------
 NB. JVERSION_z_ (used in about box)

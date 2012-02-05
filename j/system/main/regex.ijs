@@ -107,6 +107,13 @@ f=. BINPATH,'/',t
 if. 0 = 1!:4 :: 0: <f do.
   f=. jpath '~tools/regex/',t
 end.
+NB. fall back one more time for android
+if. 0 = 1!:4 :: 0: <f do.
+ f=. (BINPATH i: '/'){. BINPATH
+ f=. (f i: '/'){. f
+ f=. f,'/lib/', t
+end.
+
 rxdll=: '"',f,'" '
 )
 

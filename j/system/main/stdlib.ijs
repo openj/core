@@ -6,16 +6,25 @@ jpathsep=: '/'&(('\' I.@:= ])})
 winpathsep=: '\'&(('/' I.@:= ])})
 PATHJSEP_j_=: '/'                 
 IF64=: 16={:$3!:3[2
-'IFUNIX IFWIN IFWINCE'=: 5 6 7 = 9!:12''
+'IFUNIX IFWIN IFWINCE IFANDROID'=: 5 6 7 8 = 9!:12''
+
+NB. include android as a unix type
+IFUNIX =: IFUNIX +. IFANDROID
+
 IFGTK=: IFJHS=: 0
 IFJ6=: 0     
-IFWINE=: IFWIN > 0-:2!:5'_'   
-if. IFUNIX do.
+IFWINE=: IFWIN > 0-:2!:5'_'  
+
+ 
+if. IFANDROID do.
+  UNAME=: 'Android'
+elseif. IFUNIX do.
   UNAME=: (2!:0 'uname')-.10{a.
-else.
+elseif. 1 do.
   UNAME=: 'Win'
 end.
 )
+
 jcwdpath=: (1!:43@(0&$),])@jpathsep@((*@# # '/'"_),])
 jsystemdefs=: 3 : 0
 0!:0 <jpath '~system/defs/',y,'_',(tolower UNAME),(IF64#'_64'),'.ijs'
