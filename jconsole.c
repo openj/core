@@ -146,9 +146,11 @@ int main(int argc, char* argv[])
 	 type=0;
  addargv(argc,argv,input+strlen(input));
 #ifndef READLINE
+#ifndef ANDROID
 // _O_TEXT may not be defined on non-VC++ systems
 #ifdef _O_TEXT
  _setmode( _fileno( stdin ), _O_TEXT ); //readline filters '\r' (so does this)
+#endif
 #endif
 #endif
  jefirst(type,input);

@@ -77,8 +77,11 @@ char *toascbuf(wchar_t *src);
 #undef atop
 #endif
 
+#ifndef ANDROID
 #undef MAX     /* defined in sys/param.h */
 #undef MIN     /* defined in sys/param.h */
+#endif
+
 #include <sys/param.h>
 
 typedef void *HMODULE;
@@ -146,7 +149,7 @@ typedef struct {
 void double_trick(D,D,D,D);
 #endif
 
-#if SYS & (SYS & SYS_LINUX)
+#if SYS & (SYS & (SYS_LINUX|SYS_ANDROID))
 void double_trick(D,D,D,D,D,D,D,D);
 #endif
 #if SY_MACPPC
@@ -172,7 +175,7 @@ static void double_trick(double*v, I n){I i=0;
 }
 #endif
 
-/*
+
 #if SYS & SYS_MACOSX
  #define dtrick double_trick(dd,dcnt);
 #elif SY_64 && SY_WIN32
@@ -182,7 +185,7 @@ static void double_trick(double*v, I n){I i=0;
 #elif 1
  #define dtrick ;
 #endif
-*/
+
 
 #if SY_64
  #if SY_WIN32
