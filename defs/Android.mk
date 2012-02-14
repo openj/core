@@ -1,20 +1,22 @@
 
-LOCAL_PATH := $(call my-dir)
+# This makefile fragment calls for the building of subdirectories containing their own Android.mk
 
-include $(CLEAR_VARS)
+# In this case, it causes netdefs and hostdefs to be created.  In order to build an Android package, 
+# those binaries must be uploaded onto an android device or emulator and executed.  
+# The output of these programs become netdefs_android.ijs and hostdefs_android.ijs respectively.  
+# They must be placed in <PROJECT_ROOT>/assets/system/defs in the final package in order to
+# be installed at first boot along with the rest of the system files.
 
-LOCAL_MODULE    := j
-
-LOCAL_LDLIBS := -llog  -ldl -lm -lc 
-
-LOCAL_CFLAGS := -O0  -fno-omit-frame-pointer -fno-strict-aliasing -fno-unwind-tables -fno-tree-vectorize -D_MISALIGN_BYTEVECTOR  -DNOASM  -fPIC
-
-
-LOCAL_SRC_FILES := hostdefs.c
-# LOCAL_SRC_FILES := netdefs.c
+# For convenience, a copy of these 2 def files have already been generated and placed there.
 
 
-include $(BUILD_EXECUTABLE)
+LOCAL_PATH:=(call my-dir)
 
+TARGET_PLATFORM := android-8
 
+# LOCAL_CPP_FLAGS := -O0 -fno-strict-aliasing
+
+LOCAL_CPP_FLAG :=  -fPIC
+
+include $(call all-subdir-makefiles)
 
