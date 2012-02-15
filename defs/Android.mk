@@ -14,9 +14,5 @@ LOCAL_PATH:=(call my-dir)
 
 TARGET_PLATFORM := android-8
 
-# LOCAL_CPP_FLAGS := -O0 -fno-strict-aliasing
-
-LOCAL_CPP_FLAG :=  -fPIC
-
 include $(call all-subdir-makefiles)
 
