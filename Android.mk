@@ -1,3 +1,13 @@
+# This make file can be usedS to build J as part of an Android project.
+# The project it was created for is hosted on github at
+# https://github.com/mdykman/jconsole_for_android .
+# openj should be checked out into a seperate folder under 
+# <project-root>/jni . That project is equipped with an Android.mk 
+# file which will invoke this one.
+# Further detais on building J within the Android
+# context can be found in that project
+#
+# this has been built under Android 2.2, API level 8.
 
 LOCAL_PATH := $(call my-dir)
 
