@@ -1,11 +1,16 @@
 #include "j.h"
 #include "org_dykman_j_android_JInterface.h"
+#include "j-jni-interface.h"
 #include <strings.h>
-/*
-#include <stdio.h>
-*/
 
 
+/**
+This is designed to explicitly to be used with the class file org.dykman.dykman.j.JInterface whic is part of a larger Android project hosted at
+	https://github.com/mdykman/jconsole_for_android
+It consists of the implementations of the native function declared in the class as well as a method for sending output ansynchronously to the Java layer.
+While wrriten a part of an Android project, JInterface is generic enough to be used in any Java context that whishes to interact with J and capture it's output.
+A subclass of JInterface, org.dykman.j.android.AndroidJInterface include additional android-specific methods which can be invoke from J, via 15!:0
+ */
 
 #define LOCALOGTAG "j-interface"
 #ifdef ANDROID
@@ -90,3 +95,27 @@ JNIEXPORT jlong JNICALL Java_org_dykman_j_JInterface_initializeJNative
 	 JSM(j,callbacks);
 	return (jlong) j;
 }
+
+
+
+#ifdef ANDROID
+int __downloadViaAndroid(
+		JNIEnv *env, 
+		jobject obj, 
+		const char* furl, 
+		const char* ff) {
+	jclass cls = (*env)->GetObjectClass(env,obj);
+	jmethodID downloadId = (*env)->GetMethodID(env,cls,"downloadFile","(Ljava/lang/String;Ljava/lang/String;)I" );
+	jstring jurl = (*env)->NewStringUTF(env,furl);
+	jstring jfile = (*env)->NewStringUTF(env,ff);
+	jint res = (*env)->CallIntMethod(env,obj,downloadId,jurl,jfile);
+	return (int)res;
+}
+
+
+int _stdcall android_download_file(const char* furl, const char* ff) {
+	return __downloadViaAndroid(local_jnienv, local_baseobj,furl,ff);
+	return 0;
+}
+
+#endif
