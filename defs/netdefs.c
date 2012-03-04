@@ -7,6 +7,9 @@
 #ifdef sun
 #include <inet/tcp.h>
 #endif
+#ifdef ANDROID
+#include<linux/time.h>
+#endif
 #include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>

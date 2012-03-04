@@ -9,19 +9,20 @@
 # They must be placed in <PROJECT_ROOT>/assets/system/defs in the final package in order to
 # be installed at first boot along with the rest of the system files.
 
-# if you have the Android emulator installed as part of the Android Developers Toolkit (ADK), the
-# tool abd may be used to automate the generation of XXXdefs_android.ijs for the ARM5 processori only
-# as neither the ARM7 not x86 are directly supported by the emulator.  The NDK (the native development toolkit)
+# If you have the Android emulator installed as part of the Android Developers Toolkit (ADK), the
+# tool adb may be used to automate the generation of XXXdefs_android.ijs for the ARM5 processor only
+# as neither the ARM7 nor x86 are directly supported by the emulator.  The NDK (the native development toolkit)
 # provides cross-compilers and build support for all 3 platforms
 #
 # This might be integrated into the final step of the make process, after the NDK has built the binaries.
-# The following assumes that an emulator is running on your system.  I have not yet found a means of automating
-# that.
+# The following assumes that an emulator is running on your system.  Below is an example of how it might be
+# automated with a shell script.
+
 # The emulator is assumed to be running Android version 2.2
 #
 # ADB=<ANDROID_SDK_HOME>/platform-tools/adb
 # BINSRC=<PROJECT_ROOT>/libs/armeabi
-# EMUNAME=<emulater-name>
+# EMUNAME=<emulator-name>
 #
 # $ADB start-server
 # $ADB -s $EMUNAME wait-for-device # blocks until the device is available
@@ -40,5 +41,7 @@ LOCAL_PATH:=(call my-dir)
 
 TARGET_PLATFORM := android-8
 
-include $(call all-subdir-makefiles)
+# include $(call all-subdir-makefiles)
 
+include jni/openj-core/defs/hostdefs/Android.mk
+include jni/openj-core/defs/netdefs/Android.mk
