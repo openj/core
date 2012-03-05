@@ -26,14 +26,15 @@ A subclass of JInterface, org.dykman.j.android.AndroidJInterface include additio
 #endif
 
 JNIEnv *local_jnienv;
+jclass local_class;
 jobject local_baseobj;
 
 jmethodID outputId = 0;
 
 void consoleAppend(JNIEnv *env, jobject obj,int type, const char*chars) {
 	if(outputId == 0) {
-		jclass cls = (*env)->GetObjectClass(env,obj);
-		outputId = (*env)->GetMethodID(env,cls,"output","(ILjava/lang/String;)V" );
+//		jclass cls = (*env)->GetObjectClass(env,obj);
+		outputId = (*env)->GetMethodID(env,local_class,"output","(ILjava/lang/String;)V" );
 	}
 	if(outputId == 0) {
 		LOGD("failed to get the method id for " "output:" "(ILjava/lang/String;)V");
@@ -48,6 +49,7 @@ JNIEXPORT jint JNICALL Java_org_dykman_j_JInterface_callJNative
 	J jengine = (J)inst;
 	local_jnienv = env;
 	local_baseobj = obj;
+	local_class = (*env)->GetObjectClass(env,obj);
 	const char *nativeString = (*env)->GetStringUTFChars(env, js, 0);
 	int jc = JDo(jengine,(C*)nativeString);
 	return (jint) jc;
@@ -89,6 +91,8 @@ JNIEXPORT jlong JNICALL Java_org_dykman_j_JInterface_initializeJNative
 	LOGD("init called");
 	local_jnienv = env;
 	local_baseobj = obj;
+	local_class = (*env)->GetObjectClass(env,obj);
+
 	outputId = 0;
 	 J j = JInit();
 	 void* callbacks[] = {outputHandler,0,0,0,(void*)SMJAVA};
@@ -99,13 +103,28 @@ JNIEXPORT jlong JNICALL Java_org_dykman_j_JInterface_initializeJNative
 
 
 #ifdef ANDROID
+const char* __nextLineFromAndroid(
+		JNIEnv *env, 
+		jobject obj) {
+	local_class = (*env)->GetObjectClass(env,obj);
+	jmethodID nextLineId = (*env)->GetMethodID(env,local_class,"nextLine","()Ljava/lang/String;" );
+	jstring res = (jstring) (*env)->CallObjectMethod(env,obj,nextLineId);
+	const char *line = (*env)->GetStringUTFChars(env, res, 0);
+	return line;
+}
+
+const char * _stdcall android_next_line() {
+	return __nextLineFromAndroid(local_jnienv,local_baseobj);
+}
+
 int __downloadViaAndroid(
 		JNIEnv *env, 
 		jobject obj, 
 		const char* furl, 
 		const char* ff) {
-	jclass cls = (*env)->GetObjectClass(env,obj);
-	jmethodID downloadId = (*env)->GetMethodID(env,cls,"downloadFile","(Ljava/lang/String;Ljava/lang/String;)I" );
+//	jclass cls = (*env)->GetObjectClass(env,obj);
+	local_class = (*env)->GetObjectClass(env,obj);
+	jmethodID downloadId = (*env)->GetMethodID(env,local_class,"downloadFile","(Ljava/lang/String;Ljava/lang/String;)I" );
 	jstring jurl = (*env)->NewStringUTF(env,furl);
 	jstring jfile = (*env)->NewStringUTF(env,ff);
 	jint res = (*env)->CallIntMethod(env,obj,downloadId,jurl,jfile);
@@ -115,7 +134,6 @@ int __downloadViaAndroid(
 
 int _stdcall android_download_file(const char* furl, const char* ff) {
 	return __downloadViaAndroid(local_jnienv, local_baseobj,furl,ff);
-	return 0;
 }
 
 #endif
