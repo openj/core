@@ -1,4 +1,7 @@
 18!:4 <'z'
+
+IFDEF_z_=: 3 : '0=4!:0<''DEF'',y,''_z_'''
+
 3 : 0 ''
 
 notdef=. 0: ~: 4!:0 @ <
@@ -7,24 +10,21 @@ jpathsep=: '/'&(('\' I.@:= ])})
 winpathsep=: '\'&(('/' I.@:= ])})
 PATHJSEP_j_=: '/'
 IF64=: 16={:$3!:3[2
-'IFUNIX IFWIN IFWINCE IFANDROID'=: 5 6 7 8 = 9!:12''
-IFUNIX=:IFUNIX+.IFANDROID
+'IFUNIX IFWIN IFWINCE'=: 5 6 7 = 9!:12''
 IFGTK=: IFJHS=: IFBROADWAY=: 0
 IFJ6=: 0
 IFWINE=: IFWIN > 0-:2!:5'_'
-if. IF64 do.
+if. IF64 +. IFDEF'android' do.
   IFWOW64=: 0
 else.
-  if. IFANDROID do.
-    IFWOW64=:0
-  elseif. IFUNIX do.
+  if. IFUNIX do.
     IFWOW64=: '64'-:_2{.(2!:0 'uname -m')-.10{a.
-  elseif. do.
+  else.
     IFWOW64=: 'AMD64'-:2!:5'PROCESSOR_ARCHITEW6432'
   end.
 end.
-if. IFANDROID do.
-  UNAME=:'Linux'
+if. IFDEF'android' do.
+  UNAME=: 'Linux'
 elseif. IFUNIX do.
   UNAME=: (2!:0 'uname')-.10{a.
 elseif. do.
@@ -33,8 +33,8 @@ end.
 )
 jcwdpath=: (1!:43@(0&$),])@jpathsep@((*@# # '/'"_),])
 jsystemdefs=: 3 : 0
-xuname=. tolower > IFANDROID { UNAME ; 'android'
-0!:0 <jpath '~system/defs/',y,'_',xuname,(IF64#'_64'),'.ijs'
+xuname=. > (IFDEF'android') { UNAME;'Android'
+0!:0 <jpath '~system/defs/',y,'_',(tolower xuname),(IF64#'_64'),'.ijs'
 )
 18!:4 <'z'
 'TAB LF FF CR DEL EAV'=: 9 10 12 13 127 255{a.
@@ -63,8 +63,8 @@ getenv=: 2!:5
 inv=: inverse=: ^:_1
 3 : 0''
 if. 'Linux'-:UNAME do.
-  llib=.>IFANDROID{'libc.so.6';'libc.so'
-  isatty=: (llib,' isatty > i i') & (15!:0)
+  llib=. > (IFDEF'android'){'libc.so.6';'libc.so'
+  isatty=: (llib , ' isatty > i i') & (15!:0)
 elseif. 'Darwin'-:UNAME do.
   isatty=: 'libc.dylib isatty > i i' & (15!:0)
 elseif. do.
@@ -72,15 +72,6 @@ elseif. do.
 end.
 ''
 )
-
-NB. 3 : 0''
-NB. NB. added by md.  there is likely a beter place to bootstrap this
-NB. if. IFANDROID do.
-NB.   anddf_z_=: 4 : '''libj.so android_download_file i *c *c'' 15!:0 x;y'
-NB. end.
-NB. ''
-NB. )
-
 items=: "_1
 fetch=: {::
 leaf=: L:0
@@ -189,16 +180,10 @@ type=: {&t@(2&+)@(4!:0)&boxopen
 ucp=: 7&u:
 ucpcount=: # @ (7&u:)
 3 : 0''
-if. 'Linux'-:UNAME do. 
-  if. IFANDROID do.
-    usleep=: 3 : '''libc.so usleep > i i''&(15!:0) >.y'
-  else.
-    usleep=: 3 : '''libc.so.6 usleep > i i''&(15!:0) >.y'
-  end.
-elseif. 'Darwin'-:UNAME do. 
-  usleep=: 3 : '''libc.dylib usleep > i i''&(15!:0) >.y'
-elseif. 
-  do. usleep=: 3 : '0: ''kernel32 Sleep > n i''&(15!:0) >.y % 1000'
+llib=.>(IFDEF'android'){'libc.so.6';'libc.so'
+if. 'Linux'-:UNAME do. usleep=: 3 : '(llib,'' usleep > i i'')&(15!:0) >.y'
+elseif. 'Darwin'-:UNAME do. usleep=: 3 : '''libc.dylib usleep > i i''&(15!:0) >.y'
+elseif. do. usleep=: 3 : '0: ''kernel32 Sleep > n i''&(15!:0) >.y % 1000'
 end.
 EMPTY
 )
@@ -361,7 +346,7 @@ cocurrent 'z'
 if. -. (UNAME-:'Darwin')+.(UNAME-:'SunOS') do. DLL_PATH=: '' return. end.
 llp=. 2!:5 'LD_LIBRARY_PATH',~'DY'#~UNAME-:'Darwin'
 if. 0 -: llp do. llp=. '' end.
-def_path=. ':/usr/local/lib:/usr/lib:/usr/lib/ccs/lib:/etc/lib:/lib'
+def_path=. >(IFDEF'android') { ':/usr/local/lib:/usr/lib:/usr/lib/ccs/lib:/etc/lib:/lib':'/system/lib'
 DLL_PATH=: a: -.~ <;._1 ':',llp,def_path
 )
 find_dll=: 3 : 0

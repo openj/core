@@ -4,8 +4,7 @@
 /* #define READLINE for Unix readline support */
 #ifdef _WIN32
 #include <windows.h>
-#include <io.h>
-#include <fcntl.h>
+#include <io.h> 
 #else
 #define _isatty isatty
 #define _fileno fileno

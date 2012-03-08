@@ -52,9 +52,10 @@ HS=: SZI*HSN
 AFRO=: 1
 AFNJA=: 2
 NULLPTR=: <0
+
 3 : 0''
 if. IFUNIX do.
-  lib=. > IFANDROID { 'libc.so.6 ';'libc.so '
+  lib=. > (IFDEF'android') { 'libc.so.6 ';'libc.so '
   lib=. >(UNAME-:'Darwin'){lib;'libc.dylib '
   api=. 1 : ('(''',lib,''',x) & cd')
   c_isatty=: ' isatty i i' api

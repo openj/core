@@ -51,6 +51,15 @@ JNIEXPORT void JNICALL Java_org_dykman_j_JInterface_destroyJNative
 JNIEXPORT jlong JNICALL Java_org_dykman_j_JInterface_initializeJNative
   (JNIEnv *, jobject);
 
+
+/*
+ * Class:     org_dykman_j_JInterface
+ * Method:    setEnv
+ * Signature: (Ljava/lang/String;Ljava/lang/String;)V
+ */
+JNIEXPORT void JNICALL Java_org_dykman_j_JInterface_setEnv
+  (JNIEnv *, jobject, jstring, jstring);
+
 #ifdef __cplusplus
 }
 #endif

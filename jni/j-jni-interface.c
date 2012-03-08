@@ -71,7 +71,7 @@ JNIEXPORT jobject JNICALL Java_org_dykman_j_JInterface_getVariableNative
 	char *data;
 
 	JGetM(jengine,(I*)&type,(I*)&rank,(I*)&shape,(I*)&data);
-LOGFD("type=%l,rank=%l,shapehead=%l,data=%p",type,rank,*shape,data);
+LOGFD("name=%s,type=%l,rank=%l,shapehead=%l,data=%p",name,type,rank,*shape,data);
 		return NULL;
  }
 
@@ -80,37 +80,30 @@ void _stdcall outputHandler(J jt,int type, const char* s) {
 		 consoleAppend(local_jnienv,local_baseobj,type,s);
 }
 
-/*
- * Class:     org_dykman_j_android_JActivity
- * Method:    initializeJNative
- * Signature: ()V
- */
-
-JNIEXPORT jlong JNICALL Java_org_dykman_j_JInterface_initializeJNative
-  (JNIEnv * env, jobject obj) {
-	LOGD("init called");
-	local_jnienv = env;
-	local_baseobj = obj;
-	local_class = (*env)->GetObjectClass(env,obj);
-
-	outputId = 0;
-	 J j = JInit();
-	 void* callbacks[] = {outputHandler,0,0,0,(void*)SMJAVA};
-	 JSM(j,callbacks);
-	return (jlong) j;
+JNIEXPORT void JNICALL Java_org_dykman_j_JInterface_setEnv
+  (JNIEnv *env, jobject obj, jstring jkey, jstring jval) {
+  char*key =  (*env)->GetStringUTFChars(env, jkey, 0);
+  char*val =  (*env)->GetStringUTFChars(env, jval, 0);
+  setenv(key,val,0);
+  free(key);
+  free(val);
 }
 
 
 
 #ifdef ANDROID
+const char* android_next_ptr = NULL;
 const char* __nextLineFromAndroid(
 		JNIEnv *env, 
 		jobject obj) {
 	local_class = (*env)->GetObjectClass(env,obj);
 	jmethodID nextLineId = (*env)->GetMethodID(env,local_class,"nextLine","()Ljava/lang/String;" );
 	jstring res = (jstring) (*env)->CallObjectMethod(env,obj,nextLineId);
-	const char *line = (*env)->GetStringUTFChars(env, res, 0);
-	return line;
+	if(android_next_ptr != NULL) {
+		free((char*)android_next_ptr);
+	}
+	android_next_ptr = (*env)->GetStringUTFChars(env, res, 0);
+	return android_next_ptr;
 }
 
 const char * _stdcall android_next_line() {
@@ -137,3 +130,28 @@ int _stdcall android_download_file(const char* furl, const char* ff) {
 }
 
 #endif
+
+/*
+ * Class:     org_dykman_j_android_JActivity
+ * Method:    initializeJNative
+ * Signature: ()V
+ */
+
+JNIEXPORT jlong JNICALL Java_org_dykman_j_JInterface_initializeJNative
+  (JNIEnv * env, jobject obj) {
+	LOGD("init called");
+	local_jnienv = env;
+	local_baseobj = obj;
+	local_class = (*env)->GetObjectClass(env,obj);
+
+	outputId = 0;
+	 J j = JInit();
+#ifdef ANDROID
+	 void* callbacks[] = {outputHandler,0,android_next_line,0,(void*)SMJAVA};
+#else
+	 void* callbacks[] = {outputHandler,0,0,0,(void*)SMJAVA};
+#endif
+	 JSM(j,callbacks);
+	return (jlong) j;
+}
+

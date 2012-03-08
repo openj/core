@@ -10,7 +10,7 @@
 
 #include "j.h"
 
-#if !SY_WINCE && (SY_WIN32 || (SYS & SYS_LINUX)|| (SYS & SYS_ANDROID))
+#if !SY_WINCE && (SY_WIN32 || (SYS & SYS_LINUX))
 #include <time.h>
 #else
 #if (SY_GETTOD && !(SYS&SYS_IBMRS6000))

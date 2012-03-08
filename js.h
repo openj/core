@@ -15,7 +15,7 @@
 #define SYS_DEC5500         16L             /* GCC                         */
 #define SYS_IBMRS6000       32L             /* AIX XL C                    */
 #define SYS_MACINTOSH       64L             /* Think C                     */
-#define SYS_ANDROID         128L            /* android-ntk/GCC             */
+#define SYS_MIPS            128L            /* GCC                         */
 #define SYS_NEXT            256L            /* GCC                         */
 #define SYS_OS2             512L
 #define SYS_PC              1024L           /* Turbo C                     */
@@ -39,16 +39,15 @@
 #define SY_LINUX            0    /* any linux intel version                */
 #define SY_MAC              0    /* any macosx intel or powerpc version    */
 #define SY_MACPPC           0    /* macosx powerpc                         */
-#define SY_ANDROID           0    /* android arm                           */
 
 #define SY_GETTOD           0    /* gettimeofday on unix                   */
 
 #define SYS_DOS             (SYS_PC + SYS_PC386 + SYS_PCWIN)
 
 #define SYS_UNIX            (SYS_ATT3B1 + SYS_DEC5500 + SYS_IBMRS6000 + \
-                             SYS_NEXT + SYS_SGI + SYS_SUN3 + \
+                             SYS_MIPS + SYS_NEXT + SYS_SGI + SYS_SUN3 + \
                              SYS_SUN4 + SYS_VAX + SYS_LINUX + SYS_MACOSX + \
-                             SYS_FREEBSD + SYS_NETBSD + SYS_SUNSOL2 + SYS_HPUX + SYS_ANDROID)
+                             SYS_FREEBSD + SYS_NETBSD + SYS_SUNSOL2 + SYS_HPUX)
 
 #define SYS_ANSILIB         (SYS_AMIGA + SYS_ARCHIMEDES + SYS_DOS + \
                              SYS_MACINTOSH +  SYS_OS2 + SYS_UNIX)
@@ -62,8 +61,6 @@
 
 #if defined(__FreeBSD__)
 #define SYS SYS_FREEBSD
-#undef SY_FREEBSD
-#define SY_FREEBSD 1
 #endif
 
 #if defined(__NetBSD__)
@@ -86,18 +83,10 @@
 #define SYS SYS_IBMRS6000
 #endif
 
-#ifdef ANDROID
-#define SYS SYS_ANDROID
-#undef SY_ANDROID
-#define SY_ANDROID 1
-
-#else
 #ifdef __linux__
 #define SYS SYS_LINUX
 #undef SY_LINUX
 #define SY_LINUX 1
-#endif
-
 #endif
 
 #if defined _PA_RISC1_1
@@ -111,7 +100,7 @@
 #undef SY_MAC
 #define SY_MAC 1
 #undef SY_MACPPC
-#define SY_MACPPC 1
+#def SY_MACPPC 1
 #endif
 #endif
 #endif
@@ -157,7 +146,12 @@
 #else
 #define SY_WINCE_SH         0
 #endif
-#ifdef definedARM
+#ifdef MIPS
+#define SY_WINCE_MIPS       1
+#else
+#define SY_WINCE_MIPS       0
+#endif
+#ifdef ARM
 #define SY_WINCE_ARM        1
 #else
 #define SY_WINCE_ARM        0
@@ -174,8 +168,8 @@
  error: "SYS must be defined"
 #endif
 
-#if 1!=SY_WIN32+SY_LINUX+SY_MAC+SY_FREEBSD+SY_ANDROID
-#error "one and only one of SY_WIN32, SY_LINUX, SY_MAC, SY_FREEBSD must be 1"
+#if 1!=SY_WIN32+SY_LINUX+SY_MAC
+ error: "one and only one of SY_WIN32, SY_LINUX, SY_MAC must be 1"
 #endif 
 
 #endif /* only include once */

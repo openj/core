@@ -10,6 +10,7 @@ if. IFUNIX do.
   assert. fds_bits_off=0
 end.
 )
+
 3 : 0''
 select. UNAME
 case. 'Win' do.
@@ -22,7 +23,7 @@ case. 'Win' do.
   closesocketJ=: 'closesocket i i' scdm
   ioctlsocketJ=: 'ioctlsocket i i i *i' scdm
 case. 'Linux' do.
-  c=. > IFANDROID {'libc.so.6';'libc.so'
+  c=. > (IFDEF'android') {'libc.so.6';'libc.so'
   ccdm=: 1 : ('(''"',c,'" '',x)&(15!:0)')
   ncdm=: ccdm
   scdm=: ccdm

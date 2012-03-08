@@ -128,7 +128,6 @@ F1(jtjfperm1){A y,fn,z;C *s;F f;int x; US *p,*q;
  R z;
 }
 
-
 F2(jtjfperm2){A y,fn;C*s;F f;int x=0;US *p;
  F2RANK(1,0,jtjfperm2,0);
  RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAV0(w);
@@ -140,16 +139,8 @@ F2(jtjfperm2){A y,fn;C*s;F f;int x=0;US *p;
  if('r'==s[0]) x|=S_IREAD;  else ASSERT('-'==s[0],EVDOMAIN);
  if('w'==s[1]) x|=S_IWRITE; else ASSERT('-'==s[1],EVDOMAIN);
  if('x'==s[2]) x|=S_IEXEC;  else ASSERT('-'==s[2],EVDOMAIN);
- /*
- don't do any actual changes under android
- */
-#ifdef ANDROID_NOTDEFINED
- R 0;
-#else
  R _wchmod(p,x)?jerrno():mtm;
-#endif 
 }
-
 
 #else /* SY_WINCE: */
 
