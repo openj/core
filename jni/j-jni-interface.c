@@ -98,6 +98,7 @@ const char* __nextLineFromAndroid(
 		jobject obj) {
 	local_class = (*env)->GetObjectClass(env,obj);
 	jmethodID nextLineId = (*env)->GetMethodID(env,local_class,"nextLine","()Ljava/lang/String;" );
+	/* this method blocks via sleep until a line is available */
 	jstring res = (jstring) (*env)->CallObjectMethod(env,obj,nextLineId);
 	if(android_next_ptr != NULL) {
 		free((char*)android_next_ptr);
@@ -110,12 +111,31 @@ const char * _stdcall android_next_line() {
 	return __nextLineFromAndroid(local_jnienv,local_baseobj);
 }
 
+int __unzipViaAndroid(
+		JNIEnv *env, 
+		jobject obj, 
+		const char* file, 
+		const char* dir) {
+	local_class = (*env)->GetObjectClass(env,obj);
+	jmethodID unzipId = (*env)->GetMethodID(env,local_class,"unzip","(Ljava/lang/String;Ljava/lang/String;)I" );
+	jstring jfile = (*env)->NewStringUTF(env,file);
+	jstring jdir = dir == NULL ? NULL : (*env)->NewStringUTF(env,dir);
+	jint res = (*env)->CallIntMethod(env,obj,unzipId,jfile,jdir);
+	return (int)res;
+}
+
+
+int _stdcall android_unzip_file(const char* file, const char* todir) {
+/* make the empty string equate to null to accomodate J (he guessed) */
+	const char* _todir = todir == NULL || strlen(todir) == 0 ? NULL : todir;
+	return __unzipViaAndroid(local_jnienv, local_baseobj,file,_todir);
+}
+
 int __downloadViaAndroid(
 		JNIEnv *env, 
 		jobject obj, 
 		const char* furl, 
 		const char* ff) {
-//	jclass cls = (*env)->GetObjectClass(env,obj);
 	local_class = (*env)->GetObjectClass(env,obj);
 	jmethodID downloadId = (*env)->GetMethodID(env,local_class,"downloadFile","(Ljava/lang/String;Ljava/lang/String;)I" );
 	jstring jurl = (*env)->NewStringUTF(env,furl);
