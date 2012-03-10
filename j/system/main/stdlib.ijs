@@ -1,33 +1,40 @@
 18!:4 <'z'
+
+IFDEF_z_=: 3 : '0=4!:0<''DEF'',y,''_z_'''
+
 3 : 0 ''
 
 notdef=. 0: ~: 4!:0 @ <
+hostpathsep=: ('/\'{~6=9!:12'')&(I. @ (e.&'/\')@] })
 jpathsep=: '/'&(('\' I.@:= ])})
 winpathsep=: '\'&(('/' I.@:= ])})
-PATHJSEP_j_=: '/'                 
+PATHJSEP_j_=: '/'
 IF64=: 16={:$3!:3[2
-'IFUNIX IFWIN IFWINCE IFANDROID'=: 5 6 7 8 = 9!:12''
-
-NB. include android as a unix type
-IFUNIX =: IFUNIX +. IFANDROID
-
-IFGTK=: IFJHS=: 0
-IFJ6=: 0     
-IFWINE=: IFWIN > 0-:2!:5'_'  
-
- 
-if. IFANDROID do.
-  UNAME=: 'Android'
+'IFUNIX IFWIN IFWINCE'=: 5 6 7 = 9!:12''
+IFGTK=: IFJHS=: IFBROADWAY=: 0
+IFJ6=: 0
+IFWINE=: IFWIN > 0-:2!:5'_'
+if. IF64 +. IFDEF'android' do.
+  IFWOW64=: 0
+else.
+  if. IFUNIX do.
+    IFWOW64=: '64'-:_2{.(2!:0 'uname -m')-.10{a.
+  else.
+    IFWOW64=: 'AMD64'-:2!:5'PROCESSOR_ARCHITEW6432'
+  end.
+end.
+if. IFDEF'android' do.
+  UNAME=: 'Linux'
 elseif. IFUNIX do.
   UNAME=: (2!:0 'uname')-.10{a.
-elseif. 1 do.
+elseif. do.
   UNAME=: 'Win'
 end.
 )
-
 jcwdpath=: (1!:43@(0&$),])@jpathsep@((*@# # '/'"_),])
 jsystemdefs=: 3 : 0
-0!:0 <jpath '~system/defs/',y,'_',(tolower UNAME),(IF64#'_64'),'.ijs'
+xuname=. > (IFDEF'android') { UNAME;'Android'
+0!:0 <jpath '~system/defs/',y,'_',(tolower xuname),(IF64#'_64'),'.ijs'
 )
 18!:4 <'z'
 'TAB LF FF CR DEL EAV'=: 9 10 12 13 127 255{a.
@@ -45,8 +52,26 @@ each=: &.>
 echo=: 0 0&$ @ (1!:2&2)
 exit=: 2!:55
 every=: &>
+getargs=: 3 : 0
+ARGV getargs y
+:
+argb=. (]`(([: < 1: {. }.) , [: < 2: }. ])@.('-'"_ = {.))&.> x
+parm=. 32 = ;(3!:0)&.> argb
+((-. parm)#argb);(>parm#argb);(". (0 = isatty 0)#'stdin ''''')
+)
 getenv=: 2!:5
 inv=: inverse=: ^:_1
+3 : 0''
+if. 'Linux'-:UNAME do.
+  llib=. > (IFDEF'android'){'libc.so.6';'libc.so'
+  isatty=: (llib , ' isatty > i i') & (15!:0)
+elseif. 'Darwin'-:UNAME do.
+  isatty=: 'libc.dylib isatty > i i' & (15!:0)
+elseif. do.
+  isatty=: 2: = ('kernel32 GetFileType > i x' & (15!:0)) @ ('kernel32 GetStdHandle > x i'& (15!:0)) @ - @ (10&+)
+end.
+''
+)
 items=: "_1
 fetch=: {::
 leaf=: L:0
@@ -154,6 +179,14 @@ t=. <;._1 '/invalid name/not defined/noun/adverb/conjunction/verb/unknown'
 type=: {&t@(2&+)@(4!:0)&boxopen
 ucp=: 7&u:
 ucpcount=: # @ (7&u:)
+3 : 0''
+llib=.>(IFDEF'android'){'libc.so.6';'libc.so'
+if. 'Linux'-:UNAME do. usleep=: 3 : '(llib,'' usleep > i i'')&(15!:0) >.y'
+elseif. 'Darwin'-:UNAME do. usleep=: 3 : '''libc.dylib usleep > i i''&(15!:0) >.y'
+elseif. do. usleep=: 3 : '0: ''kernel32 Sleep > n i''&(15!:0) >.y % 1000'
+end.
+EMPTY
+)
 utf8=: 8&u:
 uucp=: u:@(7&u:)
 3 : 0''
@@ -206,8 +239,7 @@ conl=: 18!:1 @ (, 0 1"_ #~ # = 0:)
 copath=: 18!:2 & boxxopen
 coreset=: 3 : 0
 if. IFGTK do.
-  a=. <'jgtkide'
-  exc=. locEdits__a,locTerm__a,locFif__a,locFiw__a
+  exc=. gtklocs_jgtkide_''
 else.
   exc=. ''
 end.
@@ -305,6 +337,7 @@ JSIZES=: >IF64{1 1 4 4 8 16 4;1 1 8 8 8 16 8
 ic=: 3!:4
 fc=: 3!:5
 endian=: |.^:('a'={.2 ic a.i.'a')
+Endian=: |.^:('a'~:{.2 ic a.i.'a')
 AND=: $:/ : (17 b.)
 OR=: $:/ : (23 b.)
 XOR=: $:/ : (22 b.)
@@ -313,13 +346,13 @@ cocurrent 'z'
 if. -. (UNAME-:'Darwin')+.(UNAME-:'SunOS') do. DLL_PATH=: '' return. end.
 llp=. 2!:5 'LD_LIBRARY_PATH',~'DY'#~UNAME-:'Darwin'
 if. 0 -: llp do. llp=. '' end.
-def_path=. ':/usr/local/lib:/usr/lib:/usr/lib/ccs/lib:/etc/lib:/lib'
+def_path=. >(IFDEF'android') { ':/usr/local/lib:/usr/lib:/usr/lib/ccs/lib:/etc/lib:/lib':'/system/lib'
 DLL_PATH=: a: -.~ <;._1 ':',llp,def_path
 )
 find_dll=: 3 : 0
 DLL_PATH find_dll y
 :
-if. UNAME-:'Linux' do. ('find_dll decommitted') 13!:8 ] 24 end.  
+if. UNAME-:'Linux' do. ('find_dll decommitted') 13!:8 ] 24 end.
 if. -.IFUNIX do. y return. end.
 y=. ,y
 if. (UNAME-:'Darwin') do. ext=. '.dylib*' else. ext=. '.so*' end.
@@ -337,20 +370,22 @@ class=. >(0=#y){y;'default'
 p=. 9!:46''
 q=. (>:p i: '/'){.p
 fs=. (<q),each {."1[1!:0<q,'*.',class
-fs=. fs-.<p 
+fs=. fs-.<p
 for_f. fs do.
   v=. 2<.>:a.i.1!:11 f,<0 1
-  (v{a.) 1!:12 f,<0 
+  (v{a.) 1!:12 f,<0
 end.
 i.0 0
 )
 setbreak=: 3 : 0
-p=. jpath '~break/'
-1!:5 ::] <p
-f=. p,(":2!:6''),'.',y
-({.a.) 1!:12 f;0 
-9!:47 f
-f
+try.
+  p=. jpath '~break/'
+  1!:5 ::] <p
+  f=. p,(":2!:6''),'.',y
+  ({.a.) 1!:12 f;0
+  9!:47 f
+  f
+catch. '' end.
 )
 cocurrent 'z'
 calendar=: 3 : 0
@@ -699,7 +734,7 @@ if. +/ # &> c do.
   if. {.opt do.
     r=. r,LF,;(,&(LF2)) &.> cd
   end.
-
+  
 end.
 
 if. 0=#;res do. r=. r,'no difference',LF end.
@@ -747,14 +782,14 @@ dy=. (fy e. fx)#dy
 if. #j=. dx -. dy do.
   j=. {."1 j
   cmp=. <@fcompare"1 (sx&,&.>j),.sy&,&.>j
-
+  
   if. 0=2{opt do.
     f=. 'no difference'&-: @ (_13&{.)
     msk=. -. f &> cmp
     j=. msk#j
     cmp=. msk#cmp
   end.
-
+  
   r=. r,< j;<cmp
 else.
   r=. r,a:
@@ -807,12 +842,9 @@ dirss=: 4 : 0
 if. (2=#x) *. 1=L. x do.
   x dirssrplc y return.
 end.
-
 sub=. ' '&(I.@(e.&(TAB,CRLF))@]})
 fls=. {."1 dirtree y
-if. 0 e. #fls do.
-  'no files in directory: ',y return.
-end.
+if. 0 e. #fls do. 'not found: ',x return. end.
 fnd=. ''
 while. #fls do.
   dat=. 1!:1 <fl=. >{.fls
@@ -1160,22 +1192,26 @@ chopstring=: 3 : 0
 dat=. y
 'fd sd'=. 2{. boxopen x
 assert. 1 = #fd
-if. =/sd do. sd=. (-<:#sd)}.sd   
-else. 
-  s=. {.('|'=fd){ '|`'  
-  dat=. dat rplc ({.sd);s;({:sd);s
-  sd=. s
+if. #sd do.
+  if. 1=#~.sd do. sd=. ,{.sd
+  else.
+    s=. {.('|'=fd){ '|`'
+    dat=. dat rplc ({.sd);s;({:sd);s
+    sd=. s
+  end.
+  dat=. dat,fd
+  b=. dat e. fd
+  c=. dat e. sd
+  d=. ~:/\ c
+  fmsk=. b > d
+  smsk=. (> (0 , }:)) c
+  smsk=. -. smsk +. c *. 1|.fmsk
+  y=. smsk#y,fd
+  fmsk=. 0:^:(,@1: -: ]) smsk#fmsk
+  fmsk <;._2 y
+else.
+  <;._2 dat,fd
 end.
-dat=. dat,fd
-b=. dat e. fd
-c=. dat e. sd
-d=. ~:/\ c                       
-fmsk=. b > d                     
-smsk=. (> (0 , }:)) c            
-smsk=. -. smsk +. c *. 1|.fmsk   
-y=. smsk#y,fd   
-fmsk=. 0:^:(,@1: -: ]) smsk#fmsk
-fmsk <;._2 y  
 )
 dltbs=: LF&$: : (4 : 0)
 txt=. ({.x), y
@@ -1235,7 +1271,6 @@ if. *./ 1 = oldlen do.
   
 else.
   
-  
   hit=. old I. @ E. each <txt
   cnt=. # &> hit
   
@@ -1271,7 +1306,7 @@ else.
   
   hit=. ; hit
   ind=. /: (#hit) $ 1 2 3
-  hnx=. (/: ind { hit) { ind    
+  hnx=. (/: ind { hit) { ind
   bgn=. (hnx { hit) + +/\ 0, }: hnx { cnt # del
   
 end.
@@ -1432,17 +1467,19 @@ end.
 )
 octal=: 3 : 0
 t=. ,y
-x=. a. i. t
-n=. x e. 9 10 13
-m=. n < 32 > x
-if. (isutf8 t) > 1 e. m do. t return. end.
-r=. t ,"0 1 [ 3 # EAV
-if. #m=. I. m +. x>126 do.
-  s=. '\',.}.1 ": 8 (#.^:_1) 255,m{x
-  r=. s m} r
+if. LF e. t do.
+  t=. octal each <;._2 t,LF
+  }: ; t ,each LF return.
 end.
-EAV -.~ ,r
+u=. isutf8 t
+x=. a. i. t
+m=. x < 32
+if. u > 1 e. m do. t return. end.
+n=. I. m=. m +. u < x > 126
+s=. '\',.}.1 ": 8 (#.^:_1) 255,n{x
+s ((n+3*i.#n)+/i.4)} (>:3*m)#t
 )
+
 rmdir=: 3 : 0
 r=. 1;'not a directory: ',":y
 if. 0=#y do. r return. end.
@@ -1532,6 +1569,10 @@ if. '"' = {.y do. y else. '"',y,'"' end.
 browse=: 3 : 0
 cmd=. dlb@dtb y
 isURL=. 1 e. '://'&E.
+if. IFBROADWAY do.
+  sminfo 'browse error: not yet implemented'
+  EMPTY return.
+end.
 if. IFJHS do.
   cmd=. '/' (I. cmd='\') } cmd
   if. -. isURL cmd do.
@@ -1589,8 +1630,8 @@ case. do.
     2!:0'which google-chrome'
     'google-chrome' return. catch. end.
   try.
-    2!:0'which chromium-browser'
-    'chromium-browser' return. catch. end.
+    2!:0'which chromium'
+    'chromium' return. catch. end.
   try.
     2!:0'which firefox'
     'firefox' return. catch. end.
@@ -1600,6 +1641,74 @@ case. do.
   try.
     2!:0'which netscape'
     'netscape' return. catch. end.
+  '' return.
+end.
+)
+viewpdf=: 3 : 0
+cmd=. dlb@dtb y
+if. IFBROADWAY do.
+  sminfo 'viewpdf error: not yet implemented'
+  EMPTY return.
+end.
+if. IFJHS do.
+  cmd=. '/' (I. cmd='\') } cmd
+  if. -.fexist cmd do. EMPTY return. end.
+  redirecturl_jijxm_=: (' ';'%20') stringreplace cmd
+  EMPTY return.
+end.
+PDFReader=. PDFReader_j_
+if. IFWIN do.
+  ShellExecute=. 'shell32 ShellExecuteW > i x *w *w *w *w i'&cd
+  SW_SHOWNORMAL=. 1
+  NULL=. <0
+  cmd=. '/' (I. cmd='\') } cmd
+  if. -.fexist cmd do. EMPTY return. end.
+  if. 0 = #PDFReader do.
+    r=. ShellExecute 0;(uucp 'open');(uucp cmd);NULL;NULL;SW_SHOWNORMAL
+  else.
+    r=. ShellExecute 0;(uucp 'open');(uucp PDFReader);(uucp dquote cmd);NULL;SW_SHOWNORMAL
+  end.
+  if. r<33 do. sminfo 'view pdf error:',PDFReader,' ',cmd,LF2,1{::cderx'' end.
+  EMPTY return.
+end.
+if. 0 = #PDFReader do.
+  PDFReader=. dfltpdfreader''
+end.
+PDFReader=. dquote PDFReader
+cmd=. '/' (I. cmd='\') } cmd
+cmd=. PDFReader,' ',dquote cmd
+try.
+  2!:1 cmd
+catch.
+  msg=. 'Could not run the PDFReader with the command:',LF2
+  msg=. msg, cmd,LF2
+  if. IFGTK do.
+    msg=. msg, 'You can change the PDFReader definition in Edit|Configure|Base',LF2
+  end.
+  sminfo 'Run PDFReader';msg
+end.
+EMPTY
+)
+dfltpdfreader=: verb define
+select. UNAME
+case. 'Win' do. ''
+case. 'Darwin' do. 'open'
+case. do.
+  try.
+    2!:0'which evince'
+    'evince' return. catch. end.
+  try.
+    2!:0'which kpdf'
+    'kpdf' return. catch. end.
+  try.
+    2!:0'which xpdf'
+    'xpdf' return. catch. end.
+  try.
+    2!:0'which okular'
+    'okular' return. catch. end.
+  try.
+    2!:0'which acroread'
+    'acroread' return. catch. end.
   '' return.
 end.
 )
@@ -1613,7 +1722,7 @@ if. '~' ~: {. nam do. return. end.
 fld=. SystemFolders, UserFolders
 ind=. nam i. '/'
 tag=. }. ind {. nam
-if. 0=#tag do.       
+if. 0=#tag do.
   tag=. 'home'
   nam=. '~home',}.nam
   ind=. nam i. '/'
@@ -1736,7 +1845,7 @@ if. 0=L.y do.
     y=. cutnames y
   end.
 end.
-y=. y -. Ignore, IFJHS#;:'plot viewmat'   
+y=. y -. Ignore, IFJHS#;:'viewmat'
 if. 0=#y do. '' return. end.
 ndx=. ({."1 Public) i. y
 ind=. I. ndx < # Public
@@ -1772,13 +1881,23 @@ r fwritenew jpath '~config/recent.dat'
 )
 xedit=: 0&$: : (4 : 0)
 'file row'=. 2{.(boxopen y),<0
-if. IFJHS do.         
+if. IFBROADWAY do.
+  msg=. '|Could not run the editor:',cmd,LF
+  msg=. msg,'|Not yet implemented'
+  smoutput msg
+  EMPTY return.
+end.
+if. IFJHS do.
   xmr ::0: file
   EMPTY return.
 end.
 editor=. (Editor_j_;Editor_nox_j_){::~ nox=. IFUNIX *. (0;'') e.~ <2!:5 'DISPLAY'
 if. 0=#editor do. EMPTY return. end.
-cmd=. editor stringreplace~ '%f';(dquote >@fboxname file);'%l';(":>:row)
+if. 1 e. '%f' E. editor do.
+  cmd=. editor stringreplace~ '%f';(dquote >@fboxname file);'%l';(":>:row)
+else.
+  cmd=. editor, ' ', (dquote >@fboxname file)
+end.
 try.
   if. IFUNIX do.
     if. x do.
@@ -1842,8 +1961,8 @@ end.
 )
 coclass 'jcompare'
 
-MAXPFX=: 100        
-MAXLCS=: *: MAXPFX  
+MAXPFX=: 100
+MAXLCS=: *: MAXPFX
 cin=: e. ,
 fmt0=: 'p<0 [>q<] >' & (8!:0)
 fmt1=: 'p<1 [>q<] >' & (8!:0)

@@ -10,6 +10,7 @@ if. IFUNIX do.
   assert. fds_bits_off=0
 end.
 )
+
 3 : 0''
 select. UNAME
 case. 'Win' do.
@@ -21,17 +22,8 @@ case. 'Win' do.
   LIB=: ''
   closesocketJ=: 'closesocket i i' scdm
   ioctlsocketJ=: 'ioctlsocket i i i *i' scdm
-case. 'Android' do.
-  c=. 'libc.so'
-  ccdm=: 1 : ('(''"',c,'" '',x)&(15!:0)')
-  ncdm=: ccdm
-  scdm=: ccdm
-  wcdm=: 1 : ']'
-  LIB=: c
-  closesocketJ=: 'close i i' scdm
-  ioctlsocketJ=: 'ioctl i i i *i' scdm
 case. 'Linux' do.
-  c=. 'libc.so.6'
+  c=. > (IFDEF'android') {'libc.so.6';'libc.so'
   ccdm=: 1 : ('(''"',c,'" '',x)&(15!:0)')
   ncdm=: ccdm
   scdm=: ccdm
@@ -44,17 +36,6 @@ case. 'Darwin' do.
   ccdm=: 1 : ('(''"',c,'" '',x)&(15!:0)')
   ncdm=: ccdm
   scdm=: ccdm
-  wcdm=: 1 : ']'
-  LIB=: c
-  closesocketJ=: 'close i i' scdm
-  ioctlsocketJ=: 'ioctl i i i *i' scdm
-case. 'SunOS' do.
-  c=. find_dll 'c'
-  ccdm=: 1 : ('(''"',c,'" '',x)&(15!:0)')
-  n=. find_dll 'nsl'
-  ncdm=: 1 : ('(''"',n,'" '',x)&(15!:0)')
-  s=. find_dll 'socket'
-  scdm=: 1 : ('(''"',s,'" '',x)&(15!:0)')
   wcdm=: 1 : ']'
   LIB=: c
   closesocketJ=: 'close i i' scdm
@@ -174,7 +155,7 @@ j=. <;._2 (0 : 0)
 )
 
 SDERRORS=: (0 ". 5 {. &> j) ; < 6 }.each j
-SDERRORS=: ((10000*IFUNIX) | >{.SDERRORS);{:SDERRORS 
+SDERRORS=: ((10000*IFUNIX) | >{.SDERRORS);{:SDERRORS
 
 tostring=: 3 : 0
 }: ;'.',~each ":each a.i.y
@@ -190,9 +171,9 @@ if. 0~:res y do. (sdsockerror'');0;'';0 return. end.
 )
 
 flip=: 'a'={.2 ic a.i.'a'
-bigendian=: |.^:flip 
-hns=: 3 : 'a.{~256 256#:y'          
-hs=: 3 : 'bigendian a.{~256 256#:y' 
+bigendian=: |.^:flip
+hns=: 3 : 'a.{~256 256#:y'
+hs=: 3 : 'bigendian a.{~256 256#:y'
 res=: >@:{.
 
 sockaddr_in=: 3 : 0
@@ -315,7 +296,7 @@ end.
 fdset_bytes=: 4 : 0
 bitvector=. 1 y} (x*8)#0
 bytes=. a. {~ _8 #.@|.\ bitvector
-if. -.flip do. bytes=. , _4 |.\ bytes end. 
+if. -.flip do. bytes=. , _4 |.\ bytes end.
 bytes
 )
 fdset_fds=: 3 : 0
@@ -330,8 +311,8 @@ if. 0=#y do. y=. SOCKETS_jsocket_;SOCKETS_jsocket_;SOCKETS_jsocket_;0 end.
 time=. <<.1000000 1000000#:1000*t
 if. IFUNIX do.
   max1=. >:>./r,w,e,0
-  m=. 4  
-  n=. 32 
+  m=. 4
+  n=. 32
   bytes=. m*>:<.n%~max1
   r=. bytes fdset_bytes r
   w=. bytes fdset_bytes w
@@ -389,4 +370,4 @@ sdgetsockets=: 3 : '0;SOCKETS_jsocket_'
 sdcheck=: }. ` (sderror 13!:8 3:) @. (0 ~: >@{.)
 INVALID_SOCKET=: 1
 SOCKET_ERROR=: _1
-sdinit'' 
+sdinit''

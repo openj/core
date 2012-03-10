@@ -43,18 +43,20 @@ doc=: 0 : 0
   showmap''                   - show all maps
 
 )
-SZI=: IF64{4 8     
+SZI=: IF64{4 8
 'HADK HADFLAG HADM HADT HADC HADN HADR HADS'=: SZI*i.8
 HADCN=: <.HADC%SZI
 
-HSN=: 7+64         
-HS=: SZI*HSN       
-AFRO=: 1           
-AFNJA=: 2          
+HSN=: 7+64
+HS=: SZI*HSN
+AFRO=: 1
+AFNJA=: 2
 NULLPTR=: <0
+
 3 : 0''
 if. IFUNIX do.
-  lib=. >(UNAME-:'Darwin'){'libc.so.6 ';'libc.dylib '
+  lib=. > (IFDEF'android') { 'libc.so.6 ';'libc.so '
+  lib=. >(UNAME-:'Darwin'){lib;'libc.dylib '
   api=. 1 : ('(''',lib,''',x) & cd')
   c_isatty=: ' isatty i i' api
   c_open=: 'open i *c i i' api
@@ -66,7 +68,7 @@ if. IFUNIX do.
   c_munmap=: 'munmap i * x' api
   if. UNAME -: 'Darwin' do.
     c_mmap=: }:@:('mmap * * i i i i i i' api)@:(}: , (<0)"_ , {:)
-    if. ({.a.)={. 1&(3!:4) 1 do. 
+    if. ({.a.)={. 1&(3!:4) 1 do.
       c_lseek=: (0 1 3 4&{)@:('lseek i i i i i' api)@:(0&{ , (<0)"_ , 1&{ , 2&{)
     end.
   end.
@@ -92,12 +94,12 @@ else.
   RW=: j,:GENERIC_READ,PAGE_READONLY,FILE_MAP_READ
   
   CloseHandleR=: 'kernel32 CloseHandle > i x'&(15!:0)
-  CreateFileMappingR=: 'kernel32 CreateFileMappingA > x x * i i i *c'&(15!:0)
-  CreateFileR=: 'kernel32 CreateFileA > x *c i i * i i x'&(15!:0)
+  CreateFileMappingR=: 'kernel32 CreateFileMappingW > x x * i i i *w'&(15!:0)
+  CreateFileR=: 'kernel32 CreateFileW > x *w i i * i i x'&(15!:0)
   GetLastError=: 'kernel32 GetLastError > i'&(15!:0)
   FlushViewOfFileR=: 'kernel32 FlushViewOfFile > i * x'&(15!:0)
   MapViewOfFileR=: >@{.@('kernel32 MapViewOfFile * x i i i x'&(15!:0))
-  OpenFileMappingR=: 'kernel32 OpenFileMappingA > x i i *c'&(15!:0)
+  OpenFileMappingR=: 'kernel32 OpenFileMappingW > x i i *w'&(15!:0)
   SetEndOfFile=: 'kernel32 SetEndOfFile > i x'&(15!:0)
   UnmapViewOfFileR=: 'kernel32 UnmapViewOfFile > i *'&(15!:0)
   WriteFile=: 'kernel32 WriteFile i x * i *i *'&(15!:0)
@@ -115,11 +117,11 @@ if. _1 = 4!:0<'mappings' do.
 end.
 empty''
 )
-symget=: 15!:6 
-symset=: 15!:7 
+symget=: 15!:6
+symset=: 15!:7
 allochdr=: 3 : 'r[2 memw (r=.15!:8 y),HADC,1,JINT'
 
-freehdr=: 15!:9 
+freehdr=: 15!:9
 msize=: 3 : 'memr y,HADM,1,JINT'
 refcount=: 3 : 'memr y,HADC,1,JINT'
 MAXINTU=: 2 ^ IF64{32 64x
@@ -143,18 +145,18 @@ t=. y-.' '
 t,('_'~:{:t)#'_base_'
 )
 mbxcheck=: 3 : 0
-x=. 15!:12 y                  
-b=. 0={:"1 x                  
-'a s c'=. |: (-.b)#x          
-'u n z'=. ,b#x                
-z=. *./ c e. 1 2              
-z=. z, (-:<.) 2^.s            
-z=. z, (}.a)-:}:a+s           
-z=. z, u = {.a                
-z=. z, ({:a+s) <: u+n         
-z=. z, (-: <.) 64 %~ +/s      
-z=. z, (+/s) = <.&.(%&64) n   
-z=. z, *./ 0 = 8|a            
+x=. 15!:12 y
+b=. 0={:"1 x
+'a s c'=. |: (-.b)#x
+'u n z'=. ,b#x
+z=. *./ c e. 1 2
+z=. z, (-:<.) 2^.s
+z=. z, (}.a)-:}:a+s
+z=. z, u = {.a
+z=. z, ({:a+s) <: u+n
+z=. z, (-: <.) 64 %~ +/s
+z=. z, (+/s) = <.&.(%&64) n
+z=. z, *./ 0 = 8|a
 )
 settypeshape=: 3 : 0
 'name type shape'=: y
@@ -237,21 +239,21 @@ i.0 0
 createjmf=: 3 : 0
 'fn msize'=. y
 msize=. <. msize
-ts=. HS+msize     
+ts=. HS+msize
 if. IFUNIX do.
   fh=. 0 pick c_open fn; (OR O_RDWR, O_CREAT, O_TRUNC); 8b666
   c_lseek fh;(<:ts);SEEK_SET
-  c_write fh; (,0{a.); 0+1   
+  c_write fh; (,0{a.); 0+1
   c_lseek fh;0 ;SEEK_SET
-  d=. HS,AFNJA,msize,JINT,0,0,1,0 
+  d=. HS,AFNJA,msize,JINT,0,0,1,0
   c_write fh;d;(SZI*#d)
   c_close fh
 else.
-  fh=. CreateFileR fn;(GENERIC_READ+GENERIC_WRITE);0;NULLPTR;CREATE_ALWAYS;0;0
+  fh=. CreateFileR (uucp fn,{.a.);(GENERIC_READ+GENERIC_WRITE);0;NULLPTR;CREATE_ALWAYS;0;0
   SetFilePointerR fh;ts;NULLPTR;FILE_BEGIN
   SetEndOfFile fh
   SetFilePointerR fh;0;NULLPTR;FILE_BEGIN
-  d=. HS,AFNJA,msize,JINT,0,0,1,0 
+  d=. HS,AFNJA,msize,JINT,0,0,1,0
   WriteFile fh;d;(SZI*#d);(,0);<NULLPTR
   CloseHandleR fh
 end.
@@ -259,7 +261,7 @@ i.0 0
 )
 share=: 3 : 0
 'name sn ro'=. 3{.y,<0
-sn=. '/' (('\'=sn)#i.#sn)} sn 
+sn=. '/' (('\'=sn)#i.#sn)} sn
 if. IFUNIX do.
   map name;sn;sn;ro
 else.
@@ -270,7 +272,7 @@ else.
   'bad noun name'assert ('_'={:name)*._1=nc<name
   fh=. _1
   fn=. ''
-  mh=. OpenFileMappingR (ro{FILE_MAP_WRITE,FILE_MAP_READ);0;sn,{.a.
+  mh=. OpenFileMappingR (ro{FILE_MAP_WRITE,FILE_MAP_READ);0;uucp sn,{.a.
   if. mh=0 do. assert 0[CloseHandleR fh['bad mapping' end.
   fad=. MapViewOfFileR mh;FILE_MAP_WRITE;0;0;0
   if. fad=0 do. assert 0[CloseHandleR mh[CloseHandleR fh['bad view' end.
@@ -278,7 +280,7 @@ else.
   hs=: 0
   ts=. memr had,HADM,1,JINT
   mappings=: mappings,name;fn;sn;fh;mh;fad;had;ts
-  (name)=: symset had  
+  (name)=: symset had
   i.0 0
 end.
 )
@@ -290,7 +292,7 @@ AFRO(17 b.)memr (getflagsad y),0 1,JINT
 :
 flagsad=. getflagsad y
 flags=. memr flagsad,0 1,JINT
-flags=. flags(17 b.)(26 b.)AFRO 
+flags=. flags(17 b.)(26 b.)AFRO
 flags=. flags(23 b.)AFRO*0~:x
 flags memw flagsad,0 1,JINT
 i. 0 0
@@ -316,7 +318,7 @@ if. 0=L.x do. t=. <&> x else. t=. x end.
 'trailing shape may not be zero' assert -. 0 e. tshape
 
 'name fn sn ro'=. 4{.y,(#y)}.'';'';'';0
-sn=. '/' (('\'=sn)#i.#sn)} sn 
+sn=. '/' (('\'=sn)#i.#sn)} sn
 name=. fullname name
 c=. #mappings
 
@@ -327,7 +329,7 @@ c=. #mappings
 'bad noun name'assert ('_'={:name)*._1=nc<name
 
 ro=. 0~:ro
-aa=. AFNJA+AFRO*ro     
+aa=. AFNJA+AFRO*ro
 
 if. IFUNIX do.
   'Unix sharename must be same as filename' assert (sn-:'')+.sn-:fn
@@ -335,33 +337,39 @@ if. IFUNIX do.
   fh=. >0 { c_open fn;(ro{O_RDWR,O_RDONLY);0
   'bad file name/access' assert fh~:_1
   mh=. ts
-  fad=. >0{ c_mmap (<0);ts;(OR ro}. PROT_WRITE, PROT_READ);MAP_SHARED;fh;0
-  if. fad e. 0 _1 do.
-    'bad view' assert 0[free fh,mh,0
+  if. 0=ts do.
+    fad=. 0
+  else.
+    fad=. >0{ c_mmap (<0);ts;(OR ro}. PROT_WRITE, PROT_READ);MAP_SHARED;fh;0
+    if. _1=fad do. 'bad view' assert 0[free fh,mh,0 end.
   end.
 else.
-  'fa ma va'=. ro{RW     
-  fh=. CreateFileR (fn,{.a.);fa;(FILE_SHARE_READ+FILE_SHARE_WRITE);NULLPTR;OPEN_EXISTING;0;0
+  'fa ma va'=. ro{RW
+  fh=. CreateFileR (uucp fn,{.a.);fa;(FILE_SHARE_READ+FILE_SHARE_WRITE);NULLPTR;OPEN_EXISTING;0;0
   'bad file name/access'assert fh~:_1
   ts=. GetFileSizeR fh
-  mh=: CreateFileMappingR fh;NULLPTR;ma;0;0;(0=#sn){(sn,{.a.);<NULLPTR
-  if. mh=0 do. 'bad mapping'assert 0[free fh,0,0 end.
-  fad=. MapViewOfFileR mh;va;0;0;0
-  if. fad=0 do.
-    errno=. GetLastError''
-    free fh,mh,0
-    if. ERROR_NOT_ENOUGH_MEMORY-:errno do.
-      'not enough memory' assert 0
-    else.
-      'bad view' assert 0
+  if. 0=ts do.
+    fad=. mh=. 0
+  else.
+    mh=: CreateFileMappingR fh;NULLPTR;ma;0;0;(0=#sn){(uucp sn,{.a.);<NULLPTR
+    if. mh=0 do. 'bad mapping'assert 0[free fh,0,0 end.
+    fad=. MapViewOfFileR mh;va;0;0;0
+    if. fad=0 do.
+      errno=. GetLastError''
+      free fh,mh,0
+      if. ERROR_NOT_ENOUGH_MEMORY-:errno do.
+        'not enough memory' assert 0
+      else.
+        'bad view' assert 0
+      end.
     end.
   end.
 end.
 
-if. ro*.0=type do. 
+if. ro*.0=type do.
   had=. allochdr 127
   d=. memr fad,0,HSN,JINT
-  d=. (sfu HS+-/ufs fad,had),aa,2}.d 
+  d=. (sfu HS+-/ufs fad,had),aa,2}.d
   d=. 1 HADCN} d
   d memw had,0,HSN,JINT
 elseif. 0=type do.
@@ -371,21 +379,21 @@ elseif. 0=type do.
   if. sn-:'' do.
     t=. 0
   else.
-    t=. 10000+ memr had,HADC,1,JINT 
+    t=. 10000+ memr had,HADC,1,JINT
   end.
-  (,t+1) memw had,HADC,1,JINT    
+  (,t+1) memw had,HADC,1,JINT
 elseif. 1 do.
-  had=. allochdr 127                   
+  had=. allochdr 127
   bx=. JBOXED=type
   hs=. (+/hsize)*asize=. JSIZES {~ JTYPES i. type
   lshape=. bx}.<.(ts-hs)%(*/tshape)*asize
   d=. sfu hs+-/ufs fad,had
   h=. d,aa,ts,type,1,(*/lshape,tshape),((-.bx)+#tshape),lshape,tshape
-  h memw had,0,(#h),JINT  
+  h memw had,0,(#h),JINT
 end.
 
 mappings=: mappings,name;fn;sn;fh;mh;fad;had
-(name)=: symset had  
+(name)=: symset had
 i.0 0
 )
 unmap=: 3 : 0
@@ -393,15 +401,15 @@ unmap=: 3 : 0
 :
 'y newsize'=. 2{.(boxopen y),<_1
 n=. <fullname y
-row=. ({."1 mappings)i.n 
-if. row=#mappings do. 1 return. end.  
+row=. ({."1 mappings)i.n
+if. row=#mappings do. 1 return. end.
 m=. row{mappings
-4!:55 ::] n 
+4!:55 ::] n
 'sn fh mh fad had'=. 5{.2}.m
 
 if. *./(-.x),(0=#sn),1~:memr had,HADC,1,JINT do. 2 return. end.
 
-jmf=. fad = had  
+jmf=. fad = had
 if. -.jmf do. freehdr had end.
 if. _1=newsize do.
   free fh,mh,fad
@@ -411,7 +419,7 @@ else.
   free _1,mh,fad
   if. IFUNIX do.
     c_lseek fh;(<:totsize);SEEK_SET
-    c_write fh;(,0{a.);0+1 
+    c_write fh;(,0{a.);0+1
     if. jmf do.
       c_lseek fh;(SZI*2);SEEK_SET
       c_write fh;(,newsize);SZI
@@ -434,7 +442,7 @@ unmapall=: 3 : '>unmap each 0{"1 mappings'
 memshare=: 3 : 0
 bNo_Inherit_Handle=. FALSE
 lpShareName=. y,{.a.
-mh=. OpenFileMappingR (FILE_MAP_READ+FILE_MAP_WRITE); bNo_Inherit_Handle; lpShareName
+mh=. OpenFileMappingR (FILE_MAP_READ+FILE_MAP_WRITE); bNo_Inherit_Handle; uucp lpShareName
 ('Unable to map ',y) assert mh~:0
 
 addr=. MapViewOfFileR mh; (FILE_MAP_READ+FILE_MAP_WRITE); 0; 0; 0
@@ -451,5 +459,5 @@ r=. y findkey mapTable
 UnmapViewOfFileR <<addr						
 if. CloseHandleR mh	do. 					
   mapTable=: (<((i.#mapTable)-.r); i.{:$mapTable){mapTable 	
-end.                                        
+end.
 )

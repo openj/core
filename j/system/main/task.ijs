@@ -4,19 +4,19 @@ NB. executing tasks with optional timeout or I/O
 NB.
 NB. TASKS WITHOUT I/O
 NB.
-NB.   fork 'notepad.exe'           NB. run notepad, no wait, no I/O
-NB.   5000 fork 'notepad.exe'      NB. run notepad, wait 5 sec, no I/O
-NB.   _1 fork 'notepad.exe'        NB. run notepad, until closed, no I/O
+NB.   fork_jtask_ 'notepad.exe'           NB. run notepad, no wait, no I/O
+NB.   5000 fork_jtask_ 'notepad.exe'      NB. run notepad, wait 5 sec, no I/O
+NB.   _1 fork_jtask_ 'notepad.exe'        NB. run notepad, until closed, no I/O
 NB.
-NB.   5000 fork 'cmd /k dir'  NB. show dir in cmd window for 5 sec and close
-NB.   _1 fork 'cmd /k dir'    NB. show dir in cmd window until user closes it
+NB.   5000 fork_jtask_ 'cmd /k dir'  NB. show dir in cmd window for 5 sec and close
+NB.   _1 fork_jtask_ 'cmd /k dir'    NB. show dir in cmd window until user closes it
 NB.
 NB.   launch jpath'~system'        NB. run default application, no wait
 NB.
 NB. TASKS WITH I/O
 NB.
-NB.   spawn 'net users'                    NB. get stdout from process
-NB.   '+/i.3 4'spawn'jconsole'             NB. call process with I/O
+NB.   spawn_jtask_ 'net users'                    NB. get stdout from process
+NB.   '+/i.3 4' spawn_jtask_ 'jconsole'           NB. call process with I/O
 NB.   12 15 18 21
 NB.
 NB. SHELL COMMANDS (WITH I/O)
@@ -204,8 +204,8 @@ NB.   timeout: 0 no wait, _1 infinite, >0 timeout
 NB.   cmdline: 'shortcmd arg1 arg2 ...'
 NB.   cmdline: '"command with space" arg1 ...'
 NB.
-NB. e.g. fork 'notepad.exe'
-fork=: (3 : 0)`(2!:1)@.IFUNIX
+NB. e.g. fork_jtask_ 'notepad.exe'
+fork=: (3 : 0)`([: 2!:1 '(' , ')&' ,~ ])@.IFUNIX
 0 fork y
 :
 ph=. CreateProcess y
@@ -274,7 +274,7 @@ if. 0=nc<'LAUNCH_j_'do.if. 0<#LAUNCH_j_ do.LAUNCH=: LAUNCH_j_ end.end.
 launch=: 3 : 'shell LAUNCH,'' '',y'
 NB. task zdefs
 
-fork_z_=: fork_jtask_
-spawn_z_=: spawn_jtask_
+NB. fork_z_=: fork_jtask_
+NB. spawn_z_=: spawn_jtask_
 shell_z_=: shell_jtask_
 launch_z_=: launch_jtask_
