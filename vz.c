@@ -87,14 +87,17 @@ ZF2(jtzrem){D a,b,d;Z q;
  }
  ZASSERT(!ZINF(u),EVNONCE);
  d=u.re*u.re+u.im*u.im;
- a=u.re*v.re+u.im*v.im; q.re=tfloor(0.5+a/d); 
- b=u.re*v.im-u.im*v.re; q.im=tfloor(0.5+b/d);
+ a=u.re*v.re+u.im*v.im; q.re=tfloor(a/d); 
+ b=u.re*v.im-u.im*v.re; q.im=tfloor(b/d);
  R zminus(v,ztymes(u,q));
 }
 
 ZF2(jtzgcd){D a,b;Z t,z;
  ZASSERT(!(ZINF(u)||ZINF(v)),EVNAN);
- while(ZNZ(u)){t=zrem(u,v); v.re=u.re; v.im=u.im; u.re=t.re; u.im=t.im;}
+ while(ZNZ(u)){
+  t=zrem(u,v); if(t.re>v.re/2)t.re-=v.re; if(t.im>v.im/2)t.im-=v.im;
+  v.re=u.re; v.im=u.im; u.re=t.re; u.im=t.im;
+ }
  z.re=a=v.re; z.im=b=v.im;
  switch(2*(0>a)+(0>b)){
   case 0: if(!a){z.re= b; z.im=0;}                        break;

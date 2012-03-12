@@ -43,7 +43,7 @@ A jtnfs(J jt,I n,C*s){A z;C c,f,*t;I m,p;NM*zv;
  ASSERT(m<=255&&p<=255,EVLIMIT);
  zv->flag=f;
  zv->sn=0; zv->e=0;
- zv->m=(UC)m; zv->hash=NMHASH(m,s); 
+ zv->m=(UC)m; zv->hash=nmhash(m,s); 
  R z;
 }    /* name from string */
 
