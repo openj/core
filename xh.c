@@ -57,7 +57,7 @@ F1(jthostne){C*s;
  {
   I b;
   b=system(s);
-#if !SY_64 && (SYS&(SYS_LINUX|SYS_ANDROID))
+#if !SY_64 && (SYS&SYS_LINUX)
   //Java-jnative-j.so system always returns -1
   if(jt->sm==SMJAVA&&-1==b) b=-1==system("")?0:-1;
 #endif
@@ -80,20 +80,12 @@ F1(jtjwait ){ASSERT(0,EVDOMAIN);}
 
 #define CL(f) {close(f[0]);close(f[1]);}
 
-/*
 F1(jthostio){C*s;A z;F*pz;I fi[2],fo[2],r;int fii[2],foi[2];
-// fii[0]=fi[0];fii[1]=fi[1];foi[0]=fo[0];foi[1]=fo[1];
+ fii[0]=fi[0];fii[1]=fi[1];foi[0]=fo[0];foi[1]=fo[1];
  F1RANK(1,jthostio,0);
  RZ(w=vs(w));
  s=CAV(w); GA(z,INT,3,1,0); pz=(F*)AV(z);
- if((r=pipe(fii))==-1||pipe(foi)==-1){
- 	if(r!=-1)
-		CL(fii); 
-	ASSERT(0,EVFACE);
- }
- 
- fi[0]=fii[0];fi[1]=fii[1];fo[0]=foi[0];fo[1]=foi[1];
-
+ if((r=pipe(fii))==-1||pipe(foi)==-1){if(r!=-1)CL(fi); ASSERT(0,EVFACE);}
  if(!((pz[1]=fdopen(fi[0],"r"))&&(pz[2]=fdopen(fo[1],"w")))){
   if(pz[1])fclose(pz[1]); CL(fi);CL(fo);}
  if(!add2(pz[1],pz[2],s)){fclose(pz[1]);fclose(pz[2]);
@@ -101,34 +93,7 @@ F1(jthostio){C*s;A z;F*pz;I fi[2],fo[2],r;int fii[2],foi[2];
  switch(r=fork()){
   case -1:CL(fi);CL(fo);ASSERT(0,EVFACE);
   case 0:close(0);{int i=dup(fo[0]);};close(1);{int i=dup(fi[1]);};CL(fi);CL(fo);
-#ifdef ANDROID
-         execl("/system/bin/sh","/system/bin/sh","-c",s,NULL); exit(-1);
-#else
          execl("/bin/sh","/bin/sh","-c",s,NULL); exit(-1);
-#endif
- }close(fo[0]);close(fi[1]);
- add2(NULL,NULL,NULL); pz[0]=(F)r;
- R z;
-}
-*/
-
-F1(jthostio){C*s;A z;F*pz;I fi[2],fo[2],r;
- F1RANK(1,jthostio,0);
- RZ(w=vs(w));
- s=CAV(w); GA(z,INT,3,1,0); pz=(F*)AV(z);
- if((r=pipe(fi))==-1||pipe(fo)==-1){if(r!=-1)CL(fi); ASSERT(0,EVFACE);}
- if(!((pz[1]=fdopen(fi[0],"r"))&&(pz[2]=fdopen(fo[1],"w")))){
- if(pz[1])fclose(pz[1]); CL(fi);CL(fo);}
- if(!add2(pz[1],pz[2],s)){fclose(pz[1]);fclose(pz[2]);
-                              CL(fi);CL(fo);}
- switch(r=fork()){
- case -1:CL(fi);CL(fo);ASSERT(0,EVFACE);
- case 0:close(0);dup(fo[0]);close(1);dup(fi[1]);CL(fi);CL(fo);
-#ifdef ANDROID
-        execl("/system/bin/sh","/system/bin/sh","-c",s,NULL); exit(-1);
-#else
-        execl("/bin/sh","/bin/sh","-c",s,NULL); exit(-1);
-#endif
  }close(fo[0]);close(fi[1]);
  add2(NULL,NULL,NULL); pz[0]=(F)r;
  R z;

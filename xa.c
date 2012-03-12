@@ -214,7 +214,6 @@ F1(jtsysq){I j;
   case SYS_PCWIN:     j=SY_WIN32 ? (SY_WINCE ? 7 : 6) : 2; break;
   case SYS_MACINTOSH: j=3;                break;
   case SYS_OS2:       j=4;                break;
-  case SYS_ANDROID:  j=8;                break;
   default:            j=SYS&SYS_UNIX ? 5 : -1;
  }
  R sc(j);

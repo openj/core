@@ -149,7 +149,7 @@ typedef struct {
 void double_trick(D,D,D,D);
 #endif
 
-#if SYS & (SYS & (SYS_LINUX|SYS_ANDROID))
+#if SYS & (SYS & SYS_LINUX)
 void double_trick(D,D,D,D,D,D,D,D);
 #endif
 #if SY_MACPPC
