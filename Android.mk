@@ -30,4 +30,4 @@ LOCAL_SRC_FILES :=  a.c ab.c af.c ai.c am.c am1.c amn.c ao.c ap.c ar.c as.c au.c
 include $(BUILD_SHARED_LIBRARY)
 
 
-include jni/openj-core/defs/Android.mk
+#include jni/openj-core/defs/Android.mk

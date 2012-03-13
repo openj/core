@@ -21,20 +21,19 @@ A subclass of JInterface, org.dykman.j.android.AndroidJInterface include additio
 #include <stdio.h>
 #define LOGD(msg) printf("%s: %s\n",LOCALOGTAG,msg)
 
-// TODO..  this is not right...
+/* TODO..  this is not right... */
 #define LOGFD(...) printf("%s: %s\n",LOCALOGTAG,__VA_ARGS__)
 #endif
 
-JNIEnv *local_jnienv;
-jclass local_class;
-jobject local_baseobj;
+static JNIEnv *local_jnienv;
+static jobject local_baseobj;
 
 jmethodID outputId = 0;
 
 void consoleAppend(JNIEnv *env, jobject obj,int type, const char*chars) {
 	if(outputId == 0) {
-//		jclass cls = (*env)->GetObjectClass(env,obj);
-		outputId = (*env)->GetMethodID(env,local_class,"output","(ILjava/lang/String;)V" );
+  	   jclass the_class = (*env)->GetObjectClass(env,obj);
+		outputId = (*env)->GetMethodID(env,the_class,"output","(ILjava/lang/String;)V" );
 	}
 	if(outputId == 0) {
 		LOGD("failed to get the method id for " "output:" "(ILjava/lang/String;)V");
@@ -49,7 +48,7 @@ JNIEXPORT jint JNICALL Java_org_dykman_j_JInterface_callJNative
 	J jengine = (J)inst;
 	local_jnienv = env;
 	local_baseobj = obj;
-	local_class = (*env)->GetObjectClass(env,obj);
+
 	const char *nativeString = (*env)->GetStringUTFChars(env, js, 0);
 	int jc = JDo(jengine,(C*)nativeString);
 	return (jint) jc;
@@ -91,13 +90,34 @@ JNIEXPORT void JNICALL Java_org_dykman_j_JInterface_setEnv
 
 
 
+int __unzipViaJava(
+		JNIEnv *env, 
+		jobject obj, 
+		const char* file, 
+		const char* dir) {
+	jclass the_class = (*env)->GetObjectClass(env,obj);
+	jmethodID unzipId = (*env)->GetMethodID(env,the_class,"unzipS","(Ljava/lang/String;Ljava/lang/String;)I" );
+	jstring jfile = (*env)->NewStringUTF(env,file);
+	jstring jdir = dir == NULL ? NULL : (*env)->NewStringUTF(env,dir);
+	jint res = (*env)->CallIntMethod(env,obj,unzipId,jfile,jdir);
+	return (int)res;
+}
+
+
+int _stdcall java_unzip_file(const char* file, const char* todir) {
+/* make the empty string equate to null to accomodate J (he guessed) */
+	const char* _todir = todir == NULL || strlen(todir) == 0 ? NULL : todir;
+	return __unzipViaJava(local_jnienv, local_baseobj,file,_todir);
+}
+
+
 #ifdef ANDROID
 const char* android_next_ptr = NULL;
 const char* __nextLineFromAndroid(
 		JNIEnv *env, 
 		jobject obj) {
-	local_class = (*env)->GetObjectClass(env,obj);
-	jmethodID nextLineId = (*env)->GetMethodID(env,local_class,"nextLine","()Ljava/lang/String;" );
+	jclass the_class = (*env)->GetObjectClass(env,obj);
+	jmethodID nextLineId = (*env)->GetMethodID(env,the_class,"nextLine","()Ljava/lang/String;" );
 	/* this method blocks via sleep until a line is available */
 	jstring res = (jstring) (*env)->CallObjectMethod(env,obj,nextLineId);
 	if(android_next_ptr != NULL) {
@@ -110,34 +130,13 @@ const char* __nextLineFromAndroid(
 const char * _stdcall android_next_line() {
 	return __nextLineFromAndroid(local_jnienv,local_baseobj);
 }
-
-int __unzipViaAndroid(
-		JNIEnv *env, 
-		jobject obj, 
-		const char* file, 
-		const char* dir) {
-	local_class = (*env)->GetObjectClass(env,obj);
-	jmethodID unzipId = (*env)->GetMethodID(env,local_class,"unzip","(Ljava/lang/String;Ljava/lang/String;)I" );
-	jstring jfile = (*env)->NewStringUTF(env,file);
-	jstring jdir = dir == NULL ? NULL : (*env)->NewStringUTF(env,dir);
-	jint res = (*env)->CallIntMethod(env,obj,unzipId,jfile,jdir);
-	return (int)res;
-}
-
-
-int _stdcall android_unzip_file(const char* file, const char* todir) {
-/* make the empty string equate to null to accomodate J (he guessed) */
-	const char* _todir = todir == NULL || strlen(todir) == 0 ? NULL : todir;
-	return __unzipViaAndroid(local_jnienv, local_baseobj,file,_todir);
-}
-
 int __downloadViaAndroid(
 		JNIEnv *env, 
 		jobject obj, 
 		const char* furl, 
 		const char* ff) {
-	local_class = (*env)->GetObjectClass(env,obj);
-	jmethodID downloadId = (*env)->GetMethodID(env,local_class,"downloadFile","(Ljava/lang/String;Ljava/lang/String;)I" );
+	jclass the_class = (*env)->GetObjectClass(env,obj);
+	jmethodID downloadId = (*env)->GetMethodID(env,the_class,"downloadFile","(Ljava/lang/String;Ljava/lang/String;)I" );
 	jstring jurl = (*env)->NewStringUTF(env,furl);
 	jstring jfile = (*env)->NewStringUTF(env,ff);
 	jint res = (*env)->CallIntMethod(env,obj,downloadId,jurl,jfile);
@@ -162,7 +161,6 @@ JNIEXPORT jlong JNICALL Java_org_dykman_j_JInterface_initializeJNative
 	LOGD("init called");
 	local_jnienv = env;
 	local_baseobj = obj;
-	local_class = (*env)->GetObjectClass(env,obj);
 
 	outputId = 0;
 	 J j = JInit();
