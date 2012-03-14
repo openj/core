@@ -1,4 +1,4 @@
-# This make file can be usedS to build J as part of an Android project.
+# This make file can be used to build J as part of an Android project.
 # The project it was created for is hosted on github at
 # https://github.com/mdykman/jconsole_for_android .
 # openj should be checked out into a seperate folder under 
@@ -7,7 +7,29 @@
 # Further detais on building J within the Android
 # context can be found in that project
 #
+# this has been built under Android 2.1, API level 7. see note below
 # this has been built under Android 2.2, API level 8.
+
+# TARGET PLATFORMS
+
+# As long as graphics are not a defining goal,
+# Android 2.1 (API 7) has been selected as the 
+# target platform to admit the largest possible 
+# potential user base.  
+# Android 2.2 (API 8) offers a great deal more 
+# graphical power to applications with the 
+# inclusion of libGLESv2.so and should be the 
+# target for future builds hoping to integrate
+# native graphics into the Android app.
+
+# When building under Android API 7 (2.1)
+# hostdefs.c fails to build as that platform
+# lacks regex.h.  Under API 8 (2.2), the
+# include below should be uncommented.
+# The current release for Android 2.1 includes
+# XXX_defs.ijs files generated under API 8.
+# I am confident that these are sufficient
+# for the present build.
 
 LOCAL_PATH := $(call my-dir)
 
@@ -30,4 +52,6 @@ LOCAL_SRC_FILES :=  a.c ab.c af.c ai.c am.c am1.c amn.c ao.c ap.c ar.c as.c au.c
 include $(BUILD_SHARED_LIBRARY)
 
 
+# uncomment the next line for Android 2.2+
 #include jni/openj-core/defs/Android.mk
+
