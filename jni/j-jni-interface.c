@@ -143,9 +143,36 @@ int __downloadViaAndroid(
 	return (int)res;
 }
 
-
 int _stdcall android_download_file(const char* furl, const char* ff) {
 	return __downloadViaAndroid(local_jnienv, local_baseobj,furl,ff);
+}
+
+void __quitViaAndroid(
+		JNIEnv *env, 
+		jobject obj) {
+	jclass the_class = (*env)->GetObjectClass(env,obj);
+	jmethodID quitId = (*env)->GetMethodID(env,the_class,"quit","()V" );
+	(*env)->CallVoidMethod(env,obj,quitId);
+}
+
+
+#ifdef __ARM_ARCH_7__
+/* ARM-7 */
+static int android_abi = ANDROID_ABI_ARM7;
+#elseif defined(__ARM_ARCH_5__)
+/* ARM-5 */
+static int android_abi = ANDROID_ABI_ARM5;
+#else
+/*  x86 */
+static int android_abi = ANDROID_ABI_x86;
+#endif
+
+int _stdcall android_get_abi() {
+	return android_abi;
+}
+
+void _stdcall android_quit() {
+  __quitViaAndroid(local_jnienv,local_baseobj);
 }
 
 #endif

@@ -131,7 +131,13 @@ F1(jtjoff){I x;
  x=i0(w);
  breakclose(jt);
  if(jt->sesm)jsto(jt, MTYOEXIT,(C*)x);
- exit((int)x);
+
+#ifndef ANDROID
+	 exit((int)x);
+#else
+ #include "jni/j-jni-interface.h"
+ android_quit();
+#endif
  R 0;
 }
 
