@@ -12,19 +12,6 @@ While wrriten a part of an Android project, JInterface is generic enough to be u
 A subclass of JInterface, org.dykman.j.android.AndroidJInterface include additional android-specific methods which can be invoke from J, via 15!:0
  */
 
-#define LOCALOGTAG "j-interface"
-#ifdef ANDROID
-#include <android/log.h>
-#define LOGD(msg) __android_log_write(ANDROID_LOG_DEBUG,LOCALOGTAG,msg)
-#define LOGFD(...) __android_log_print(ANDROID_LOG_DEBUG,LOCALOGTAG,__VA_ARGS__)
-#else
-#include <stdio.h>
-#define LOGD(msg) printf("%s: %s\n",LOCALOGTAG,msg)
-
-/* TODO..  this is not right... */
-#define LOGFD(...) printf("%s: %s\n",LOCALOGTAG,__VA_ARGS__)
-#endif
-
 static JNIEnv *local_jnienv;
 static jobject local_baseobj;
 
@@ -156,23 +143,34 @@ void __quitViaAndroid(
 }
 
 
-#ifdef __ARM_ARCH_7__
-/* ARM-7 */
-static int android_abi = ANDROID_ABI_ARM7;
-#elseif defined(__ARM_ARCH_5__)
-/* ARM-5 */
-static int android_abi = ANDROID_ABI_ARM5;
-#else
-/*  x86 */
-static int android_abi = ANDROID_ABI_x86;
-#endif
-
 int _stdcall android_get_abi() {
 	return android_abi;
 }
 
 void _stdcall android_quit() {
   __quitViaAndroid(local_jnienv,local_baseobj);
+}
+
+const char * __hostExecAndroid(
+	JNIEnv* env,
+	jobject obj,
+	const char* cmd) {
+	jclass the_class = (*env)->GetObjectClass(env,obj);
+
+
+	jmethodID execId = (*env)->GetMethodID(env,the_class,"execHostCommand","(Ljava/lang/String;)Ljava/lang/String;");
+	jstring jcmd = (*env)->NewStringUTF(env,cmd);
+	jstring jres = (jstring) (*env)->CallObjectMethod(env,obj,execId,jcmd);
+	const char *res = (*env)->GetStringUTFChars(env, jres, 0);
+	return res;
+}
+
+char* _stdcall android_exec_host(const char *cmd) {
+	return __hostExecAndroid(local_jnienv,local_baseobj,cmd);
+}
+
+void _stdcall android_free(void *ptr) {
+	free(ptr);
 }
 
 #endif

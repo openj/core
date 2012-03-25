@@ -36,13 +36,27 @@ F1(jthost){A z;
  A t;I b;C*fn,*s;F f;I n;
  n=AN(w);
  GA(t,LIT,n+5+L_tmpnam,1,0); s=CAV(t);
- fn=5+n+s; MC(s,AV(w),n);
- MC(n+s,"   > ",5L); {C* t=tmpnam(fn);}
+ fn=5+n+s; 
+ MC(s,AV(w),n);
+#ifndef ANDROID
+ MC(n+s,"   > ",5L); 
+ {C* t=tmpnam(fn);}
  b=!system(s);
  if(b){f=fopen(fn,FREAD); z=rd(f,0L,-1L); fclose(f);}
  unlink(fn);
  ASSERT(b&&f,EVFACE);
+#else
+ #include "jni/j-jni-interface.h"
+ C*res=malloc(n+1);
+ strncpy(res,s,n);
+ res[n]=0;
+ fn = android_exec_host(res);
+ free(res);
+ z = jtstr(jt,strlen(fn),fn);
+ LOGFD("command=%s, result=%s",res,fn);
+#endif
 }
+
 #endif
  R z;
 }
