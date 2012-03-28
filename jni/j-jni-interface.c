@@ -12,6 +12,7 @@ While wrriten a part of an Android project, JInterface is generic enough to be u
 A subclass of JInterface, org.dykman.j.android.AndroidJInterface include additional android-specific methods which can be invoke from J, via 15!:0
  */
 
+char android_temp_dir[240];
 static JNIEnv *local_jnienv;
 static jobject local_baseobj;
 
@@ -70,6 +71,9 @@ JNIEXPORT void JNICALL Java_org_dykman_j_JInterface_setEnv
   (JNIEnv *env, jobject obj, jstring jkey, jstring jval) {
   char*key =  (*env)->GetStringUTFChars(env, jkey, 0);
   char*val =  (*env)->GetStringUTFChars(env, jval, 0);
+  if(strcmp(key,"TMP")==0) {
+  	 strcpy(android_temp_dir,val);
+  }
   setenv(key,val,0);
   free(key);
   free(val);

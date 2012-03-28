@@ -14,6 +14,7 @@ int _stdcall android_unzip_file(const char* file, const char* todir);
 char* _stdcall android_exec_host(const char *cmd);
 void _stdcall android_quit();
 void _stdcall android_free(void* ptr);
+extern char android_temp_dir[];
 #endif
 
 #ifdef ANDROID

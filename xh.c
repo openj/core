@@ -36,27 +36,23 @@ F1(jthost){A z;
  A t;I b;C*fn,*s;F f;I n;
  n=AN(w);
  GA(t,LIT,n+5+L_tmpnam,1,0); s=CAV(t);
- fn=5+n+s; 
- MC(s,AV(w),n);
-#ifndef ANDROID
+ fn=5+n+s; MC(s,AV(w),n);
+ #ifdef ANDROID
+ const char*ftmp=getenv("TMP");
+ ASSERT(ftmp!=NULL,EVFACE);
+ strcpy(fn,ftmp);
+ char atmp[L_tmpnam];
+ {C* t=tmpnam(atmp); }
+ strcat(fn,atmp+4);
+ #else
+ {C* t=tmpnam(fn); }
+ #endif
  MC(n+s,"   > ",5L); 
- {C* t=tmpnam(fn);}
  b=!system(s);
  if(b){f=fopen(fn,FREAD); z=rd(f,0L,-1L); fclose(f);}
  unlink(fn);
  ASSERT(b&&f,EVFACE);
-#else
- #include "jni/j-jni-interface.h"
- C*res=malloc(n+1);
- strncpy(res,s,n);
- res[n]=0;
- fn = android_exec_host(res);
- free(res);
- z = jtstr(jt,strlen(fn),fn);
- LOGFD("command=%s, result=%s",res,fn);
-#endif
 }
-
 #endif
  R z;
 }
@@ -71,7 +67,7 @@ F1(jthostne){C*s;
  {
   I b;
   b=system(s);
-#if !SY_64 && (SYS&SYS_LINUX)
+#if !SY_64 && (SYS&SYS_LINUX) && !ANDROID
   //Java-jnative-j.so system always returns -1
   if(jt->sm==SMJAVA&&-1==b) b=-1==system("")?0:-1;
 #endif
@@ -94,6 +90,12 @@ F1(jtjwait ){ASSERT(0,EVDOMAIN);}
 
 #define CL(f) {close(f[0]);close(f[1]);}
 
+#ifdef ANDROID
+#define HOST_SHELL "/system/bin/sh"
+#else
+#define HOST_SHELL "/bin/sh"
+#endif
+
 F1(jthostio){C*s;A z;F*pz;I fi[2],fo[2],r;int fii[2],foi[2];
  fii[0]=fi[0];fii[1]=fi[1];foi[0]=fo[0];foi[1]=fo[1];
  F1RANK(1,jthostio,0);
@@ -104,10 +106,11 @@ F1(jthostio){C*s;A z;F*pz;I fi[2],fo[2],r;int fii[2],foi[2];
   if(pz[1])fclose(pz[1]); CL(fi);CL(fo);}
  if(!add2(pz[1],pz[2],s)){fclose(pz[1]);fclose(pz[2]);
                                CL(fi);CL(fo);}
+
  switch(r=fork()){
   case -1:CL(fi);CL(fo);ASSERT(0,EVFACE);
   case 0:close(0);{int i=dup(fo[0]);};close(1);{int i=dup(fi[1]);};CL(fi);CL(fo);
-         execl("/bin/sh","/bin/sh","-c",s,NULL); exit(-1);
+         execl(HOST_SHELL,HOST_SHELL,"-c",s,NULL); exit(-1);
  }close(fo[0]);close(fi[1]);
  add2(NULL,NULL,NULL); pz[0]=(F)r;
  R z;
