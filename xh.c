@@ -57,6 +57,7 @@ F1(jthost){A z;
  R z;
 }
 
+#ifndef ANDROID
 F1(jthostne){C*s;
  F1RANK(1,jthostne,0);
  RZ(w=vs(w));
@@ -78,6 +79,8 @@ F1(jthostne){C*s;
  R mtv;
 }
 
+
+#endif
 #endif
 
 

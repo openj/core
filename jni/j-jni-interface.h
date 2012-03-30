@@ -11,10 +11,11 @@
 int _stdcall android_get_abi();
 int _stdcall android_download_file(const char* url, const char* file);
 int _stdcall android_unzip_file(const char* file, const char* todir);
-char* _stdcall android_exec_host(const char *cmd);
+int _stdcall android_launch_app(const char* action, const char* data, const char* type);
+//char* _stdcall android_exec_host(const char *cmd);
 void _stdcall android_quit();
 void _stdcall android_free(void* ptr);
-extern char android_temp_dir[];
+//extern char android_temp_dir[];
 #endif
 
 #ifdef ANDROID

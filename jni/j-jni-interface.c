@@ -71,9 +71,11 @@ JNIEXPORT void JNICALL Java_org_dykman_j_JInterface_setEnv
   (JNIEnv *env, jobject obj, jstring jkey, jstring jval) {
   char*key =  (*env)->GetStringUTFChars(env, jkey, 0);
   char*val =  (*env)->GetStringUTFChars(env, jval, 0);
+  /*
   if(strcmp(key,"TMP")==0) {
   	 strcpy(android_temp_dir,val);
   }
+  */
   setenv(key,val,0);
   free(key);
   free(val);
@@ -155,6 +157,7 @@ void _stdcall android_quit() {
   __quitViaAndroid(local_jnienv,local_baseobj);
 }
 
+/*
 const char * __hostExecAndroid(
 	JNIEnv* env,
 	jobject obj,
@@ -172,11 +175,30 @@ const char * __hostExecAndroid(
 char* _stdcall android_exec_host(const char *cmd) {
 	return __hostExecAndroid(local_jnienv,local_baseobj,cmd);
 }
+ */
 
 void _stdcall android_free(void *ptr) {
 	free(ptr);
 }
 
+int __launchActivityAndroid(
+	JNIEnv* env,
+	jobject obj,
+	const char* action,
+	const char* data,
+	const char* type
+	) {
+	jclass the_class = (*env)->GetObjectClass(env,obj);
+	jmethodID methodId = (*env)->GetMethodID(env,the_class,"launchActivity","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+	jstring jaction = (*env)->NewStringUTF(env,action);
+	jstring jdata = (*env)->NewStringUTF(env,data);
+	jstring jtype = (*env)->NewStringUTF(env,type);
+	jint jres = (jstring) (*env)->CallIntMethod(env,obj,methodId,jaction,jdata,jtype);
+	return (int) jres;
+}
+int _stdcall android_launch_app(const char* action, const char* data, const char* type) {
+  return __launchActivityAndroid(local_jnienv,local_baseobj,action,data,type);
+}
 #endif
 
 /*
