@@ -346,7 +346,7 @@ cocurrent 'z'
 if. -. (UNAME-:'Darwin')+.(UNAME-:'SunOS') do. DLL_PATH=: '' return. end.
 llp=. 2!:5 'LD_LIBRARY_PATH',~'DY'#~UNAME-:'Darwin'
 if. 0 -: llp do. llp=. '' end.
-def_path=. >(IFDEF'android') { ':/usr/local/lib:/usr/lib:/usr/lib/ccs/lib:/etc/lib:/lib':'/system/lib'
+def_path=. >(IFDEF'android') { ':/usr/local/lib:/usr/lib:/usr/lib/ccs/lib:/etc/lib:/lib';'/system/lib'
 DLL_PATH=: a: -.~ <;._1 ':',llp,def_path
 )
 find_dll=: 3 : 0
