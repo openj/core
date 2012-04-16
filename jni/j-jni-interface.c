@@ -2,19 +2,29 @@
 #include "org_dykman_j_android_JInterface.h"
 #include "j-jni-interface.h"
 #include <strings.h>
+#include <fenv.h>
 
 
 /**
 This is designed to explicitly to be used with the class file org.dykman.dykman.j.JInterface whic is part of a larger Android project hosted at
 	https://github.com/mdykman/jconsole_for_android
 It consists of the implementations of the native function declared in the class as well as a method for sending output ansynchronously to the Java layer.
-While wrriten a part of an Android project, JInterface is generic enough to be used in any Java context that whishes to interact with J and capture it's output.
+While written a part of an Android project, JInterface is generic enough to be used in any Java context that whishes to interact with J and capture it's output.
 A subclass of JInterface, org.dykman.j.android.AndroidJInterface include additional android-specific methods which can be invoke from J, via 15!:0
+
+Under this implementation, we rely on the jobject which calls these methods from java being a singleton.
  */
 
+/*
 char android_temp_dir[240];
+ */
 static JNIEnv *local_jnienv;
 static jobject local_baseobj;
+
+
+int jfetestexcept(int _except) {
+	return fetestexcept(_except);
+}
 
 jmethodID outputId = 0;
 
@@ -186,18 +196,19 @@ int __launchActivityAndroid(
 	jobject obj,
 	const char* action,
 	const char* data,
-	const char* type
+	const char* type,
+	int flags
 	) {
 	jclass the_class = (*env)->GetObjectClass(env,obj);
-	jmethodID methodId = (*env)->GetMethodID(env,the_class,"launchActivity","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)I");
+	jmethodID methodId = (*env)->GetMethodID(env,the_class,"launchActivity","(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)I");
 	jstring jaction = (*env)->NewStringUTF(env,action);
 	jstring jdata = (*env)->NewStringUTF(env,data);
 	jstring jtype = (*env)->NewStringUTF(env,type);
-	jint jres = (jstring) (*env)->CallIntMethod(env,obj,methodId,jaction,jdata,jtype);
+	jint jres = (*env)->CallIntMethod(env,obj,methodId,jaction,jdata,jtype,(jint)flags);
 	return (int) jres;
 }
-int _stdcall android_launch_app(const char* action, const char* data, const char* type) {
-  return __launchActivityAndroid(local_jnienv,local_baseobj,action,data,type);
+int _stdcall android_launch_app(const char* action, const char* data, const char* type,int flags) {
+  return __launchActivityAndroid(local_jnienv,local_baseobj,action,data,type,flags);
 }
 #endif
 

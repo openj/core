@@ -11,7 +11,7 @@
 int _stdcall android_get_abi();
 int _stdcall android_download_file(const char* url, const char* file);
 int _stdcall android_unzip_file(const char* file, const char* todir);
-int _stdcall android_launch_app(const char* action, const char* data, const char* type);
+int _stdcall android_launch_app(const char* action, const char* data, const char* type,int flags);
 //char* _stdcall android_exec_host(const char *cmd);
 void _stdcall android_quit();
 void _stdcall android_free(void* ptr);

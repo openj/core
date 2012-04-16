@@ -69,7 +69,10 @@ static void jtcirx(J jt,I n,I k,D*z,D*y){D p,t;
   case 11: DO(n,         *z++=0.0;);            break;
   case 12: DO(n,         *z++=0<=*y++?0.0:PI;); break;
  }
+#ifndef ANDROID
+/* this assertion is producing a lot of false positives under android/arm in the emulator environment */
  NAN1V;
+#endif
 }
 
 AHDR2(cirBD,D,B,D){ASSERTW(b&&1==m,EWIMAG); cirx(n,(I)*x,z,y);}
