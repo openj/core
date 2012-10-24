@@ -39,7 +39,7 @@
 
 LOCAL_PATH:=(call my-dir)
 
-TARGET_PLATFORM := android-8
+TARGET_PLATFORM := android-7
 
 # include $(call all-subdir-makefiles)
 
