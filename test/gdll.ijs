@@ -7,12 +7,12 @@ if. 0=4!:0<'libtsdll' do. 1[lib=: libtsdll return. end.
 t=. >IF64{'32';'64'
 s=. >(UNAME-:'Darwin'){'.so';'.dylib'
 if. IFUNIX do.
- lib=: jpath '~home/dev/j/tsdll/libtsdll',t,s
+ lib=: 'libtsdll',t,s
 else.
  if. IF64 do.
-  lib=: '\dev\j\p_tsdll\release64\tsdll.dll'
+  lib=: 'tsdll.dll'
  else.
-  lib=: '\dev\j\p_tsdll\release\tsdll.dll'
+  lib=: 'tsdll.dll'
  end.
 end.
 lib=: lib,' '
@@ -74,7 +74,7 @@ NB. l type is same as x on J64 and and error on J32
 if. IF64 do.
  assert. (9;(,9);2;3 4) =  'xbasic l *l l *l' dcd (,2);2;3 4
 else.
- assert. 'domain error'-:  'xbasic l *l l *l' dcd etx (,2);2;3 4 
+ assert. 'domain error'-:  'xbasic l *l l *l' dcd etx (,2);2;3 4
  assert. 5 0 -: cder ''  NB. error 5, result/arg declaration 0
 end.
 )
@@ -145,7 +145,7 @@ td4=: 32$'d i '
 (+/>yy)=>{.z=:('d4 d ',td4) dcd yy=:16$12.3;4
 
 xx=:'d5 d d i d i d i d *d *f *x *i'
-(+/;yy)=>{.z=: xx dcd yy=:1.1;2;3.3;4;5.5;6;7.7;2.2 3.3;3.3 4.4;23 24;46 47 
+(+/;yy)=>{.z=: xx dcd yy=:1.1;2;3.3;4;5.5;6;7.7;2.2 3.3;3.3 4.4;23 24;46 47
 
 tf=: 16$'f '
 (<.+/>yy)=<.>{.z=:('f1 f ',tf ) dcd yy=:<"0 [ 1.375*?8#10
@@ -259,7 +259,7 @@ xbasic_add=: ":>{.'xbasic_add x' dcd ''
 NB. 1 procindex - 0 is objxxx and 1 is objddd
 obj_add=:    <>{.'obj_add x' dcd ''
 5    = >{.'objxxx x * x x' dcd obj_add;2;3
-5.75 = >{.'objddd d * d d' dcd obj_add;2.5;3.25 
+5.75 = >{.'objddd d * d d' dcd obj_add;2.5;3.25
 5    = >{.'1 0 x * x x'     cd obj_add;2;3
 5.75 = >{.'1 1 d * d d'     cd obj_add;2.5;3.25
 

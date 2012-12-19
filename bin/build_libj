@@ -124,9 +124,19 @@ xs.o \
 xt.o \
 xu.o "
 
-echo COMP $COMP
-echo LINK $SOLINK
-export LIBJ_OBJS
+if [ $un = Win ]; then
+LIBJ_WIN_OBJS="win/jdll.o "
+if [ $olecom = 1 ]; then
+LIBJ_WINOLE_OBJS="win/jdllcomx.o "
+fi
+LIBJDEF="win/jdll.def"
+fi
+
+if [ $jjni = 1 ]; then
+LIBJ_JJNI_OBJS="javaconsole/jinterface.o "
+fi
+
+export LIBJ_OBJS LIBJ_WIN_OBJS LIBJ_WINOLE_OBJS LIBJDEF LIBJ_JJNI_OBJS
 
 echo takes minutes for a clean build
 echo "running: make libj >& make.txt"
@@ -138,10 +148,17 @@ cat make.txt | grep -Ev "assignment from incompatible pointer type|initializatio
 
 cat esum.txt
 
-if [ -x libj.$SOSUFFIX ]
+if [ -x $TARGET.$SOSUFFIX ]
 then
-cp libj.$SOSUFFIX  j/bin/.
-echo success: libj.$SOSUFFIX created and copied to j/bin
+strip $TARGET.$SOSUFFIX
+if [ $un = Win ]; then
+cp $TARGET.$SOSUFFIX  j/bin/j.$SOSUFFIX
+cp $TARGET.$SOSUFFIX  release/$un$bits/j.$SOSUFFIX
 else
-echo failed: libj.$SOSUFFIX NOT created
+cp $TARGET.$SOSUFFIX  j/bin/$TARGET.$SOSUFFIX
+cp $TARGET.$SOSUFFIX  release/$un$bits/$TARGET.$SOSUFFIX
+fi
+echo success: $TARGET.$SOSUFFIX created and copied to j/bin
+else
+echo failed: $TARGET.$SOSUFFIX NOT created
 fi

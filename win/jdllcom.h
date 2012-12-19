@@ -29,7 +29,7 @@ void setguids();
 int reg(BOOL set, LPSTR keys);
 
 extern char jmodule[];
-extern char jclass[];
+extern char joclass[];
 extern char jversion[];
 extern GUID jclsid;
 extern GUID jlibid;

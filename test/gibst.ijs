@@ -3,14 +3,14 @@ NB. i.!.0 and associates timing tests -----------------------------------
 L=: 1 : 0
 :
  f=: x&u
- assert. (threshold*{.t) <: -/}.t=: 10 timer 'f y','x u y',:'/:x'
+ assert. (threshold*{.t) <: | -/}.t=: 10 timer 'f y','x u y',:'/:x'
  1
 )
 
 R=: 1 : 0
 :
  f=: u&y
- assert. (threshold*{.t) <: -/}.t=: 10 timer 'f x','x u y',:'/:y'
+ assert. (threshold*{.t) <: | -/}.t=: 10 timer 'f x','x u y',:'/:y'
  1
 )
 

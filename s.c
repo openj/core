@@ -38,8 +38,6 @@
 /* named locales:                                                          */
 /* jt->stloc:  locales symbol table                                        */
 
-UI nmhash (I k,UC*v){UI z=*v>>7; DO(k,z=(k-i)^(1000003*z)^*v++;); R z;}
-
 static I symcol=(sizeof(L)+SZI-1)/SZI;
 
 B jtsymext(J jt,B b){A x,y;I j,m,n,s[2],*v,xn,yn;L*u;
@@ -74,7 +72,7 @@ L* jtsymnew(J jt,I*hv){I j;L*u,*v;
 
 B jtsymfree(J jt,L*u){I q;
  q=u->next;
- if(q)(q+jt->sympv)->prev=u->prev; 
+ if(q)(q+jt->sympv)->prev=u->prev;
  if(LHEAD&u->flag){*(I*)u->prev=q; if(q)(q+jt->sympv)->flag|=LHEAD;}
  else (u->prev+jt->sympv)->next=q;
  fa(u->name); u->name=0;                    /* zero out data fields        */
@@ -89,7 +87,7 @@ static SYMWALK(jtsymfreeha, B,B01,100,1, 1, RZ(symfree(d)))   /* free pool table
 B jtsymfreeh(J jt,A w,L*v){I*wv;L*u;
  wv=AV(w);
  ASSERTSYS(*wv,"symfreeh");
- u=*wv+jt->sympv; 
+ u=*wv+jt->sympv;
  RZ(symfree(u));
  RZ(symfreeha(w));
  memset(wv,C0,AN(w)*SZI);
@@ -102,8 +100,8 @@ B jtsymfreeh(J jt,A w,L*v){I*wv;L*u;
 static SYMWALK(jtsympoola, I,INT,100,1, 1, *zv++=j;)
 
 F1(jtsympool){A aa,*pu,q,x,y,*yv,z,*zv;I i,j,n,*u,*v,*xv;L*pv;
- RZ(w); 
- ASSERT(1==AR(w),EVRANK); 
+ RZ(w);
+ ASSERT(1==AR(w),EVRANK);
  ASSERT(!AN(w),EVLENGTH);
  GA(z,BOX,3,1,0); zv=AAV(z);
  n=*AS(jt->symp); pv=jt->sympv;
@@ -120,9 +118,9 @@ F1(jtsympool){A aa,*pu,q,x,y,*yv,z,*zv;I i,j,n,*u,*v,*xv;L*pv;
  }
  GA(y,BOX,n,1,0); yv=AAV(y); zv[2]=y;
  DO(n, yv[i]=mtv;);
- n=AN(jt->stloc); v=AV(jt->stloc); 
+ n=AN(jt->stloc); v=AV(jt->stloc);
  for(i=0;i<n;++i)if(j=v[i]){    /* per named locales    */
-  x=(j+jt->sympv)->val; 
+  x=(j+jt->sympv)->val;
   RZ(yv[j]=yv[*AV(x)]=aa=sfn(1,LOCNAME(x)));
   RZ(q=sympoola(x)); u=AV(q); DO(AN(q), yv[u[i]]=aa;);
  }
@@ -155,13 +153,13 @@ static L*jtprobeis(J jt,A a,A g){C*s;I*hv,k,m;L*v;NM*u;
  u=NAV(a); m=u->m; s=u->s; k=u->hash%AN(g); hv=AV(g)+(k?k:1);
  if(*hv){                                 /* !*hv means (0) empty slot    */
   v=*hv+jt->sympv;
-  while(1){                               
+  while(1){
    u=NAV(v->name);
    if(m==u->m&&!memcmp(s,u->s,m))R jt->cursymb=v;    /* (1) exact match   */
    if(!v->next)break;                                /* (2) link list end */
    v=v->next+jt->sympv;
  }}
- RZ(v=symnew(hv)); 
+ RZ(v=symnew(hv));
  v->name=ra(a);
  R jt->cursymb=v;
 }    /* probe for assignment */
@@ -170,25 +168,25 @@ static L*jtsyrd1(J jt,A a,A g,B b){A*v,x,y;L*e;NM*av;
  if(b&&jt->local&&(e=probe(a,jt->local))){av=NAV(a); R av->e=e;}
  RZ(g&&(y=LOCPATH(g)));
  if(e=probe(a,g))R e;
- v=AAV(y); 
+ v=AAV(y);
  DO(AN(y), x=v[i]; if(e=probe(a,stfind(1,AN(x),CAV(x))))break;);
  R e;
-}    /* find name a where the current locale is g */ 
+}    /* find name a where the current locale is g */
 
 static A jtlocindirect(J jt,I n,C*u){A a,g=jt->global,x,y;B lcl=1;C*s,*v,*xv;I k,xn;L*e;
  s=n+u;
  while(u<s){
   v=s; while('_'!=*--v); ++v;
   k=s-v; s=v-2; RZ(a=nfs(k,v));
-  e=syrd1(a,g,lcl); lcl=0; 
+  e=syrd1(a,g,lcl); lcl=0;
   ASSERTN(e,EVVALUE,a);
-  y=e->val;  
-  ASSERTN(!AR(y),EVRANK,a); 
+  y=e->val;
+  ASSERTN(!AR(y),EVRANK,a);
   ASSERTN(BOX&AT(y),EVDOMAIN,a);
-  x=AAV0(y); xn=AN(x); xv=CAV(x); 
-  ASSERTN(1>=AR(x),EVRANK,a); 
+  x=AAV0(y); xn=AN(x); xv=CAV(x);
+  ASSERTN(1>=AR(x),EVRANK,a);
   ASSERTN(xn,EVLENGTH,a);
-  ASSERTN(LIT&AT(x),EVDOMAIN,a); 
+  ASSERTN(LIT&AT(x),EVDOMAIN,a);
   ASSERTN(vlocnm(xn,xv),EVILNAME,a);
   RZ(g=stfind(1,xn,xv));
  }
@@ -208,9 +206,9 @@ static A jtdllsymaddr(J jt,A w,C flag){A*wv,x,y,z;I i,n,wd,*zv;L*v;
  RZ(w);
  n=AN(w); wv=AAV(w); wd=(I)w*ARELATIVE(w);
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
- GA(z,INT,n,AR(w),AS(w)); zv=AV(z); 
+ GA(z,INT,n,AR(w),AS(w)); zv=AV(z);
  for(i=0;i<n;++i){
-  x=WVR(i); v=syrd(nfs(AN(x),CAV(x)),0L); 
+  x=WVR(i); v=syrd(nfs(AN(x),CAV(x)),0L);
   ASSERT(v,EVVALUE);
   y=v->val;
   ASSERT(NOUN&AT(y),EVDOMAIN);
@@ -250,16 +248,16 @@ A jtsymbis(J jt,A a,A w,A g){A x;I m,n,wn,wr,wt;NM*v;L*e;V*wv;
  n=AN(a); v=NAV(a); m=v->m;
  if(n==m)ASSERT(!(jt->local&&g==jt->global&&probe(a,jt->local)),EVDOMAIN)
  else{C*s=1+m+v->s; RZ(g=NMILOC&v->flag?locindirect(n-m-2,1+s):stfind(1,n-m-2,s));}
- RZ(e=probeis(a,g)); 
+ RZ(e=probeis(a,g));
  if(jt->db)RZ(redef(w,e));
  wt=AT(w);
  if(wt&FUNC&&(wv=VAV(w),wv->f)){if(wv->id==CCOLON)wv->flag|=VNAMED; if(jt->glock)wv->flag|=VLOCK;}
- x=e->val; 
+ x=e->val;
  ASSERT(!(x&&AFRO&AFLAG(x)),EVRO);
  if(!(x&&AFNJA&AFLAG(x))){
-  RZ(w=ra(AFNJA&AFLAG(w)?w:rca(w))); 
-  nvrredef(x); 
-  fa(x); 
+  RZ(w=ra(AFNJA&AFLAG(w)?w:rca(w)));
+  nvrredef(x);
+  fa(x);
   e->val=w;
  }else if(x!=w){  /* replacing mapped data */
   if(wt&BOX)R smmis(x,w);

@@ -1,7 +1,7 @@
 NB. prehashed i. family of functions ------------------------------------
 
 g=: 4 : 0
- xx=: y{~(1e4,x) ?@$ #y 
+ xx=: y{~(1e4,x) ?@$ #y
  yy=: y{~(1e3,x) ?@$ #y
  ss=: y{~(    x) ?@$ #y
  fidot=: xx&i.
@@ -13,11 +13,11 @@ g=: 4 : 0
  assert. (fidot ss) -: xx i. ss
  assert. (fico  ss) -: xx i: ss
  assert. (fedot ss) -: ss e. xx
- 1 
+ 1
 )
 
 h=: 4 : 0
- xx=: y{~(1e4,x) ?@$ #y 
+ xx=: y{~(1e4,x) ?@$ #y
  yy=: y{~(1e3,x) ?@$ #y
  ss=: y{~(    x) ?@$ #y
  fidot=: xx&(i.!.0)
@@ -29,7 +29,7 @@ h=: 4 : 0
  assert. (fidot ss) -: xx i. ss
  assert. (fico  ss) -: xx i: ss
  assert. (fedot ss) -: ss e. xx
- 1 
+ 1
 )
 
 ''  g 0 1
@@ -113,4 +113,3 @@ f=: x&i.
 4!:55 ;:'f fedot fico fidot g h m ss x xx yy'
 
 
- 

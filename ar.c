@@ -13,23 +13,28 @@ static DF1(jtreduce);
 
 
 #define PARITY2         u=(UC*)&s; b=0; b^=*u++; b^=*u++;
-#define PARITY4         u=(UC*)&s; b=0; b^=*u++; b^=*u++; b^=*u++; b^=*u++; 
+#define PARITY4         u=(UC*)&s; b=0; b^=*u++; b^=*u++; b^=*u++; b^=*u++;
 #define PARITY8         u=(UC*)&s; b=0; b^=*u++; b^=*u++; b^=*u++; b^=*u++; b^=*u++; b^=*u++; b^=*u++; b^=*u++;
 
 #if SY_64
 #define PARITYW         PARITY8
 #else
 #define PARITYW         PARITY4
-#endif  
+#endif
 
-#if SY_ALIGN
+#if SY_ALIGN || _MISALIGN_BYTEVECTOR
 #define VDONE(T,PAR)  \
  {I q=n/sizeof(T);T s,*y=(T*)x; DO(m, s=0; DO(q, s^=*y++;); PAR; *z++=b==pc;);}
 
+#if _MISALIGN_BYTEVECTOR
+static void vdone(I m,I n,B*x,B*z,B pc){B b,*u;
+ DO(m, b=0; DO(n, b^=*x++;); *z++=b==pc;);
+}
+#else
 static void vdone(I m,I n,B*x,B*z,B pc){B b,*u;
  if(1==m){UI s,*xi;
   s=0; b=0;
-  xi=(I*)x; DO(n/SZI, s^=*xi++;); 
+  xi=(I*)x; DO(n/SZI, s^=*xi++;);
   u=(B*)xi; DO(n%SZI, b^=*u++;);
   u=(B*)&s; DO(SZI,   b^=*u++;);
   *z=b==pc;
@@ -38,6 +43,7 @@ static void vdone(I m,I n,B*x,B*z,B pc){B b,*u;
  else  if(0==n%sizeof(US  ))VDONE(US,  PARITY2)
  else  DO(m, b=0; DO(n, b^=*x++;); *z++=b==pc;);
 }
+#endif
 #else
 static void vdone(I m,I n,B*x,B*z,B pc){B b;I q,r;UC*u;UI s,*y;
  q=n/SZI; r=n%SZI; y=(UI*)x;
@@ -114,7 +120,7 @@ static void vdone(I m,I n,B*x,B*z,B pc){B b;I q,r;UC*u;UI s,*y;
 
 REDUCECFX(  eqinsB, EQ,  IEQ,  SEQ,  BEQ,  vdone(m,n,x,z,(B)(n%2)))
 REDUCECFX(  neinsB, NE,  INE,  SNE,  BNE,  vdone(m,n,x,z,1       ))
-REDUCECFX(  orinsB, OR,  IOR,  SOR,  BOR,  DO(m, *z++=1&&memchr(x,C1,n);                         x+=c;)) 
+REDUCECFX(  orinsB, OR,  IOR,  SOR,  BOR,  DO(m, *z++=1&&memchr(x,C1,n);                         x+=c;))
 REDUCECFX( andinsB, AND, IAND, SAND, BAND, DO(m, *z++=!  memchr(x,C0,n);                         x+=c;))
 REDUCEBFX(  ltinsB, LT,  ILT,  SLT,  BLT,  DO(m, *z++= *(x+n-1)&&!memchr(x,C1,n-1)?1:0;          x+=c;))
 REDUCEBFX(  leinsB, LE,  ILE,  SLE,  BLE,  DO(m, *z++=!*(x+n-1)&&!memchr(x,C0,n-1)?0:1;          x+=c;))
@@ -129,13 +135,13 @@ REDUCEPFX(plusinsB,I,B,PLUS)
 #else
 AHDRR(plusinsB,I,B){I d,dw,i,p,q,r,r1,s;UC*tu;UI*v;
  if(c==n&&n<SZI)DO(m, s=0; DO(n, s+=*x++;); *z++=s;)
- else if(c==n){UI t;
+ else if((!MISALIGN_BYTEVECTOR)&&(c==n)){UI t;
   p=n/SZI; q=p/255; r=p%255; r1=n%SZI; tu=(UC*)&t;
   for(i=0;i<m;++i){
-   s=0; v=(UI*)x; 
+   s=0; v=(UI*)x;
    DO(q, t=0; DO(255, t+=*v++;); DO(SZI, s+=tu[i];));
          t=0; DO(r,   t+=*v++;); DO(SZI, s+=tu[i];);
-   x=(B*)v; DO(r1, s+=*x++;); 
+   x=(B*)v; DO(r1, s+=*x++;);
    *z++=s;
  }}else{A t;UI*tv;
   d=c/n; dw=(d+SZI-1)/SZI; p=dw*SZI; memset(z,C0,m*d*SZI);
@@ -149,24 +155,24 @@ AHDRR(plusinsB,I,B){I d,dw,i,p,q,r,r1,s;UC*tu;UI*v;
 #endif
 
 
-REDUCEOVF( plusinsI, I, I,  PLUSR, PLUSVV, PLUSRV) 
-REDUCEOVF(minusinsI, I, I, MINUSR,MINUSVV,MINUSRV) 
+REDUCEOVF( plusinsI, I, I,  PLUSR, PLUSVV, PLUSRV)
+REDUCEOVF(minusinsI, I, I, MINUSR,MINUSVV,MINUSRV)
 REDUCEOVF(tymesinsI, I, I, TYMESR,TYMESVV,TYMESRV)
 
 REDUCCPFX( plusinsO, D, I,  PLUSO)
-REDUCCPFX(minusinsO, D, I, MINUSO) 
-REDUCCPFX(tymesinsO, D, I, TYMESO) 
+REDUCCPFX(minusinsO, D, I, MINUSO)
+REDUCCPFX(tymesinsO, D, I, TYMESO)
 
-REDUCENAN( plusinsD, D, D, PLUS  ) 
+REDUCENAN( plusinsD, D, D, PLUS  )
 REDUCENAN( plusinsZ, Z, Z, zplus )
 REDUCEPFX( plusinsX, X, X, xplus )
 
-REDUCEPFX(minusinsB, I, B, MINUS ) 
-REDUCENAN(minusinsD, D, D, MINUS ) 
-REDUCENAN(minusinsZ, Z, Z, zminus) 
+REDUCEPFX(minusinsB, I, B, MINUS )
+REDUCENAN(minusinsD, D, D, MINUS )
+REDUCENAN(minusinsZ, Z, Z, zminus)
 
-REDUCEPFX(tymesinsD, D, D, TYMES ) 
-REDUCEPFX(tymesinsZ, Z, Z, ztymes) 
+REDUCEPFX(tymesinsD, D, D, TYMES )
+REDUCEPFX(tymesinsZ, Z, Z, ztymes)
 
 REDUCENAN(  divinsD, D, D, DIV   )
 REDUCENAN(  divinsZ, Z, Z, zdiv  )
@@ -197,11 +203,11 @@ static DF1(jtredg){PROLOG;DECLF;A y,z;B p;C*u,*v;I i,k,n,old,r,wr,yn,yr,*ys,yt;
  n=IC(w); p=ARELATIVE(w);
  RZ(z=tail(w)); yt=AT(z); yn=AN(z); yr=AR(z); ys=1+AS(w);
  k=yn*bp(yt); v=CAV(w)+k*(n-1);
- old=jt->tbase+jt->ttop; 
+ old=jt->tbase+jt->ttop;
  for(i=1;i<n;++i){
-  v-=k; 
-  GA(y,yt,yn,yr,ys); u=CAV(y); 
-  if(p){A1*wv=(A1*)v,*yv=(A1*)u;I d=(I)w-(I)y; AFLAG(y)=AFREL; DO(yn, yv[i]=d+wv[i];);}else MC(u,v,k); 
+  v-=k;
+  GA(y,yt,yn,yr,ys); u=CAV(y);
+  if(p){A1*wv=(A1*)v,*yv=(A1*)u;I d=(I)w-(I)y; AFLAG(y)=AFREL; DO(yn, yv[i]=d+wv[i];);}else MC(u,v,k);
   RZ(z=CALL2(f2,y,z,fs));
   gc(z,old);
  }
@@ -222,9 +228,9 @@ static A jtredsp1a(J jt,C id,A z,A e,I n,I r,I*s){A t;B b,p=0;D d=1;
   case CSTAR:    if(n&&equ(e,one ))R z; DO(r, d*=s[i];); t=expn2(e,d>IMAX?scf(d-n):sc((I)d-n)); R n?tymes(z,t):t;
   case CEQ:      p=1;  /* fall thru */
   case CNE:
-   ASSERT(B01&AT(e),EVNONCE); 
-   if(!n)*BAV(z)=p; 
-   b=1; DO(r, if(!(s[i]%2)){b=0; break;}); 
+   ASSERT(B01&AT(e),EVNONCE);
+   if(!n)*BAV(z)=p;
+   b=1; DO(r, if(!(s[i]%2)){b=0; break;});
    R !p==*BAV(e)&&b!=n%2?not(z):z;
 }}   /* f/w on sparse vector w, post processing */
 
@@ -256,10 +262,10 @@ static A jtredspd(J jt,A w,A self,C id,VF ado,I cv,I f,I r,I zt){A a,e,x,z,zx;I 
  wp=PAV(w); a=SPA(wp,a); e=SPA(wp,e); x=SPA(wp,x); s=AS(x);
  xr=r; v=AV(a); DO(AN(a), if(f<v[i])--xr;); xf=AR(x)-xr;
  m=prod(xf,s); c=m?AN(x)/m:0; n=s[xf];
- GA(zx,zt,AN(x)/n,AR(x)-1,s); ICPY(xf+AS(zx),1+xf+s,xr-1); 
+ GA(zx,zt,AN(x)/n,AR(x)-1,s); ICPY(xf+AS(zx),1+xf+s,xr-1);
  ado(jt,m,c,n,AV(zx),AV(x)); RE(0);
  switch(id){
-  case CPLUS: if(!equ(e,zero))RZ(e=tymes(e,sc(n))); break; 
+  case CPLUS: if(!equ(e,zero))RZ(e=tymes(e,sc(n))); break;
   case CSTAR: if(!equ(e,one )&&!equ(e,zero))RZ(e=expn2(e,sc(n))); break;
   case CEQ:   ASSERT(B01&AT(x),EVNONCE); if(!*BAV(e)&&0==n%2)e=one; break;
   case CNE:   ASSERT(B01&AT(x),EVNONCE); if( *BAV(e)&&1==n%2)e=zero;
@@ -279,7 +285,7 @@ static A jtredspd(J jt,A w,A self,C id,VF ado,I cv,I f,I r,I zt){A a,e,x,z,zx;I 
 static B jtredspsprep(J jt,C id,I f,I zt,A a,A e,A x,A y,I*zm,I**zdv,B**zpv,I**zqv,C**zxxv,A*zsn){
      A d,p,q,sn=0,xx;B*pv;C*xxv;I*dv,j,k,m,mm,*qv=0,*u,*v,yc,yr,yr1,*yv;
  v=AS(y); yr=v[0]; yc=v[1]; yr1=yr-1;
- RZ(d=grade1(eq(a,sc(f)))); dv=AV(d); 
+ RZ(d=grade1(eq(a,sc(f)))); dv=AV(d);
  DO(AN(a), if(i!=dv[i]){RZ(q=grade1p(d,y)); qv=AV(q); break;});
  GA(p,B01,yr,1,0); pv=BAV(p); memset(pv,C0,yr);
  u=yv=AV(y); m=mm=0; j=-1; if(qv)v=yv+yc*qv[0];
@@ -306,7 +312,7 @@ static B jtredspsprep(J jt,C id,I f,I zt,A a,A e,A x,A y,I*zm,I**zdv,B**zpv,I**z
 static B jtredspse(J jt,C id,I wm,I xt,A e,A zx,A sn,A*ze,A*zzx){A b;B nz;I t,zt;
  RZ(b=ne(zero,sn)); nz=!all0(b); zt=AT(zx);
  switch(id){
-  case CPLUS:    if(nz)RZ(zx=plus (zx,       tymes(e,sn) )); RZ(e=       tymes(e,sc(wm)) ); break; 
+  case CPLUS:    if(nz)RZ(zx=plus (zx,       tymes(e,sn) )); RZ(e=       tymes(e,sc(wm)) ); break;
   case CSTAR:    if(nz)RZ(zx=tymes(zx,bcvt(1,expn2(e,sn)))); RZ(e=bcvt(1,expn2(e,sc(wm)))); break;
   case CPLUSDOT: if(nz)RZ(zx=gcd(zx,from(b,over(zero,e))));                 break;
   case CSTARDOT: if(nz)RZ(zx=lcm(zx,from(b,over(one ,e))));                 break;
@@ -325,7 +331,7 @@ static A jtredsps(J jt,A w,A self,C id,VF ado,I cv,I f,I r,I zt){A a,a1,e,sn,x,x
  RZ(w);
  ASSERT(strchr(fca,id),EVNONCE);
  wr=AR(w); ws=AS(w); wm=ws[f];
- wp=PAV(w); a=SPA(wp,a); e=SPA(wp,e); 
+ wp=PAV(w); a=SPA(wp,a); e=SPA(wp,e);
  y=SPA(wp,i); v=AS(y); yr=v[0]; yc=v[1]; yv=AV(y);
  x=SPA(wp,x); xt=AT(x); xc=aii(x);
  RZ(redspsprep(id,f,zt,a,e,x,y,&m,&dv,&pv,&qv,&xxv,&sn));
@@ -345,9 +351,9 @@ static A jtredsps(J jt,A w,A self,C id,VF ado,I cv,I f,I r,I zt){A a,a1,e,sn,x,x
  RZ(a1=ca(a)); v=AV(a1); n=0; DO(AN(a), if(f!=v[i])v[n++]=v[i]-(f<v[i]););
  GA(z,STYPE(AT(zx)),1,wr-1,ws); if(1<r)ICPY(f+AS(z),f+1+ws,r-1);
  zp=PAV(z);
- SPB(zp,a,vec(INT,n,v)); 
+ SPB(zp,a,vec(INT,n,v));
  SPB(zp,e,cvt(AT(zx),e));
- SPB(zp,x,zx); 
+ SPB(zp,x,zx);
  SPB(zp,i,zy);
  R z;
 }    /* f/"r w for sparse w, rank > 1, sparse axis */
@@ -362,8 +368,8 @@ static DF1(jtreducesp){A a,g,x,y,z;B b;C id;I cv,f,n,r,rr[2],*v,wn,wr,*ws,wt,zt;
  vains(id,wt,&ado,&cv);
  if(2==n&&!(ado&&strchr(fca,id))){
   rr[0]=0; rr[1]=r;
-  jt->rank=rr; x=from(zero,w); 
-  jt->rank=rr; y=from(one, w); 
+  jt->rank=rr; x=from(zero,w);
+  jt->rank=rr; y=from(one, w);
   R df2(x,y,g);
  }
  if(!ado)R redg(w,self);
@@ -463,11 +469,11 @@ static DF1(jtreduce){A z;C id;I c,cv,f,m,n,r,rr[2],t,wn,wr,*ws,wt,zt;VF ado;
 
 static A jtredcatsp(J jt,A w,A z,I r){A a,q,x,y;B*b;I c,d,e,f,j,k,m,n,n1,p,*u,*v,wr,*ws,xr;P*wp,*zp;
  ws=AS(w); wr=AR(w); f=wr-r; p=ws[1+f];
- wp=PAV(w); x=SPA(wp,x); y=SPA(wp,i); a=SPA(wp,a); v=AV(a); 
+ wp=PAV(w); x=SPA(wp,x); y=SPA(wp,i); a=SPA(wp,a); v=AV(a);
  m=*AS(y); n=AN(a); n1=n-1; xr=AR(x);
  RZ(b=bfi(wr,a,1));
  c=b[f]; d=b[1+f]; if(c&&d)b[f]=0; e=f+!c;
- j=0; DO(n, if(e==v[i]){j=i; break;}); 
+ j=0; DO(n, if(e==v[i]){j=i; break;});
  k=1; DO(f, if(!b[i])++k;);
  zp=PAV(z); SPB(zp,e,ca(SPA(wp,e)));
  GA(q,INT,n-(c&&d),1,0); v=AV(q); DO(wr, if(b[i])*v++=i-(i>f);); SPB(zp,a,q);
@@ -481,12 +487,12 @@ static A jtredcatsp(J jt,A w,A z,I r){A a,q,x,y;B*b;I c,d,e,f,j,k,m,n,n1,p,*u,*v
   MC(AV(q),AV(x),AN(x)*bp(AT(x)));
   SPB(zp,x,q); SPB(zp,i,ca(y));
  }else{             /* other */
-  GA(q,INT,xr,1,0); v=AV(q); 
+  GA(q,INT,xr,1,0); v=AV(q);
   if(1!=k){*v++=0; *v++=k; e=0; DO(xr-1, ++e; if(e!=k)*v++=e;); RZ(x=cant2(q,x));}
   v=AV(q); u=AS(x); *v=u[0]*u[1]; ICPY(1+v,2+u,xr-1); RZ(x=reshape(vec(INT,xr-1,v),x));
   e=ws[f+c]; RZ(y=repeat(sc(e),y)); v=j+AV(y);
   if(c)DO(m, k=p**v; DO(e, *v=k+  i; v+=n;);)
-  else DO(m, k=  *v; DO(e, *v=k+p*i; v+=n;);); 
+  else DO(m, k=  *v; DO(e, *v=k+p*i; v+=n;););
   RZ(q=grade1(y)); RZ(y=from(q,y)); RZ(x=from(q,x));
   SPB(zp,x,x); SPB(zp,i,y);
  }
@@ -498,7 +504,7 @@ static DF1(jtredcat){A z;B b;I f,r,*s,*v,wr;
  wr=AR(w); r=jt->rank?jt->rank[1]:wr; f=wr-r; s=AS(w); jt->rank=0;
  b=1==r&&1==s[f];
  if(2>r&&!b)R ca(w);
- GA(z,AT(w),AN(w),wr-1,s); 
+ GA(z,AT(w),AN(w),wr-1,s);
  if(!b){v=f+AS(z); RE(*v=mult(s[f],s[1+f])); ICPY(1+v,2+f+s,r-2);}
  if(SPARSE&AT(w))R redcatsp(w,z,r);
  MC(AV(z),AV(w),AN(w)*bp(AT(w)));
@@ -528,9 +534,9 @@ static DF1(jtredstitch){A c,y;I f,n,r,*s,*v,wr;
   RE(v[f+1]=mult(s[f],s[f+2])); ICPY(v+f+2,s+3+f,r-3);
   R reshape(x,y);
  }else{
-  v=AS(y); 
+  v=AS(y);
   RE(v[f+1]=mult(s[f],s[f+2])); ICPY(v+f+2,s+3+f,r-3);
-  --AR(y); 
+  --AR(y);
   R y;
 }}   /* ,./"r w */
 
@@ -563,7 +569,7 @@ static DF2(jtoprod){R df2(a,w,VAV(self)->h);}
 F1(jtslash){A h;AF f1=jtreduce;C c;V*v;
  RZ(w);
  if(NOUN&AT(w))R evger(w,sc(GINSERT));
- v=VAV(w); 
+ v=VAV(w);
  switch(v->id){
   case CCOMMA:  f1=jtredcat;    break;
   case CCOMDOT: f1=jtredstitch; break;
@@ -607,7 +613,7 @@ DF1(jtmean){A z;I c,f,m,n,r,wn,wr,*ws,wt;
  if(!(wn&&2<n&&wt&INT+FL))R divide(df1(w,qq(slash(ds(CPLUS)),sc(r))),sc(n));
  GA(z,FL,wn/n,MAX(0,wr-1),ws); if(1<r)ICPY(f+AS(z),f+1+ws,r-1);
  m=prod(f,ws); c=m?wn/m:prod(r,f+ws);
- if(wt&INT)meanI(m,c,n,DAV(z), AV(w)); 
+ if(wt&INT)meanI(m,c,n,DAV(z), AV(w));
  else      meanD(m,c,n,DAV(z),DAV(w));
  RE(0); R z;
 }    /* (+/%#)"r w */

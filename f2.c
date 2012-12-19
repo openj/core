@@ -4,17 +4,15 @@
 /* Format: ": Dyad                                                         */
 
 #include "j.h"
-
-
 static F2(jtth2box){A z;I n,p,q,*v,x,y;
  p=jt->pos[0]; q=jt->pos[1];
  RZ(a=vi(a)); n=AN(a); v=AV(a);
  ASSERT(1>=AR(a),EVRANK);
  ASSERT(1==n||2==n,EVLENGTH);
- x=v[0]; y=2>n?0:v[1]; 
+ x=v[0]; y=2>n?0:v[1];
  ASSERT(0<=x&&x<=2&&0<=y&&y<=2,EVDOMAIN);
  jt->pos[0]=x; jt->pos[1]=y;
- z=thorn1(w); 
+ z=thorn1(w);
  jt->pos[0]=p; jt->pos[1]=q;
  R z;
 }
@@ -30,7 +28,7 @@ static I jtc2j(J jt,B e,I m,C*zv){C c,*s,*t;I k,p;
  }}
  t=jt->th2buf; k=strlen(t);
  if(!e&&(s=memchr(t,'-',k))){  /* turn -0 to 0 */
-  *s=' '; 
+  *s=' ';
   DO(k-(1+s-t), c=s[1+i]; if(c!='0'&&c!='.'){*s=CSIGN; break;});
   if(!m&&' '==*s){++t; --k;}
  }
@@ -59,7 +57,7 @@ static B jtfmtex(J jt,I m,I d,I n,I*xv,B b,I c,I q,I ex){B bm=b||m;C*u,*v=jt->th
 }    /* format one extended integer in exponential form */
 
 static B jtfmtx(J jt,B e,I m,I d,C*s,I t,X*wv){B b;C*v=jt->th2buf;I c,n,p,q,*xv;X x;
- x=*wv; n=AN(x); xv=AV(x)+n-1; 
+ x=*wv; n=AN(x); xv=AV(x)+n-1;
  c=*xv; b=0>c; if(b)c=-c;
  if(c==XPINF){if(b)*v++='_'; *v++='_'; *v=0; R 1;}
  q=c>999?4:c>99?3:c>9?2:1; p=q+XBASEN*(n-1);
@@ -67,9 +65,9 @@ static B jtfmtx(J jt,B e,I m,I d,C*s,I t,X*wv){B b;C*v=jt->th2buf;I c,n,p,q,*xv;
  else if(m&&m<b+p+d+!!d){memset(v,'*',m); v[m]=0;}
  else{
   if(jt->th2bufn<4+p+d){A s; jt->th2bufn=4+p+d; GA(s,LIT,jt->th2bufn,1,0); v=jt->th2buf=CAV(s);}
-  if(' '==*s)*v++=' '; if(b)*v++='_'; 
+  if(' '==*s)*v++=' '; if(b)*v++='_';
   sprintf(v,FMTI,c); v+=q;
-  DO(n-1, c=*--xv; sprintf(v,FMTI04,b?-c:c); v+=XBASEN;); 
+  DO(n-1, c=*--xv; sprintf(v,FMTI04,b?-c:c); v+=XBASEN;);
   if(d){*v++='.'; memset(v,'0',d); v[d]=0;}
  }
  R 1;
@@ -114,7 +112,11 @@ static void jtfmt1(J jt,B e,I m,I d,C*s,I t,C*wv){D y;
    else if(!memcmp(wv,&infm,SZD))strcpy(jt->th2buf,e?" __" :' '==*s?" __":"__");
    else if(_isnan(*wv)          )strcpy(jt->th2buf,e?"  _.":' '==*s?" _.":"_.");
    else sprintf(jt->th2buf,s,y);
-}}   /* format one number */
+}
+#ifdef __MINGW32__
+if ('+'==jt->th2buf[0])jt->th2buf[0]=' ';
+#endif
+}   /* format one number */
 
 static void jtth2c(J jt,B e,I m,I d,C*s,I n,I t,I wk,C*wv,I zk,C*zv){
  DO(n, fmt1(e,m,d,s,t,wv); c2j(e,m,zv); zv+=zk; wv+=wk;);
@@ -131,7 +133,7 @@ static A jtth2a(J jt,B e,I m,I d,C*s,I n,I t,I wk,C*wv,B first){PROLOG;A y,z;B b
  }
  m+=!first;
  GA(y,LIT,n*m,2,0); *AS(y)=n; *(1+AS(y))=m;
- yv=CAV(y); memset(yv,' ',AN(y));  u=zv; 
+ yv=CAV(y); memset(yv,' ',AN(y));  u=zv;
  if(e){yv+=!first; DO(n, q=strlen(u); MC(yv+(b&&CSIGN!=*u),u,q); yv+=m; u+=1+q;);}
  else {yv+=m;      DO(n, q=strlen(u); MC(yv-q,          u,q); yv+=m; u+=1+q;);}
  EPILOG(y);
@@ -154,8 +156,13 @@ static B jtth2ctrl(J jt,A a,A*ep,A*mp,A*dp,A*sp,I*zkp){A da,ea,ma,s;B b=1,*ev,r;
   }
   if(0>m)m=-m; if(0>d)d=-d; ASSERT(0<=m&&0<=d,EVLIMIT);
   if(0<=x)sprintf(sv, "%%"FMTI"."FMTI"f",  m,d);
+// mingw bug for spec "%- 7.0e+000" , missing the leading space for positive number
+#ifdef __MINGW32__
+  else    sprintf(sv, m?"%%-+"FMTI"."FMTI"e" :"%%-"FMTI"."FMTI"e", m?m-1:0,d+!!(SYS&SYS_PC));
+#else
   else    sprintf(sv, m?"%%- "FMTI"."FMTI"e" :"%%-"FMTI"."FMTI"e", m?m-1:0,d+!!(SYS&SYS_PC));
-  sv+=sk; ev[i]=0>x; mv[i]=m; dv[i]=d; zk+=m; b=b&&m; 
+#endif
+  sv+=sk; ev[i]=0>x; mv[i]=m; dv[i]=d; zk+=m; b=b&&m;
   if(jt->th2bufn<m)jt->th2bufn=m; if(jt->th2bufn<500+d)jt->th2bufn=500+d;
  }
  GA(s,LIT,jt->th2bufn,1,0); jt->th2buf=CAV(s);
@@ -181,8 +188,8 @@ F2(jtthorn2){PROLOG;A da,ea,h,ma,s,y,*yv,z;B e,*ev;C*sv,*wv,*zv;I an,c,d,*dv,k,m
   DO(c, if(i<an){e=ev[i]; m=mv[i]; d=dv[i];} RZ(yv[i]=th2a(e,m,d,sv+=sk,n,t,wk,wv+=k,(B)!i)););
   RZ(z=razeh(y));
   if(2<r||1==n&&2!=r){
-   if(!r)r=1; 
-   RZ(h=vec(INT,r,ws)); *(AV(h)+r-1)=*(1+AS(z)); 
+   if(!r)r=1;
+   RZ(h=vec(INT,r,ws)); *(AV(h)+r-1)=*(1+AS(z));
    RZ(z=reshape(h,z));
  }}
  EPILOG(z);

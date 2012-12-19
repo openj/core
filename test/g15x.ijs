@@ -11,7 +11,7 @@ require 'dll'         NB. DLL utils
 
 3 : 0''
 if. pc do.
- require 'winapi'      NB. API utils
+ require '~addons/api/winapi/winapi.ijs'      NB. API utils
 else.
  winset=:1:
 end.
@@ -44,11 +44,11 @@ fsetptr   =: 4 : '>{.Fsetptr x;y;(<0);FILE_BEGIN'
 fcreate=: 3 : 0   NB. fcreate name
  >{.Fcreate y,(GENERIC_READ+GENERIC_WRITE);0;(<0);CREATE_NEW   ;0;0
 )
- 
+
 fopen  =: 3 : 0   NB. fopen name
  >{.Fcreate y,(GENERIC_READ+GENERIC_WRITE);0;(<0);OPEN_EXISTING;0;0
 )
- 
+
 fwrite =: 4 : 0   NB. string fwrite handle
  Fwrite y;x;(#x);(,0);<<0
 )

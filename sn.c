@@ -11,7 +11,7 @@ B jtvnm(J jt,I n,C*s){B b=0;C c,d,t;I j,k;
  c=*s; d=*(s+n-1);
  if(jt->dotnames&&2==n&&'.'==d&&('m'==c||'n'==c||'u'==c||'v'==c||'x'==c||'y'==c))R 1;
  RZ(CA==ctype[c]);
- c='a'; 
+ c='a';
  DO(n, d=c; c=s[i]; t=ctype[c]; RZ(t==CA||t==C9); if(c=='_'&&d=='_'&&!b&&i!=n-1){j=1+i; b=1;});
  if(c=='_'){DO(j=n-1, if('_'==s[--j])break;); k=n-j-2; R!b&&j&&(!k||vlocnm(k,s+j+1));}
  if(!b)R 1;
@@ -19,7 +19,7 @@ B jtvnm(J jt,I n,C*s){B b=0;C c,d,t;I j,k;
  R !k;
 }    /* validate name s, return type or 0 if error */
 
-B vlocnm(I n,C*s){C c,t; 
+B vlocnm(I n,C*s){C c,t;
  if(!n)R 0;
  DO(n, t=ctype[c=s[i]]; RZ(c!='_'&&(t==CA||t==C9)););
  if(C9==ctype[*s]){RZ(1==n||'0'!=*s); DO(n, c=s[i]; RZ('0'<=c&&c<='9'););}
@@ -27,14 +27,14 @@ B vlocnm(I n,C*s){C c,t;
 }    /* validate locale name */
 
 A jtnfs(J jt,I n,C*s){A z;C c,f,*t;I m,p;NM*zv;
- DO(n, if(' '!=*s)break; ++s; --n;); 
+ DO(n, if(' '!=*s)break; ++s; --n;);
  t=s+n-1;
  DO(n, if(' '!=*t)break; --t; --n;);
  if((1==n||2==n&&'.'==s[1])&&strchr("mnuvxy",c=*s)){
   if(1==n)R c=='y'?ynam:c=='x'?xnam:c=='v'?vnam:c=='u'?unam:c=='n'?nnam:mnam;
   else    R c=='y'?ydot:c=='x'?xdot:c=='v'?vdot:c=='u'?udot:c=='n'?ndot:mdot;
  }
- ASSERT(n,EVILNAME); 
+ ASSERT(n,EVILNAME);
  GA(z,NAME,n,1,0); zv=NAV(z);
  memcpy(zv->s,s,n); *(n+zv->s)=0;
  f=0; m=n; p=0;
@@ -43,7 +43,7 @@ A jtnfs(J jt,I n,C*s){A z;C c,f,*t;I m,p;NM*zv;
  ASSERT(m<=255&&p<=255,EVLIMIT);
  zv->flag=f;
  zv->sn=0; zv->e=0;
- zv->m=(UC)m; zv->hash=nmhash(m,s); 
+ zv->m=(UC)m; zv->hash=NMHASH(m,s);
  R z;
 }    /* name from string */
 
@@ -73,11 +73,11 @@ static F1(jtstdnm){C*s;I j,n,p,q;
 F1(jtonm){A x,y; RZ(x=ope(w)); y=stdnm(x); ASSERTN(y,EVILNAME,nfs(AN(x),CAV(x))); R y;}
 
 
-F1(jtnc){A*wv,x,y,z;I i,n,t,wd,*zv;L*v; 
+F1(jtnc){A*wv,x,y,z;I i,n,t,wd,*zv;L*v;
  RZ(w);
  n=AN(w); wv=AAV(w); wd=(I)w*ARELATIVE(w);
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
- GA(z,INT,n,AR(w),AS(w)); zv=AV(z); 
+ GA(z,INT,n,AR(w),AS(w)); zv=AV(z);
  for(i=0;i<n;++i){
   x=0;
   RE(y=stdnm(WVR(i)));
@@ -88,7 +88,7 @@ F1(jtnc){A*wv,x,y,z;I i,n,t,wd,*zv;L*v;
 }    /* 4!:0  name class */
 
 
-static SYMWALK(jtnlxxx, A,BOX,20,1, jt->nla[*((UC*)NAV(d->name)->s)]&&jt->nlt&AT(d->val), 
+static SYMWALK(jtnlxxx, A,BOX,20,1, jt->nla[*((UC*)NAV(d->name)->s)]&&jt->nlt&AT(d->val),
     RZ(*zv++=sfn(1,d->name)) )
 
        SYMWALK(jtnlsym, A,BOX,20,1, jt->nla[*((UC*)NAV(d->name)->s)],
@@ -97,8 +97,8 @@ static SYMWALK(jtnlxxx, A,BOX,20,1, jt->nla[*((UC*)NAV(d->name)->s)]&&jt->nlt&AT
 static I nlmask[] = {NOUN,ADV,CONJ,VERB, MARK,MARK,SYMB,MARK};
 
 static F1(jtnlx){A z=mtv;B b;I m=0,*v,x;
- RZ(w=vi(w)); v=AV(w); 
- DO(AN(w), x=*v++; m|=nlmask[x<0||6<x?7:x];); 
+ RZ(w=vi(w)); v=AV(w);
+ DO(AN(w), x=*v++; m|=nlmask[x<0||6<x?7:x];);
  jt->nlt=m&RHS; b=1&&jt->nlt&RHS;
  ASSERT(!(m&MARK),EVDOMAIN);
  if(b           )RZ(z=nlxxx(jt->global));
@@ -113,7 +113,7 @@ F1(jtnl1){memset(jt->nla,C1,256L); R nlx(w);}
 F2(jtnl2){UC*u;
  RZ(a&&w);
  ASSERT(LIT&AT(a),EVDOMAIN);
- memset(jt->nla,C0,256L); 
+ memset(jt->nla,C0,256L);
  u=UAV(a); DO(AN(a),jt->nla[*u++]=1;);
  R nlx(w);
 }    /* 4!:1  name list */
@@ -121,7 +121,7 @@ F2(jtnl2){UC*u;
 
 F1(jtscind){A*wv,x,y,z;I n,wd,*zv;L*v;
  RZ(w);
- n=AN(w); 
+ n=AN(w);
  ASSERT(!n||BOX&AT(w),EVDOMAIN);
  wv=AAV(w); wd=(I)w*ARELATIVE(w);
  GA(z,INT,n,AR(w),AS(w)); zv=AV(z);
@@ -143,7 +143,7 @@ static A jtnch1(J jt,B b,A w,I*pm,A ch){A*v,x,y;C*s,*yv;I*e,i,k,m,p,wn;L*d;
     if(b){
      if(m==AN(ch)){RZ(ch=ext(0,ch)); v=m+AAV(ch);}
      x=d->name; k=NAV(x)->m;
-     GA(y,LIT,k+2+p,1,0); yv=CAV(y); 
+     GA(y,LIT,k+2+p,1,0); yv=CAV(y);
      MC(yv,NAV(x)->s,k); MC(1+k+yv,s,p); yv[k]=yv[1+k+p]='_';
      *v++=y; ++m;
    }}

@@ -4,8 +4,9 @@
 /* #define READLINE for Unix readline support */
 #ifdef _WIN32
 #include <windows.h>
-#include <io.h> 
+#include <io.h>
 #else
+#include <sys/resource.h>
 #define _isatty isatty
 #define _fileno fileno
 #endif
@@ -20,11 +21,20 @@ static char input[30000];
 /* J calls for keyboard input (debug suspension and 1!:1[1) */
 /* we call to get next input */
 #ifdef READLINE
+#ifndef ANDROID
 /* readlin.h */
 int   add_history(const char *);
 int   read_history(const char *);
 int   write_history(const char *);
 char* readline(const char *);
+#else
+#include "linenoise.h"
+#define add_history    linenoiseHistoryAdd
+#define read_history   linenoiseHistoryLoad
+#define write_history  linenoiseHistorySave
+#define readline       linenoise
+#define using_history()
+#endif
 
 int hist=1;
 char histfile[256];
@@ -51,7 +61,7 @@ if(hist)
 	if(line) free(line); /* free last input */
 	line = readline(prompt);
 	if(!line) return "2!:55''"; /* ^d eof */
-	if(*line) add_history(line); 
+	if(*line) add_history(line);
 	return line;
 }
 #endif
@@ -76,17 +86,17 @@ char* Jinput_stdio(char* prompt)
 	return input;
 }
 
-char* _stdcall Jinput(J jt,char* prompt){
+C* _stdcall Jinput(J jt,C* prompt){
 #ifdef READLINE
     if(isatty(0)){
 		return Jinput_rl(prompt);
-    } else 
+    } else
 #endif
 	return Jinput_stdio(prompt);
 }
 
 /* J calls for output */
-void _stdcall Joutput(J jt,int type, char* s)
+void _stdcall Joutput(J jt,int type, C* s)
 {
  if(MTYOEXIT==type)
  {
@@ -117,7 +127,7 @@ void addargv(int argc, char* argv[], C* d)
    if('\''==*(p-1))*p++='\'';
   }
   *p++='\'';
- } 
+ }
  *p=0;
 }
 
@@ -126,13 +136,19 @@ J jt;
 int main(int argc, char* argv[])
 {
  void* callbacks[] = {Joutput,0,Jinput,0,(void*)SMCON}; int type;
-
+#if !defined(WIN32) && !(defined(__arm__)||defined(__mips__))
+// set stack size to get limit error instead of crash
+ struct rlimit lim;
+ getrlimit(RLIMIT_STACK,&lim);
+ lim.rlim_cur=0x1000000; // 0xc000000 12mb works, but let's be safe with 16mb
+ setrlimit(RLIMIT_STACK,&lim);
+#endif
  jepath(argv[0]);     // get path to JFE folder
  jt=jeload(callbacks);
  if(!jt){char m[1000]; jefail(m), fputs(m,stdout); exit(1);}
  adadbreak=(char**)jt; // first address in jt is address of breakdata
  signal(SIGINT,sigint);
- 
+
 #ifdef READLINE
  char* rl_readline_name="jconsole"; /* argv[0] varies too much*/
 #endif

@@ -9,7 +9,8 @@
 #else
 
 #include <winsock.h>
-#include "winregex\rxposix.h"
+//#include "winregex\rxposix.h"
+#include "pcreposix.h"
 #endif
 #include <sys/types.h>
 #include <fcntl.h>

@@ -55,7 +55,7 @@ NULLPTR=: <0
 
 3 : 0''
 if. IFUNIX do.
-  lib=. > (IFDEF'android') { 'libc.so.6 ';'libc.so '
+  lib=. > (UNAME-:'Android') { 'libc.so.6 ';'libc.so '
   lib=. >(UNAME-:'Darwin'){lib;'libc.dylib '
   api=. 1 : ('(''',lib,''',x) & cd')
   c_isatty=: ' isatty i i' api
@@ -89,10 +89,10 @@ else.
   PAGE_READONLY=: 2
   PAGE_READWRITE=: 4
   TRUNCATE_EXISTING=: 5
-  
+
   j=. (GENERIC_READ+GENERIC_WRITE),PAGE_READWRITE,FILE_MAP_WRITE
   RW=: j,:GENERIC_READ,PAGE_READONLY,FILE_MAP_READ
-  
+
   CloseHandleR=: 'kernel32 CloseHandle > i x'&(15!:0)
   CreateFileMappingR=: 'kernel32 CreateFileMappingW > x x * i i i *w'&(15!:0)
   CreateFileR=: 'kernel32 CreateFileW > x *w i i * i i x'&(15!:0)

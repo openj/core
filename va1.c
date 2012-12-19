@@ -66,8 +66,8 @@ static A jtva1s(J jt,A w,C id,I cv,VF ado){A e,x,z,ze,zx;B c;C ee;I n,t,zt;P*wp,
  if(c)RZ(e=cvt(t,x)); n=AN(x); GA(zx,zt,n,AR(x),AS(x)); ado(jt,n, AV(zx),AV(x));
  if(jt->jerr){
   if(jt->jerr<=NEVM)R 0;
-  ee=jt->jerr; RZ(ze=va1(e,id)); 
-  jt->jerr=ee; RZ(zx=va1(x,id)); 
+  ee=jt->jerr; RZ(ze=va1(e,id));
+  jt->jerr=ee; RZ(zx=va1(x,id));
  }else if(cv&VRI+VRD){RZ(ze=cvz(cv,ze)); RZ(zx=cvz(cv,zx));}
  GA(z,STYPE(AT(ze)),1,AR(w),AS(w)); zp=PAV(z);
  SPB(zp,a,ca(SPA(wp,a)));
@@ -100,7 +100,7 @@ static A jtva1(J jt,A w,C id){A e,z;B b,m;I cv,n,t,wt,zt;P*wp;VA2 p;VF ado;
   }
   RESETERR;
  }else{
-  p=((va1tab+(strchr(va1fns,id)-(C*)va1fns))->p1)[wt&B01?0:wt&INT?1:wt&FL?2:wt&CMPX?3:wt&XNUM?4:5];
+  p=((va1tab+((C*)strchr(va1fns,id)-(C*)va1fns))->p1)[wt&B01?0:wt&INT?1:wt&FL?2:wt&CMPX?3:wt&XNUM?4:5];
   ado=p.f; cv=p.cv;
  }
  if(ado==idf)R rat(w);
@@ -109,7 +109,7 @@ static A jtva1(J jt,A w,C id){A e,z;B b,m;I cv,n,t,wt,zt;P*wp;VA2 p;VF ado;
  if(t&&t!=wt)RZ(w=cvt(t,w));
  GA(z,zt,n,AR(w),AS(w));
  ado(jt,n,AV(z),AV(w));
- if(jt->jerr)R NEVM<jt->jerr?va1(w,id):0; 
+ if(jt->jerr)R NEVM<jt->jerr?va1(w,id):0;
  else    R cv&VRI+VRD?cvz(cv,z):z;
 }
 

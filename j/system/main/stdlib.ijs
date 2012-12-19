@@ -9,12 +9,37 @@ hostpathsep=: ('/\'{~6=9!:12'')&(I. @ (e.&'/\')@] })
 jpathsep=: '/'&(('\' I.@:= ])})
 winpathsep=: '\'&(('/' I.@:= ])})
 PATHJSEP_j_=: '/'
+IFDEF=: 3 : '0=4!:0<''DEF'',y,''_z_'''
+
 IF64=: 16={:$3!:3[2
 'IFUNIX IFWIN IFWINCE'=: 5 6 7 = 9!:12''
 IFGTK=: IFJHS=: IFBROADWAY=: 0
 IFJ6=: 0
 IFWINE=: IFWIN > 0-:2!:5'_'
-if. IF64 +. IFDEF'android' do.
+
+if. notdef 'IFIOS' do.
+  IFIOS=: 0
+end.
+
+if. notdef 'UNAME' do.
+  if. IFUNIX do.
+    UNAME=: (2!:0 'uname')-.10{a.
+  elseif. do.
+    UNAME=: 'Win'
+  end.
+end.
+
+if. notdef 'IFARM' do.
+  if. IFIOS do.
+    IFARM=: 1
+  elseif. IFUNIX do.
+    IFARM=: 'arm' -: 3{.(2!:0 'uname -m')-.10{a.
+  elseif. do.
+    IFARM=: 0
+  end.
+end.
+
+if. IF64 +. IFIOS +. (<UNAME) e. <'Android' do.
   IFWOW64=: 0
 else.
   if. IFUNIX do.
@@ -23,18 +48,10 @@ else.
     IFWOW64=: 'AMD64'-:2!:5'PROCESSOR_ARCHITEW6432'
   end.
 end.
-if. IFDEF'android' do.
-  UNAME=: 'Linux'
-elseif. IFUNIX do.
-  UNAME=: (2!:0 'uname')-.10{a.
-elseif. do.
-  UNAME=: 'Win'
-end.
 )
 jcwdpath=: (1!:43@(0&$),])@jpathsep@((*@# # '/'"_),])
 jsystemdefs=: 3 : 0
-xuname=. > (IFDEF'android') { UNAME;'Android'
-0!:0 <jpath '~system/defs/',y,'_',(tolower xuname),(IF64#'_64'),'.ijs'
+0!:0 <jpath '~system/defs/',y,'_',(tolower UNAME),(IF64#'_64'),'.ijs'
 )
 18!:4 <'z'
 'TAB LF FF CR DEL EAV'=: 9 10 12 13 127 255{a.
@@ -63,7 +80,10 @@ getenv=: 2!:5
 inv=: inverse=: ^:_1
 3 : 0''
 if. 'Linux'-:UNAME do.
-  llib=. > (IFDEF'android'){'libc.so.6';'libc.so'
+  llib=. 'libc.so.6'
+  isatty=: (llib , ' isatty > i i') & (15!:0)
+elseif. 'Android'-:UNAME do.
+  llib=. 'libc.so'
   isatty=: (llib , ' isatty > i i') & (15!:0)
 elseif. 'Darwin'-:UNAME do.
   isatty=: 'libc.dylib isatty > i i' & (15!:0)
@@ -180,8 +200,8 @@ type=: {&t@(2&+)@(4!:0)&boxopen
 ucp=: 7&u:
 ucpcount=: # @ (7&u:)
 3 : 0''
-llib=.>(IFDEF'android'){'libc.so.6';'libc.so'
-if. 'Linux'-:UNAME do. usleep=: 3 : '(llib,'' usleep > i i'')&(15!:0) >.y'
+if. 'Linux'-:UNAME do. usleep=: 3 : '''libc.so.6 usleep > i i''&(15!:0) >.y'
+elseif. 'Android'-:UNAME do. usleep=: 3 : '''libc.so usleep > i i''&(15!:0) >.y'
 elseif. 'Darwin'-:UNAME do. usleep=: 3 : '''libc.dylib usleep > i i''&(15!:0) >.y'
 elseif. do. usleep=: 3 : '0: ''kernel32 Sleep > n i''&(15!:0) >.y % 1000'
 end.
@@ -346,7 +366,7 @@ cocurrent 'z'
 if. -. (UNAME-:'Darwin')+.(UNAME-:'SunOS') do. DLL_PATH=: '' return. end.
 llp=. 2!:5 'LD_LIBRARY_PATH',~'DY'#~UNAME-:'Darwin'
 if. 0 -: llp do. llp=. '' end.
-def_path=. >(IFDEF'android') { ':/usr/local/lib:/usr/lib:/usr/lib/ccs/lib:/etc/lib:/lib':'/system/lib'
+def_path=. >(UNAME-:'Android') { ':/usr/local/lib:/usr/lib:/usr/lib/ccs/lib:/etc/lib:/lib':'/system/lib'
 DLL_PATH=: a: -.~ <;._1 ':',llp,def_path
 )
 find_dll=: 3 : 0
@@ -734,7 +754,7 @@ if. +/ # &> c do.
   if. {.opt do.
     r=. r,LF,;(,&(LF2)) &.> cd
   end.
-  
+
 end.
 
 if. 0=#;res do. r=. r,'no difference',LF end.
@@ -782,14 +802,14 @@ dy=. (fy e. fx)#dy
 if. #j=. dx -. dy do.
   j=. {."1 j
   cmp=. <@fcompare"1 (sx&,&.>j),.sy&,&.>j
-  
+
   if. 0=2{opt do.
     f=. 'no difference'&-: @ (_13&{.)
     msk=. -. f &> cmp
     j=. msk#j
     cmp=. msk#cmp
   end.
-  
+
   r=. r,< j;<cmp
 else.
   r=. r,a:
@@ -1258,29 +1278,29 @@ oldlen=. # &> old
 newlen=. # &> new
 
 if. *./ 1 = oldlen do.
-  
+
   hit=. (;old) i. txt
   ndx=. I. hit < #old
-  
+
   if. 0 e. $ndx do. txt return. end.
-  
+
   cnt=. 1
   exp=. hit { newlen,1
   hnx=. ndx { hit
   bgn=. ndx + +/\ 0, (}: hnx) { newlen - 1
-  
+
 else.
-  
+
   hit=. old I. @ E. each <txt
   cnt=. # &> hit
-  
+
   if. 0 = +/ cnt do. txt return. end.
-  
+
   bgn=. set=. ''
-  
+
   pick=. > @ {
   diff=. }. - }:
-  
+
   for_i. I. 0 < cnt do.
     ln=. i pick oldlen
     cx=. (i pick hit) -. set, ,bgn -/ i.ln
@@ -1289,26 +1309,26 @@ else.
     bgn=. bgn, cx
     set=. set, ,cx +/ i.ln
   end.
-  
+
   cnt=. # &> hit
   msk=. 0 < cnt
   exp=. (#txt) $ 1
   del=. newlen - oldlen
-  
+
   if. #add=. I. msk *. del > 0 do.
     exp=. (>: (add{cnt) # add{del) (;add{hit) } exp
   end.
-  
+
   if. #sub=. I. msk *. del < 0 do.
     sbx=. ; (;sub{hit) + each (sub{cnt) # i. each sub{del
     exp=. 0 sbx } exp
   end.
-  
+
   hit=. ; hit
   ind=. /: (#hit) $ 1 2 3
   hnx=. (/: ind { hit) { ind
   bgn=. (hnx { hit) + +/\ 0, }: hnx { cnt # del
-  
+
 end.
 
 ind=. ; bgn + each hnx { cnt # i.each newlen
