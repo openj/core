@@ -256,7 +256,7 @@ JNIEXPORT jlong JNICALL Java_org_dykman_j_JInterface_initializeJNative
 
 static A jnidocall (JNIEnv * env, jobject obj, J jt, jobject appobj, jstring verb, jobjectArray objarr) {
   const char *nativeverb = (*env)->GetStringUTFChars(env, verb, 0);
-  char str[100];
+  char str[200];   /* do not reduce to 100, crash will occur if verb is long. This had happened */
 #if SY_64
   sprintf(str, "\'%s\' (jnhandler ::0:) (%li),(%li),(%li),(%li)", nativeverb, (jlong)env, (jlong)obj, (jlong)appobj, (jlong)objarr);
 #else
@@ -283,13 +283,13 @@ JNIEXPORT jobject JNICALL Java_org_dykman_j_JInterface_jnido
   jmethodID mid;
   jobject retobj;
   I rc = 0;int rettype = 0;
-  if(!r||(1!=(AN(r))&&((BOX==AT(r))||(INT==AT(r))||(FL==AT(r))||(B01==AT(r))))) {tpop(_ttop); LOGD("jnido return null object"); return JNIGNULL;}
+  if(!r||(1!=(AN(r))&&((BOX==AT(r))||(INT==AT(r))||(FL==AT(r))||(B01==AT(r))))) {tpop(_ttop); /* LOGD("jnido return null object"); */ return JNIGNULL;}
   if(B01==AT(r)) {rettype = B01;
   clz = (*env)->FindClass( env, "java/lang/Boolean" );
   mid = (*env)->GetMethodID( env, clz, "<init>", "(Z)V" );
   retobj = (*env)->NewObject( env, clz, mid, (jboolean)*(unsigned char*)AV(r) );
   (*env)->DeleteLocalRef(env, clz);
-	LOGD("jnido return boolean object");
+	// LOGD("jnido return boolean object");
   tpop(_ttop); return retobj;
   }
   if(INT==AT(r)) { rettype = INT;
@@ -303,7 +303,7 @@ JNIEXPORT jobject JNICALL Java_org_dykman_j_JInterface_jnido
   retobj = (*env)->NewObject( env, clz, mid, (jint)*(I*)AV(r) );
 #endif
   (*env)->DeleteLocalRef(env, clz);
-	LOGD("jnido return integer object");
+	// LOGD("jnido return integer object");
   tpop(_ttop); return retobj;
   }
   if(FL==AT(r)) {rettype = FL;
@@ -311,32 +311,32 @@ JNIEXPORT jobject JNICALL Java_org_dykman_j_JInterface_jnido
   mid = (*env)->GetMethodID( env, clz, "<init>", "(D)V" );
   retobj = (*env)->NewObject( env, clz, mid, *(D*)AV(r) );
   (*env)->DeleteLocalRef(env, clz);
-	LOGD("jnido return double object");
+	// LOGD("jnido return double object");
   tpop(_ttop); return retobj;
   }
   if(LIT==AT(r)) {rettype = LIT;
 	jstring str = (*env)->NewStringUTF(env,(C*)AV(r));
-	LOGD("jnido return string object");
+	// LOGD("jnido return string object");
   tpop(_ttop); return str;
   }
   if(C2T==AT(r)) {rettype = C2T;
   retobj = (*env)->NewString( env, (jchar*)AV(r), AN(r) );
-	LOGD("jnido return string (from wchar) object");
+	// LOGD("jnido return string (from wchar) object");
   tpop(_ttop); return retobj;
   }
   if(BOX==AT(r)) {
   A ra = (A)*AV(r);
   if (B01==AT(ra)&&(1==AN(ra))) {rettype = BOX;
-  if(!(*(unsigned char*)AV(ra))) {tpop(_ttop); LOGD("jnido return null object"); return JNIGNULL;}
+  if(!(*(unsigned char*)AV(ra))) {tpop(_ttop); /* LOGD("jnido return null object"); */ return JNIGNULL;}
   else {tpop(_ttop); return (jobject)*(unsigned char*)AV(ra);}
   } else if(INT==AT(ra)&&(1==AN(ra))) {rettype = BOX;
-  if(!(*(I*)AV(ra))) {tpop(_ttop); LOGD("jnido return null object"); return JNIGNULL;}
+  if(!(*(I*)AV(ra))) {tpop(_ttop); /* LOGD("jnido return null object"); */ return JNIGNULL;}
   else {tpop(_ttop); 
-	LOGD("jnido return jobject object");
+	// LOGD("jnido return jobject object");
   return (jobject)*(I*)AV(ra);}
   }
   }
-  tpop(_ttop); LOGD("jnido return null object"); return JNIGNULL;
+  tpop(_ttop); /* LOGD("jnido return null object"); */ return JNIGNULL;
 }
 
 /*
@@ -466,16 +466,11 @@ JNIEXPORT jdoubleArray JNICALL Java_org_dykman_j_JInterface_jnidod
   } else return JNIGNULL;
 }
 
-/// fetestexcpt is a macro under dalvic, so I providable a callable handle for J 
- int jfetestexcept(int _except) {
-  return fetestexcept(_except);
- }
 /*
  * Class:     org_dykman_j_JInterface
  * Method:    jnidoc
  * Signature: (JLjava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;)[B
  */
- 
 JNIEXPORT jbyteArray JNICALL Java_org_dykman_j_JInterface_jnidoc
   (JNIEnv * env, jobject obj, jlong jt, jobject appobj, jstring verb, jobjectArray objarr) {
   A r = jnidocall (env, obj, (J)jt, appobj, verb, objarr);

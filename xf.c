@@ -19,6 +19,10 @@
 
 #if (SYS & SYS_UNIX) || defined(__MINGW32__)
 #include <stdlib.h>
+#ifdef link
+#undef link
+#endif
+#include <unistd.h>
 //#include <unistd.h>
 typedef long long INT64;
 #endif
