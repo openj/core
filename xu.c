@@ -3,6 +3,8 @@
 /*                                                                         */
 /* Xenos: u: conversions                                                   */
 
+#include <wchar.h>
+
 #include "j.h"
 #include "x.h"
 

@@ -10,17 +10,18 @@
 #include <winbase.h>
 #endif
 
-#include "j.h"
-#include "x.h"
-
 #if !SY_WIN32 && (SYS & SYS_DOS)
 #include <dos.h>
 #endif
 
+
+#include "j.h"
 #if (SYS & SYS_UNIX) || defined(__MINGW32__)
 #include <stdlib.h>
+#ifdef ANDROID
 #ifdef link
 #undef link
+#endif
 #endif
 #include <unistd.h>
 //#include <unistd.h>
@@ -31,6 +32,8 @@ typedef long long INT64;
 #include <direct.h>
 #include <io.h>
 #endif
+
+#include "x.h"
 
 
 #if SY_64

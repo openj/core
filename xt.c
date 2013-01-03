@@ -8,12 +8,21 @@
 #include <winbase.h>
 #endif
 
+
 #include "j.h"
 
 #if !SY_WINCE && (SY_WIN32 || (SYS & SYS_LINUX))
 #include <time.h>
 #if (SYS & SYS_LINUX)
 #include <sys/time.h>
+
+#ifdef ANDROID
+#ifdef link
+#undef link
+#endif
+#endif
+
+#include <unistd.h>
 #endif
 #else
 #if (SY_GETTOD && !(SYS&SYS_IBMRS6000))
@@ -24,6 +33,7 @@
 #if !SY_WIN32 && (SYS & SYS_DOS)
 #include <dos.h>
 #endif
+
 
 #ifndef CLOCKS_PER_SEC
 #if (SYS & SYS_UNIX)

@@ -46,23 +46,30 @@ void consoleAppend(JNIEnv *env, jobject obj,int type, const char*chars) {
 
 JNIEXPORT jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
+	LOGD("jni-onload called");
     jvm = vm;
     if ((*vm)->GetEnv(vm, (void **)&local_jnienv, JNI_VERSION_1_6) != JNI_OK) {
+	LOGD("failed jni check");
         return -1;
     }
 
     // Get jclass with env->FindClass.
     // Register methods with env->RegisterNatives.
 
+	LOGD("returning from jni-onload");
     return JNI_VERSION_1_6;
 }
 
 JNIEXPORT jint JNICALL Java_org_dykman_j_JInterface_callJNative
   (JNIEnv * env, jobject obj, jlong inst, jstring js) {
+	LOGD("called callJNative ");
 	J jengine = (J)inst;
 
+	LOGD(":::: callJNative format string");
 	const char *nativeString = (*env)->GetStringUTFChars(env, js, 0);
+	LOGD(":::: callJNative jdo");
 	int jc = JDo(jengine,(C*)nativeString);
+	LOGD(":::: callJNative returning");
 	return (jint) jc;
 }
 

@@ -30,11 +30,13 @@
   #define JDLLNAME "libj.so"
  #endif
 #endif
-#include "j.h"
 
 #ifdef ANDROID
+#include <unistd.h>
 #include <sys/stat.h>
 #endif
+
+#include "j.h"
 
 static void* hjdll;
 static J jt;

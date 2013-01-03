@@ -6,6 +6,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <winbase.h>
+#else
+#include <unistd.h>
 #endif
 
 #include "j.h"
