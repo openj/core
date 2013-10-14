@@ -74,6 +74,7 @@ ifeq ($(TARGET_ARCH),x86)
   LOCAL_LDLIBS := -llog  -ldl -lm -lc
 endif
 
+LOCAL_CFLAGS += -DSUPPORT_UTF8
 # LOCAL_CFLAGS+= -DSYS_LINUX
 
 LOCAL_SRC_FILES := $(FENV) a.c ab.c af.c ai.c am.c am1.c amn.c ao.c ap.c ar.c as.c au.c c.c ca.c cc.c cd.c cf.c cg.c ch.c cip.c cl.c cp.c cpdtsp.c cr.c crs.c \
