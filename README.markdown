@@ -1,6 +1,14 @@
 Open J
 ======
 
+Not actively maintained
+-----------------------
+
+OpenJ is not very actively maintained. Please see: http://www.jsoftware.com/source.htm and https://github.com/iocane/unbox for alternatives.
+
+About
+-----
+
 From [jsoftware.com] [jsw]
 
 > J is a modern, high-level, general-purpose, high-performance
