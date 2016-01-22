@@ -85,7 +85,7 @@ static I jtdcase(J jt,I xi,V*v){
 /* 5   s  f  t  */
 
 TACT(jtvdyad){A fs,sf,xt,yt;B xl,xr,yl,yr;I xi=-1,yi=-1;TA x,y,z={one};V*u=0,*v=0;
- fs=stack[e-1].a; x=stack[b]; y=stack[e]; sf=swapc(fs);
+ fs=stack[e-1].a; x=stack[b]; y=stack[e]; sf=swap(fs);
  if(xt=tine(x.t)){xi=tvi(x.t); u=VAV(xt); if(0>xi&&CFORK==u->id){xi=tvi(u->f); if(0>xi)xi=tvi(u->h);}}
  if(yt=tine(y.t)){yi=tvi(y.t); v=VAV(yt); if(0>yi&&CFORK==v->id){yi=tvi(v->f); if(0>yi)yi=tvi(v->h);}}
  if(fs==ds(CLEFT)){if(xt)z.t=xt; else z.a=x.a; R z;}
