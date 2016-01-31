@@ -158,7 +158,7 @@
 #endif
 #endif
 
-/* _WIN64 defined by VC++ and _UNIX64 defined in makefile */
+/* _WIN64 defined by VC++ or MINGW64, and _UNIX64 defined in makefile */
 #if defined(_WIN64) || defined(_UNIX64)
 #undef SY_64
 #define SY_64               1
@@ -170,7 +170,7 @@
 
 #if 1!=SY_WIN32+SY_LINUX+SY_MAC
  error: "one and only one of SY_WIN32, SY_LINUX, SY_MAC must be 1"
-#endif 
+#endif
 
 #endif /* only include once */
 

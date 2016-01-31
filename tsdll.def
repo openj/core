@@ -1,0 +1,42 @@
+LIBRARY         tsdll
+
+EXPORTS
+                cbasic     @4
+                wbasic     @5
+                sbasic     @6
+                ibasic     @7
+                xbasic     @8
+                pc         @9
+                dipdpd     @10
+                fipfpf     @11
+                complex    @12
+                f          @13
+                d          @14
+                dd         @15
+                ddd        @16
+                dddd       @17
+                dx0        @18
+                dx1        @19
+                dx2        @20
+                dx3        @21
+                dx4        @22
+                dx5        @23
+                dx6        @24
+                dx7        @25
+                d1         @26
+                d1a        @27
+                d2         @28
+                d3         @29
+                d4         @30
+                d5         @31
+                f1         @32
+                f2         @33
+                f3         @34
+                fff        @35
+                fd         @36
+                altinci    @37
+                xbasic_add @38
+                objxxx     	@1
+                objddd     	@2
+                obj_add    	@3
+

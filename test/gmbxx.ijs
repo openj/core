@@ -34,13 +34,13 @@ q=: <'asdf'
 
 NB. 3!: -----------------------------------------------------------------
 
-q=: x=: <"0 (?2 12$2){(<5!:2 <'g'),< i.2 3 
+q=: x=: <"0 (?2 12$2){(<5!:2 <'g'),< i.2 3
 (mbxcheck_jmf_ q), x             -: q
 (mbxcheck_jmf_ q), q             -: 3!:2 (3!:1) q
 (mbxcheck_jmf_ q), x             -: 3!:2 (3!:1) q
 (mbxcheck_jmf_ q), q             -: 3!:2 (3!:3) q
 (mbxcheck_jmf_ q), x             -: 3!:2 (3!:3) q
-q=: x=: <"0 <"0 ?2 3 4$1e6 
+q=: x=: <"0 <"0 ?2 3 4$1e6
 (mbxcheck_jmf_ q), x             -: q
 (mbxcheck_jmf_ q), q             -: 3!:2 (3!:1) q
 (mbxcheck_jmf_ q), x             -: 3!:2 (3!:1) q
@@ -166,9 +166,9 @@ if. IFUNIX do.
  lib=: jpath '~home/dev/j/tsdll/libtsdll',t,s
 else.
  if. IF64 do.
-  lib=: '\dev\j\p_tsdll\release64\tsdll.dll'
+  lib=: 'tsdll.dll'
  else.
-  lib=: '\dev\j\p_tsdll\release\tsdll.dll'
+  lib=: 'tsdll.dll'
  end.
 end.
 lib=: lib,' '

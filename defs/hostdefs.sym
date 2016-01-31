@@ -9,7 +9,8 @@
 #else
 
 <winsock.h>
-#include "winregex\rxposix.h"
+//#include "winregex\rxposix.h"
+#include "pcreposix.h"
 #endif
 <sys/types.h>
 <fcntl.h>
@@ -34,7 +35,7 @@ i SEEK_CUR SEEK_END SEEK_SET
 i O_APPEND O_CREAT O_EXCL O_RDONLY O_RDWR O_TRUNC O_WRONLY
 
 #ifndef _WIN32
-i O_ACCMODE O_NOCTTY O_NONBLOCK 
+i O_ACCMODE O_NOCTTY O_NONBLOCK
 i FD_CLOEXEC
 i F_DUPFD F_GETFD F_SETFD F_GETFL F_SETFL
 i F_SETLK F_SETLKW F_GETLK F_UNLCK F_WRLCK

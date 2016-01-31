@@ -22,13 +22,17 @@
 
 #include <windows.h>
 #include "../j.h"
-#include "../jlib.h"
+// #include "../jlib.h"
 
 void wtom(US* src, I srcn, UC* snk);
 int valid(C* psrc, C* psnk);
 C* esub(J jt, long ec);
 
+#ifdef OLECOM
 extern int uniflag;
+#else
+int uniflag= 0;
+#endif
 
 I jdo(J, C*);
 
@@ -67,7 +71,7 @@ int _stdcall JIsBusy(J jt){	return 0;}
 //! 64 bit problems - com and dll interface is 32 bit - needs test and thought
 static int a2v (J jt, A a, VARIANT *v, int dobstrs)
 {
-	SAFEARRAY FAR* psa; 
+	SAFEARRAY FAR* psa;
 	SAFEARRAYBOUND rgsabound[MAXRANK];
 	int er;
 	I i,r,k,t,cb,*pi;
@@ -149,13 +153,13 @@ static int a2v (J jt, A a, VARIANT *v, int dobstrs)
 
 	for(i=0; i<r; ++i)
 	{
-		rgsabound[i].lLbound = 0; 
+		rgsabound[i].lLbound = 0;
 		// undo shape reversal from cant1() here.
 		// In case of Transpose(0), the shape is
 		// still passed in Column-major notation.
-		rgsabound[i].cElements = (ULONG)AS(a)[r-1-i]; 
+		rgsabound[i].cElements = (ULONG)AS(a)[r-1-i];
 	}
-	psa = SafeArrayCreate(vt, (UINT)r, rgsabound); 
+	psa = SafeArrayCreate(vt, (UINT)r, rgsabound);
 	if(!psa)
 	{
 		return EVWSFULL;
@@ -177,7 +181,7 @@ static int a2v (J jt, A a, VARIANT *v, int dobstrs)
 		A* ap;
 		VARIANT *v;
 
-		for (ap=AAV(a), SafeArrayAccessData(psa, &v);
+		for (ap=AAV(a), SafeArrayAccessData(psa, (void**) &v);
 			 ap<AAV(a)+k;
 			 ++ap, ++v)
 		{
@@ -210,7 +214,7 @@ int jget(J jt, C* name, VARIANT* v, int dobstr)
 	int er;
 
 	if(strlen(name) >= sizeof(gn)) return EVILNAME;
-	if(valid(name, gn)) return EVILNAME; 
+	if(valid(name, gn)) return EVILNAME;
 	RZ(a=symbrd(nfs(strlen(gn),gn)));
 	old = jt->tbase+jt->ttop;
 	er = a2v (jt, a, v, dobstr);
@@ -278,7 +282,7 @@ static A v2a(J jt, VARIANT* v, int dobstrs)
 		for(i=0; i<r; ++i)
 		{
 			n = pb[i].cElements;
-			shape[i] = n; 
+			shape[i] = n;
 			k *= n;
 		}
 	}
@@ -300,7 +304,7 @@ static A v2a(J jt, VARIANT* v, int dobstrs)
 			r = 0;
 		}
 		RE(a=ga(BOX, k, r, (I*)&shape));
-		ASSERT(S_OK==SafeArrayAccessData(psa, &pv),EVFACE);
+		ASSERT(S_OK==SafeArrayAccessData(psa, (void**) &pv),EVFACE);
 		boxes = AAV(a);
 		while(k--)
 		{
@@ -402,7 +406,7 @@ static A v2a(J jt, VARIANT* v, int dobstrs)
 	}
 	return a;
 }
-#endif wince
+#endif
 
 // copy non-nulls only
 static void touninx(C* src, WCHAR* sink, UI n)
@@ -450,7 +454,7 @@ I countoutput(I n, char*s)
 		{
 		case 0:  k -= 1; break;	// delete nulls
 		case CLF: k += 1; break;	// lf needs a cr
-		case CCR: 
+		case CCR:
 			if((i+1)<n && CLF != s[i+1])
 				k += 1;			// lone cr needs an lf
 			else
@@ -475,7 +479,7 @@ void oleoutput(J jt, I n, char* s)
 	else
 	{
 		I len = SysStringLen(jt->opbstr);
-		SysReAllocStringLen(&(BSTR)jt->opbstr, 0, (UINT)(len+n+k));
+		SysReAllocStringLen((BSTR*)&jt->opbstr, 0, (UINT)(len+n+k));
 		fixoutput(s, (BSTR)jt->opbstr + len, n);
 	}
 }
@@ -488,7 +492,7 @@ int jsetx(J jt, C* name, VARIANT* v, int dobstrs)
 
 	// validate name
 	if(strlen(name) >= sizeof(gn)) return EVILNAME;
-	if(valid(name, gn)) return EVILNAME; 
+	if(valid(name, gn)) return EVILNAME;
 
 	er=jt->jerr=0;
 	jset (gn, v2a(jt, v,dobstrs));	// no bstrs
@@ -510,15 +514,15 @@ int _stdcall JSetB(J jt, C* name, VARIANT* v)
 int _stdcall JErrorText(J jt, long ec, VARIANT* v)
 {
 	C* p;
-	SAFEARRAY FAR* psa; 
+	SAFEARRAY FAR* psa;
 	SAFEARRAYBOUND rgsabound;
 	I cb;
 
 	p=esub(jt, ec);
 	cb=1+strlen(p);	// include null
-	rgsabound.lLbound = 0; 
-	rgsabound.cElements = (ULONG)cb; 
-	psa = SafeArrayCreate(VT_UI1, 1, &rgsabound); 
+	rgsabound.lLbound = 0;
+	rgsabound.cElements = (ULONG)cb;
+	psa = SafeArrayCreate(VT_UI1, 1, &rgsabound);
 	if(!psa) return EVWSFULL;
 	memcpy(psa->pvData, p, cb);
 	v->vt = VT_ARRAY | VT_UI1;
@@ -526,7 +530,7 @@ int _stdcall JErrorText(J jt, long ec, VARIANT* v)
 	return 0;
 }
 
-int _stdcall JClear(J jt){ return 0;};
+int _stdcall JClear(J jt){ return 0;}
 
 int _stdcall JTranspose(J jt, long b)
 {
@@ -559,7 +563,7 @@ int _stdcall JDoR(J jt, C* p, VARIANT* v)
 	v->bstrVal=jt->opbstr;
 	R e;
 }
-#endif wince
+#endif
 
 // previously in separate file when jdll.c and jcom.c both exisited
 char modulepath[_MAX_PATH];
@@ -629,7 +633,7 @@ int WINAPI DllMain (HINSTANCE hDLL, DWORD dwReason, LPVOID lpReserved)
             if(s.wYear != 2000 || 11<s.wMonth)
 			{
 				MessageBox(0, "J.DLL beta test period has expired.", "J", MB_OK);
-				return 0; 
+				return 0;
 			}
 		}
 */

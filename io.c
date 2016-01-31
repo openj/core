@@ -8,6 +8,7 @@
 #include <winbase.h>
 #else
 #include <stdlib.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -15,6 +16,8 @@
 #include <sys/mman.h>
 #define _stdcall
 #endif
+
+#include <ctype.h>
 
 #include "j.h"
 #include "d.h"
@@ -27,21 +30,24 @@ void jtwri(J jt,I type,C*p,I m,C*s){C buf[1024],*t=jt->outseq,*v=buf;I c,d,e,n;
   d=m>n?n-3:m;
   memcpy(v,p,c); v+=c;
   memcpy(v,s,d); v+=d; if(m>n){memcpy(v,"...",3L); v+=3;}
-  memcpy(v,t,e); v+=e; 
+  memcpy(v,t,e); v+=e;
   *v=0;
   jsto(jt,type,buf);
 }}
 
 static void jtwrf(J jt,I n,C*v,F f){C*u,*x;I j=0,m;
  while(n>j){
-  u=j+v; 
-  m=(x=memchr(u,CLF,n-j))?1+x-u:n-j; 
+  u=j+v;
+  m=(x=memchr(u,CLF,n-j))?1+x-u:n-j;
   fwrite(u,sizeof(C),m,f);
   j+=m;
 }}
 
 A jtinpl(J jt,B b,I n,C*s){C c;I k=0;
  if(n&&(c=*(s+n-1),CLF==c||CCR==c))--n;
+#if _WIN32
+ if(n&&(c=*(s+n-1),CCR==c))--n;
+#endif
  ASSERT(!*jt->adbreak,EVINPRUPT);
  if(!b){ /* 1==b means literal input */
   if(n&&COFF==*(s+n-1))joff(zero);
@@ -51,7 +57,7 @@ A jtinpl(J jt,B b,I n,C*s){C c;I k=0;
 }
 
 static I advl(I j,I n,C*s){B b;C c,*v;
- v=j+s; 
+ v=j+s;
  DO(n-j, c=*v++; b=c==CCR; if(b||c==CLF)R j+1+i+(b&&CLF==*v););
  R n;
 }    /* advance one line on CR, CRLF, or LF */
@@ -71,7 +77,7 @@ A jtjgets(J jt,C*p){A y;B b;C*v;I j,k,m,n;UC*s;
  *jt->adbreak=0;
  if(b=1==*p)p=""; /* 1 means literal input */
  if(jt->dcs){
-  ++jt->dcs->dcn; j=jt->dcs->dci; 
+  ++jt->dcs->dcn; j=jt->dcs->dci;
   y=jt->dcs->dcy; n=AN(y); s=UAV(y);
   RZ(j<n);
   jt->dcs->dcj=k=j;
@@ -88,7 +94,7 @@ A jtjgets(J jt,C*p){A y;B b;C*v;I j,k,m,n;UC*s;
  if(jt->nfe)
   v=nfeinput(jt,*p?"input_jfe_'      '":"input_jfe_''");
  else{
-  ASSERT(jt->sminput,EVBREAK); 
+  ASSERT(jt->sminput,EVBREAK);
   v=((inputtype)(jt->sminput))(jt,p);
  }
  R inpl(b,(I)strlen(v),v);
@@ -131,7 +137,13 @@ F1(jtjoff){I x;
  x=i0(w);
  breakclose(jt);
  if(jt->sesm)jsto(jt, MTYOEXIT,(C*)x);
- exit((int)x);
+
+#ifndef ANDROID
+	 exit((int)x);
+#else
+ #include "jni/j-jni-interface.h"
+ android_quit();
+#endif
  R 0;
 }
 
@@ -176,7 +188,7 @@ DF1(jtwd){A z=0;C*p=0;D*pd;I e,*pi,t;V*sv;
 		pd=DAV(w);
 		GA(w,INT,AN(w),AR(w),0);
 		pi=AV(w);
-		DO(AN(w),*pi++=(I)(jfloor(0.5+*pd++));); 
+		DO(AN(w),*pi++=(I)(jfloor(0.5+*pd++)););
 		break;
 	 default:
 		 ASSERT(0,EVDOMAIN);
@@ -198,12 +210,12 @@ static char breaknone=0;
 B jtsesminit(J jt){jt->adbreak=&breakdata; R 1;}
 #endif
 
-int _stdcall JDo(J jt, char* lp){int r;
+int _stdcall JDo(J jt, C* lp){int r;
  r=(int)jdo(jt,lp);
  while(jt->nfe)
   r=(int)jdo(jt,nfeinput(jt,"input_jfe_'   '"));
  R r;
-} 
+}
 
 /* socket protocol CMDGET name */
 A _stdcall JGetA(J jt, I n, C* name){A x;
@@ -250,10 +262,10 @@ void jsto(J jt,I type,C*s){C e;I ex;
   e=jt->jerr; ex=jt->etxn;
   jt->jerr=0; jt->etxn=0;
   jt->breakignore=1;exec1(cstr(q));jt->breakignore=0;
-  jt->jerr=e; jt->etxn=ex; 
+  jt->jerr=e; jt->etxn=ex;
  }else{
   if(jt->smoutput) ((outputtype)(jt->smoutput))(jt,(int)type,s);
-#if SY_WIN32 && !SY_WINCE
+#if defined(OLECOM) && SY_WIN32 && !SY_WINCE
   if(type & MTYOFM) oleoutput(jt,strlen(s),s);	/* save output for ole */
 #endif
 }}
@@ -265,7 +277,7 @@ J JInit(void){
   /* jtglobinit must be done once when dll is first loaded
      Windows does it in dll load routine  - thread safe
      Unix does it here once, but this is not thread safe */
-  
+
   static J g_jt=0;
   if(!g_jt)
   {
@@ -371,7 +383,7 @@ static int setterm(J jt, C* name, I* jtype, I* jrank, I* jshape, I* jdata)
 
 	// validate name
 	if(strlen(name) >= sizeof(gn)) return EVILNAME;
-	if(valid(name, gn)) return EVILNAME; 
+	if(valid(name, gn)) return EVILNAME;
 	for(i=0; i<*jrank; ++i)	k *= ((I*)(*jshape))[i];
 	a = ga(*jtype, k, *jrank, (I*)*jshape);
 	if(!a) return EVWSFULL;

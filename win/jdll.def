@@ -1,10 +1,6 @@
 LIBRARY         J
 
 EXPORTS
-                DllGetClassObject   PRIVATE
-                DllCanUnloadNow     PRIVATE
-                DllRegisterServer   PRIVATE
-                DllUnregisterServer PRIVATE
                 JBreak              @6
                 JClear              @7
                 JDo                 @8

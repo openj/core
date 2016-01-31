@@ -11,12 +11,12 @@ suffix=".ijs"
 else
 suffix="_64.ijs"
 fi
- 
+
 rm -f defs/netdefs.ijs defs/hostdefs.ijs defs/temp
-cc $M32 -D$un defs/netdefs.c -o defs/temp
-defs/temp >defs/netdefs.ijs
-cc $M32 -D$un defs/hostdefs.c -o defs/temp
-defs/temp >defs/hostdefs.ijs
+${CC} $M32 -D$un defs/netdefs.c -o defs/temp
+${WINE} ./defs/temp >defs/netdefs.ijs
+${CC} $M32 -D$un defs/hostdefs.c -o defs/temp
+${WINE} ./defs/temp >defs/hostdefs.ijs
 rm -f defs/temp
 
 if [ -e defs/hostdefs.ijs ] && [ -e defs/netdefs.ijs ]

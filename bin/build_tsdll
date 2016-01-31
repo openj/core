@@ -1,11 +1,24 @@
 #!/bin/bash
-TARGET=libtsdll
 source bin/jconfig
+
+if [ $un == Win ]
+then
+TARGET=tsdll
+else
+TARGET=libtsdll
+fi
+source bin/jconfig
+
+if [ $un = Win ]; then
+export LIBTSDEF="tsdll.def"
+fi
+
 make tsdll
 
-if [ -x libj.$SOSUFFIX ]
+if [ -x $TARGET.$SOSUFFIX ]
 then
-echo success: libtsdll.$SOSUFFIX created
+cp $TARGET.$SOSUFFIX  release/$un$bits/$TARGET.$SOSUFFIX
+echo success: $TARGET.$SOSUFFIX created
 else
-echo failed: libtsdll.$SOSUFFIX NOT created
+echo failed: $TARGET.$SOSUFFIX NOT created
 fi

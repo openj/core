@@ -10,7 +10,7 @@
 #define EVLENGTH        9
 
 #ifdef _JDLL
-void showapp(long b){};
+void showapp(long b){}
 #else
 #include "..\smsrc\isi.h"
 extern void* pjst;
@@ -76,7 +76,7 @@ extern "C"
 	JDoRType		*JDoR;
 #endif
 
-char jclass[100] = "";
+char joclass[100] = "";
 char jversion[100] = "3";
 
 GUID jclsid;
@@ -101,8 +101,8 @@ void setguids()
 	}
 	p+=strlen(match);	// start of class name
 	q=strchr(p, '}');	// end of class name
-	memcpy(jclass, p, q-p);
-	jclass[p-q]=0;
+	memcpy(joclass, p, q-p);
+	joclass[p-q]=0;
 	p=q+2;				// start of version
 	q=strchr(p, '}');	// end of version
 	memcpy(jversion, p, q-p);
@@ -355,7 +355,7 @@ STDMETHODIMP CJServer::SetM(BSTR name, long* jtype, long* jrank, long* jshape, l
 STDMETHODIMP CJServer::ErrorTextM(long ec, long* text, long* pr)
 {
 	*pr = JErrorTextM(m_pjst, ec, text);
-    return NOERROR;			 
+    return NOERROR;			
 }
 
 #else
@@ -412,7 +412,7 @@ STDMETHODIMP CJServer::SetM(BSTR name, long* jtype, long* jrank, long* jshape, l
 STDMETHODIMP CJServer::ErrorTextM(long ec, long* text, long* pr)
 {
 	*pr = EDCEXE;
-    return NOERROR;			 
+    return NOERROR;			
 }
 
 #endif // _JDLL
@@ -595,7 +595,7 @@ int reg(BOOL set, LPSTR keys)
 #endif
 
 	setguids();
-	strcat(progid, jclass);
+	strcat(progid, joclass);
 	strcpy(progidcur, progid);
 	strcat(progidcur, ".");
 	strcat(progidcur, jversion);
@@ -622,7 +622,7 @@ int reg(BOOL set, LPSTR keys)
 
 	strcpy(progidtext, "Jsoftware : ");
 	strcat(progidtext, producttext);
-	strcat(progidtext, jclass);
+	strcat(progidtext, joclass);
 
 	strcpy(progidcurtext, progidtext);
 	strcat(progidcurtext, " (version ");
@@ -706,7 +706,7 @@ int reg(BOOL set, LPSTR keys)
 
 //HKEY_CLASSES_ROOT\TypeLib\{21EB05E1-1AB3-11cf-A2AC-8FF70874C460} = J Server Type Library
 	strcpy(typetext, producttext);
-	strcat(typetext, jclass);
+	strcat(typetext, joclass);
 	strcat(typetext, " Type Library");
 	r=SetKeyAndValue(set, keys, szLIBTYPELIBID, 0, typetext);
 	if(r) return r;
@@ -722,7 +722,7 @@ int reg(BOOL set, LPSTR keys)
 //HKEY_CLASSES_ROOT\TypeLib\{21EB05E1-1AB3-11cf-A2AC-8FF70874C460}\1.0 = J Server (Ver 1.0) Type Library
 	setpath(jversion, ".0");
 	strcpy(typetext, producttext);
-	strcat(typetext, jclass);
+	strcat(typetext, joclass);
 	strcat(typetext, " (version ");
 	strcat(typetext, jversion);
 	strcat(typetext, ") Type Library");
@@ -744,9 +744,9 @@ int reg(BOOL set, LPSTR keys)
 
 //HKEY_CLASSES_ROOT\Interface\{21EB05E2-1AB3-11cf-A2AC-8FF70874C460} = IJEXEServer
 #ifdef _JDLL
-	setpath("IJDLLServer", jclass);
+	setpath("IJDLLServer", joclass);
 #else	
-	setpath("IJEXEServer", jclass);
+	setpath("IJEXEServer", joclass);
 #endif
 	r=SetKeyAndValue(set, keys, inter, 0, path);
 	if(r) return r;

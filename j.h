@@ -42,8 +42,7 @@
 #endif
 
 #include <math.h>
-#include <string.h>  
-
+#include <string.h>
 
 #if SY_64
 #define IMAX            9223372036854775807L
@@ -194,7 +193,7 @@
 #define jfloor          jfloor1
 #else
 #define jfloor          floor
-#endif          
+#endif
 
 #define BB              8      /* # bits in a byte */
 #if SY_64
@@ -224,7 +223,7 @@
 #define FCONS(x)        fdef(CFCONS,VERB,jtnum1,jtnum2,0L,0L,(x),0L,RMAX,RMAX,RMAX)
 #define FEQ(u,v)        (ABS((u)-(v))<=jt->fuzz*MAX(ABS(u),ABS(v)))
 #define F1(f)           A f(J jt,    A w)
-#define F2(f)           A f(J jt,A a,A w) 
+#define F2(f)           A f(J jt,A a,A w)
 #define F1RANK(m,f,self)    {RZ(   w); if(m<AR(w)         )R rank1ex(  w,(A)self,(I)m,     f);}
 #define F2RANK(l,r,f,self)  {RZ(a&&w); if(l<AR(a)||r<AR(w))R rank2ex(a,w,(A)self,(I)l,(I)r,f);}
 #define GA(v,t,n,r,s)   RZ(v=ga(t,(I)(n),(I)(r),(I*)(s)))
@@ -306,18 +305,18 @@
 #define BS11    0x0101
 #endif
 
-#include "ja.h" 
-#include "jc.h" 
-#include "jtype.h" 
-#include "jt.h" 
+#include "ja.h"
+#include "jc.h"
+#include "jtype.h"
+#include "jt.h"
 #include "jlib.h"
-#include "je.h" 
-#include "jerr.h" 
-#include "va.h" 
-#include "vq.h" 
-#include "vx.h" 
+#include "je.h"
+#include "jerr.h"
+#include "va.h"
+#include "vq.h"
+#include "vx.h"
 #include "vz.h"
-#include "vdx.h"  
+#include "vdx.h"
 #include "m.h"
 #include "a.h"
 #include "s.h"
@@ -335,11 +334,63 @@ extern J gjt; // global for JPF (procs without jt)
 #endif
 
 #if SYS & SYS_UNIX
+#pragma STDC FENV_ACCESS ON
+
+#if defined(__arm__) && defined(ANDROID)
+#if defined(__TARGET_FPU_VFP)
+#include "arm/fenv.h"
+#define _isnan       isnan
+#define _SW_INVALID  FE_INVALID
+static inline unsigned int _clearfp(void){int r=fetestexcept(FE_ALL_EXCEPT); feclearexcept(FE_ALL_EXCEPT); return r; }
+#else
 #include <fenv.h>
 #define _isnan       isnan
 #define _SW_INVALID  FE_INVALID
-
-static inline UINT _clearfp(void){int r=fetestexcept(FE_ALL_EXCEPT);
- feclearexcept(FE_ALL_EXCEPT); return r;
-}
+static inline unsigned int _clearfp(void){int r=fetestexcept(FE_ALL_EXCEPT); feclearexcept(FE_ALL_EXCEPT); return r; }
+// #define _clearfp() (unsigned int)0
 #endif
+
+#elif defined(__mips__) && defined(ANDROID)
+#include "mips/fenv.h"
+#define _isnan       isnan
+#define _SW_INVALID  FE_INVALID
+static inline unsigned int _clearfp(void){int r=fetestexcept(FE_ALL_EXCEPT); feclearexcept(FE_ALL_EXCEPT); return r; }
+
+#else
+#include <fenv.h>
+#define _isnan       isnan
+#define _SW_INVALID  FE_INVALID
+static inline unsigned int _clearfp(void){int r=fetestexcept(FE_ALL_EXCEPT); feclearexcept(FE_ALL_EXCEPT); return r; }
+
+#endif
+#endif
+
+#ifdef _MISALIGN_BYTEVECTOR
+#define MISALIGN_BYTEVECTOR 1
+#else
+#define MISALIGN_BYTEVECTOR 0
+#endif
+
+#ifdef __MINGW32__
+#ifndef _SW_INVALID
+#define _SW_INVALID    0x00000010 /* invalid */
+#endif
+#ifndef _EM_ZERODIVIDE
+#define _EM_ZERODIVIDE  0x00000008
+#endif
+#define EM_INVALID    _SW_INVALID
+#define EM_ZERODIVIDE _EM_ZERODIVIDE
+#if defined(__STRICT_ANSI__)
+extern int __cdecl _isnan (double);
+extern unsigned int __cdecl _clearfp (void);
+#endif
+#if defined(__STRICT_ANSI__) && !defined(__MINGW64__)
+#ifndef _fileno
+#define _fileno(__F) ((__F)->_file)
+#endif
+#ifndef _MAX_PATH
+#define _MAX_PATH  (260)
+#endif
+#endif
+#endif
+

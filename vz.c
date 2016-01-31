@@ -25,7 +25,7 @@ ZS2(jtzminus, zr=a-c; zi=b-d;)
 ZF1(jtztrend){D a,b,t;Z z;
  a=v.re; b=v.im;
  if(ZOV(v)){a/=2; b/=2;}
- t=hypoth(a,b); 
+ t=hypoth(a,b);
  if(t<inf){if(!t)++t; z.re=a/t; z.im=b/t;}
  else switch((INF(a)?2:0)+INF(b)){
   case 1: z.re=0.0;    z.im=SGN(b); break;
@@ -87,17 +87,14 @@ ZF2(jtzrem){D a,b,d;Z q;
  }
  ZASSERT(!ZINF(u),EVNONCE);
  d=u.re*u.re+u.im*u.im;
- a=u.re*v.re+u.im*v.im; q.re=tfloor(a/d); 
- b=u.re*v.im-u.im*v.re; q.im=tfloor(b/d);
+ a=u.re*v.re+u.im*v.im; q.re=tfloor(0.5+a/d);
+ b=u.re*v.im-u.im*v.re; q.im=tfloor(0.5+b/d);
  R zminus(v,ztymes(u,q));
 }
 
 ZF2(jtzgcd){D a,b;Z t,z;
  ZASSERT(!(ZINF(u)||ZINF(v)),EVNAN);
- while(ZNZ(u)){
-  t=zrem(u,v); if(t.re>v.re/2)t.re-=v.re; if(t.im>v.im/2)t.im-=v.im;
-  v.re=u.re; v.im=u.im; u.re=t.re; u.im=t.im;
- }
+ while(ZNZ(u)){t=zrem(u,v); v.re=u.re; v.im=u.im; u.re=t.re; u.im=t.im;}
  z.re=a=v.re; z.im=b=v.im;
  switch(2*(0>a)+(0>b)){
   case 0: if(!a){z.re= b; z.im=0;}                        break;
@@ -114,8 +111,8 @@ ZF1(jtzexp){D a,b,c,s,t;Z z;
  a=v.re; b=v.im;
  if(a<EMIN)z.re=z.im=0.0;
  else{
-  ZASSERT(-THMAX<b&&b<THMAX,EVLIMIT); 
-  c=cos(b); s=sin(b); 
+  ZASSERT(-THMAX<b&&b<THMAX,EVLIMIT);
+  c=cos(b); s=sin(b);
   if(a<=EMAX){t=exp(a); z.re=t*c; z.im=t*s;}
   else{
    if(!c)z.re=0; else{t=a+log(ABS(c)); t=EMAX<t?inf:exp(t); z.re=0>c?-t:t;}
@@ -167,7 +164,7 @@ ZF1(jtzsqrt){D p,q,t;
 static ZF1(jtzsin){D a,b,c,s;Z z;
  a=v.re; b=v.im;
  ZASSERT(-THMAX<a&&a<THMAX,EVLIMIT);
- s=sin(a); z.re=s?s*(b<-EMAX2||    EMAX2<b?inf:cosh(b)):0.0; 
+ s=sin(a); z.re=s?s*(b<-EMAX2||    EMAX2<b?inf:cosh(b)):0.0;
  c=cos(a); z.im=c?c*(b<-EMAX2?infm:EMAX2<b?inf:sinh(b)):0.0;
  R z;
 }    /* 4.3.55 */
@@ -175,7 +172,7 @@ static ZF1(jtzsin){D a,b,c,s;Z z;
 static ZF1(jtzcos){D a,b,c,s;Z z;
  a=v.re; b=v.im;
  ZASSERT(-THMAX<a&&a<THMAX,EVLIMIT);
- c=cos(a); z.re=c? c*(b<-EMAX2||    EMAX2<b?inf:cosh(b)):0.0; 
+ c=cos(a); z.re=c? c*(b<-EMAX2||    EMAX2<b?inf:cosh(b)):0.0;
  s=sin(a); z.im=s?-s*(b<-EMAX2?infm:EMAX2<b?inf:sinh(b)):0.0;
  R z;
 }    /* 4.3.56 */
@@ -197,8 +194,8 @@ static ZF1(jtzp8){R zsqrt(ztymes(zplus(zj,v),zminus(zj,v)));}
 static ZF1(jtzasinh){R 0>v.re ? znegate(zasinh(znegate(v))) : zlog(zplus(v,zp4(v)));}
 
 static ZF1(jtzacosh){Z z;
- z=zlog(zplus(v,zm4(v))); 
- if(0>=z.re){z.re=0; z.im=ABS(z.im);} 
+ z=zlog(zplus(v,zm4(v)));
+ if(0>=z.re){z.re=0; z.im=ABS(z.im);}
  R z;
 }
 
@@ -219,7 +216,7 @@ static ZF1(jtzarc){D x,y;Z t,z;
  z.re=z.im=0;
  t=ztrend(v); x=t.re; y=t.im;
  if(0!=x||0!=y)z.re=atan2(y,x);
- 
+
 #if SY_WINCE_MIPS && !defined(WIN32_PLATFORM_PSPC)
  if(!y) z.re=x<0?PI : 0;  /* atan2(0,v) fails in mips handheld wince - 12 o. _3 */
 #endif
@@ -253,7 +250,7 @@ B jtztridiag(J jt,I n,A a,A x){I i,j,n1=n-1;Z*av,d,p,*xv;
  av=ZAV(a); xv=ZAV(x); d=xv[0];
  for(i=j=0;i<n1;++i){
   ASSERT(ZNZ(d),EVDOMAIN);
-  p=zdiv(xv[j+2],d); 
+  p=zdiv(xv[j+2],d);
   xv[j+3]=d=zminus(xv[j+3],ztymes(p,xv[j+1]));
   av[i+1]=  zminus(av[i+1],ztymes(p,av[i]  ));
   j+=3;
@@ -266,7 +263,7 @@ B jtztridiag(J jt,I n,A a,A x){I i,j,n1=n-1;Z*av,d,p,*xv;
 
 DF1(jtexppi){A z;B b;D r,th,y;I k;Z*v,t;
  F1RANK(0,jtexppi,0);
- if(!(CMPX&AT(w)))R expn1(pix(w)); 
+ if(!(CMPX&AT(w)))R expn1(pix(w));
  v=ZAV(w); r=exp(PI*v->re); y=v->im; if(b=0>y)y=-y;
  th=y-2*(I)(y/2); k=(I)(2*th); if(k!=2*th)k=-1; else if(b&&k)k=4-k;
  if(!(0<=k&&k<=3))R expn1(pix(w));

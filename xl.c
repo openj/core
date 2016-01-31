@@ -25,7 +25,11 @@ static B jtdolock(J jt,B lk,F f,I i,I n){I e;long c;fpos_t v; fpos_t q;
  if(0!=c)R (B)jerrno();
  e=_locking(_fileno(f),lk?_LK_NBLCK:_LK_UNLCK,(long)n);
  fsetpos(f,(fpos_t*)&q);
+#ifdef __MINGW32__
+ R !e?1:((errno==ENOENT)||(errno==EACCES))?0:(B)jerrno();
+#else
  R !e?1:errno==EACCES?0:(B)jerrno();
+#endif
 }
 #endif
 
@@ -39,7 +43,7 @@ static B jtdolock(J jt,B lk,F f,I i,I n){I e;
 #define LKC  3      /* number of columns in jt->flkd table       */
 
 B jtxlinit(J jt){A x;I*s;
- GA(x,INT,20*LKC,2,0); s=AS(x); s[0]=20; s[1]=LKC; ra(x); 
+ GA(x,INT,20*LKC,2,0); s=AS(x); s[0]=20; s[1]=LKC; ra(x);
  jt->flkd=x;
  R 1;
 }
@@ -49,9 +53,9 @@ F1(jtjlocks){A y; ASSERTMTV(w); y=take(sc(jt->flkn),jt->flkd); R grade2(y,y);}
 
 F1(jtjlock){B b;I*v;
  F1RANK(1,jtjlock,0);
- RZ(w=vi(w)); 
+ RZ(w=vi(w));
  ASSERT(LKC==AN(w),EVLENGTH);
- v=AV(w); RE(vfn((F)*v)); ASSERT(0<=v[1]&&0<=v[2],EVDOMAIN); 
+ v=AV(w); RE(vfn((F)*v)); ASSERT(0<=v[1]&&0<=v[2],EVDOMAIN);
  if(jt->flkn==*AS(jt->flkd))RZ(jt->flkd=ext(1,jt->flkd));
  RE(b=dolock(1,(F)v[0],v[1],v[2]));
  if(!b)R zero;
@@ -65,18 +69,18 @@ static A jtunlj(J jt,I j){B b;I*u,*v;
  u=AV(jt->flkd); v=u+j*LKC;
  RE(b=dolock(0,(F)v[0],v[1],v[2]));
  if(!b)R zero;
- --jt->flkn; 
- if(j<jt->flkn)ICPY(v,u+jt->flkn*LKC,LKC); else *v=0; 
+ --jt->flkn;
+ if(j<jt->flkn)ICPY(v,u+jt->flkn*LKC,LKC); else *v=0;
  R one;
 }    /* unlock the j-th entry in jt->flkd */
 
-B jtunlk(J jt,I x){I j=0,*v=AV(jt->flkd); 
- while(j<jt->flkn){while(x==*v)RZ(unlj(j)); ++j; v+=LKC;} 
+B jtunlk(J jt,I x){I j=0,*v=AV(jt->flkd);
+ while(j<jt->flkn){while(x==*v)RZ(unlj(j)); ++j; v+=LKC;}
  R 1;
 }    /* unlock all existing locks for file# x */
 
 F1(jtjunlock){
- F1RANK(1,jtjunlock,0); 
- ASSERT(INT&AT(w),EVDOMAIN); 
- R unlj(i0(indexof(jt->flkd,w))); 
+ F1RANK(1,jtjunlock,0);
+ ASSERT(INT&AT(w),EVDOMAIN);
+ R unlj(i0(indexof(jt->flkd,w)));
 }    /* w is (number,index,length); unlock the specified region */

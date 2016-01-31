@@ -2,10 +2,17 @@
 /* License in license.txt.                                   */
 #ifdef _WIN32
 #include <windows.h>
+#ifdef __MINGW32__
+#ifndef _stdcall
+#define _stdcall __stdcall
+#define _cdecl __cdecl
+#endif
+#else
 int WINAPI DllMain (HINSTANCE hDLL, DWORD dwReason, LPVOID lpReserved)
 {
 	return TRUE;
 }
+#endif
 typedef wchar_t wc;
 #else
 #define _stdcall
@@ -124,7 +131,9 @@ int _cdecl altinci(int i){return ++i;}
 I _stdcall xbasic_add(){return (I)xbasic;}
 
 // '1 procindex ...'
+#ifndef __MINGW32__
 typedef I (_stdcall *PROC)();
+#endif
 I _stdcall objxxx(void* obj,I a,I b){return a+b;}
 D _stdcall objddd(void* obj,D a,D b){return a+b;}
 //PROC vtable[]={&(PROC)objxxx,&(PROC)objddd};

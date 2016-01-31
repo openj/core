@@ -4,7 +4,15 @@ make jconsole
 
 if [ -x jconsole ]
 then
+strip jconsole
+if [ $un != Win ]
+then
 cp jconsole  j/bin/.
+cp jconsole  release/$un$bits/.
+else
+cp jconsole  j/bin/jconsole.exe
+cp jconsole  release/$un$bits/jconsole.exe
+fi
 echo success: jconsole created and copied to j/bin
 else
 echo failed: jconsole NOT created

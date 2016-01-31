@@ -6,6 +6,8 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <winbase.h>
+#else
+#include <unistd.h>
 #endif
 
 #include "j.h"
@@ -48,7 +50,7 @@ char *toascbuf(wchar_t *src)
 #define _A_SUBDIR   FILE_ATTRIBUTE_DIRECTORY
 #define _A_ARCH     FILE_ATTRIBUTE_ARCHIVE
 
-#endif 
+#endif
 
 #if (SYS & SYS_DOS)
 
@@ -86,7 +88,7 @@ static A jtattv(J jt,U x){A z;C*s;
 }    /* convert from 16-bit attributes x into 6-element string */
 
 static S jtattu(J jt,A w){C*s;I i,n;S z=0;
- RZ(w=vs(w)); 
+ RZ(w=vs(w));
  n=AN(w); s=CAV(w);
  for(i=0;i<n;++i)switch(s[i]){
   case 'r': z^=_A_RDONLY; break;
@@ -108,7 +110,7 @@ F1(jtfullname){C*s; C dirpath[1000];
  if(*s=='\\'||*s=='/') strcpy(dirpath,s);
  else {strcpy(dirpath, "\\"); strcat(dirpath,s);}
 #else
- _fullpath(dirpath,s,NPATH); 
+ _fullpath(dirpath,s,NPATH);
 #endif
  R cstr(dirpath);
 }
@@ -131,7 +133,7 @@ F1(jtjfperm1){A y,fn,z;C *s;F f;int x; US *p,*q;
 F2(jtjfperm2){A y,fn;C*s;F f;int x=0;US *p;
  F2RANK(1,0,jtjfperm2,0);
  RE(f=stdf(w)); if(f)ASSERT(y=fname(sc((I)f)),EVFNUM) else y=AAV0(w);
- RZ(a=vs(a)); ASSERT(3==AN(a),EVLENGTH); 
+ RZ(a=vs(a)); ASSERT(3==AN(a),EVLENGTH);
  RZ(fn=toutf16x(y));
  s=CAV(y);
  p=USAV(fn);;
@@ -190,12 +192,12 @@ static A jtdir1(J jt,LPWIN32_FIND_DATAW f,C* fn) {A z,*zv;C rwx[3],*s,*t;I n,ts[
  rwx[1]=f->dwFileAttributes & FILE_ATTRIBUTE_READONLY ?'-':'w';
  rwx[2]=strcmp(t,"exe")&&strcmp(t,"bat")&&strcmp(t,"com")?'-':'x';
  GA(z,BOX,5,1,0); zv=AAV(z);
- RZ(zv[0]=str(n,s)); 
+ RZ(zv[0]=str(n,s));
  RZ(zv[1]=vec(INT,6L,ts));
 #if SY_64
  RZ(zv[2]=sc(((I)f->nFileSizeHigh<<32) + (I)f->nFileSizeLow));
 #else
- RZ(zv[2]=sc(   (f->nFileSizeHigh || 0>(I)f->nFileSizeLow)?-1:f->nFileSizeLow ));  
+ RZ(zv[2]=sc(   (f->nFileSizeHigh || 0>(I)f->nFileSizeLow)?-1:f->nFileSizeLow ));
 #endif
  RZ(zv[3]=str(3L,rwx));
  RZ(zv[4]=attv((S)f->dwFileAttributes));
@@ -214,7 +216,7 @@ F1(jtjdir){PROLOG;A z,fn,*zv;I j=0,n=32;HANDLE fh; WIN32_FIND_DATAW f; C fnbuffe
    name = fnbuffer;
    if(strcmp(name,".")&&strcmp(name,"..")){
     if(j==n){RZ(z=ext(0,z)); n=AN(z); zv=AAV(z);}
-    RZ(zv[j++]=jtdir1(jt,&f,fnbuffer)); 
+    RZ(zv[j++]=jtdir1(jt,&f,fnbuffer));
    }
   } while (FindNextFileW(fh,&f));
   FindClose(fh);
@@ -229,7 +231,7 @@ F1(jtjfatt1){A y,fn;F f;U x;
  RZ(fn=toutf16x(y));
  x=GetFileAttributesW(USAV(fn));
  if(-1!=x) R attv(x);
- jsignal(EVFNAME); R 0; 
+ jsignal(EVFNAME); R 0;
 }
 
 F2(jtjfatt2){A y,fn;F f;U x;
@@ -260,11 +262,14 @@ F2(jtjfatt2){A y,fn;F f;U x;
 #include <fnmatch.h>
 #endif
 
+#if !defined(S_IFSOCK) && defined(__S_IFSOCK)
+#define S_IFSOCK  __S_IFSOCK
+#endif
 
 /* Return mode_t formatted into a static 10-character buffer. */
 static C*modebuf(mode_t m){C c;static C b[11];I t=m;
  strcpy(b+1,"rwxrwxrwx");
- DO(9, if(!(m&1))b[9-i]='-'; m>>=1;); 
+ DO(9, if(!(m&1))b[9-i]='-'; m>>=1;);
  if(t&S_ISUID)b[3]=(b[3]=='x')?'s':'S';
  if(t&S_ISGID)b[6]=(b[6]=='x')?'s':'S';
  if(t&S_ISVTX)b[9]=(b[9]=='x')?'t':'T';
@@ -283,18 +288,21 @@ static C*modebuf(mode_t m){C c;static C b[11];I t=m;
  R b;
 }
 
-/* 
+/*
  linux32 stat fails on big files - so it uses stat64
  but can't get it to work with struct stat64
  so struct stat is used (wrong, but seems to work)
 */
 
+/*
+replace the following lines by using compilation flag -D_FILE_OFFSET_BITS=64
 #if SYS & SYS_LINUX
 #define stat stat64
 #endif
+*/
 
- 
-static int ismatch(J jt,C*pat,C*name){ 
+
+static int ismatch(J jt,C*pat,C*name){
  strcpy(jt->dirbase,name); if(stat(jt->dirnamebuf,&jt->dirstatbuf))R 0;
  if('.'!=*pat && ((!strcmp(name,"."))||(!strcmp(name,".."))))R 0;
  if(fnmatch(pat,name,0)) R 0;
@@ -316,7 +324,7 @@ static A jtdir1(J jt,struct dirent*f){A z,*zv;C*s,att[16];I n,ts[6],i,m,sz;S x;s
  ts[3]=tm->tm_hour; ts[4]=tm->tm_min; ts[5]=tm->tm_sec;
  s=f->d_name; n=strlen(s);
  GA(z,BOX,6,1,0); zv=AAV(z);
- RZ(zv[0]=vec(LIT,n,s)); 
+ RZ(zv[0]=vec(LIT,n,s));
  RZ(zv[1]=vec(INT,6L,ts));
  sz=jt->dirstatbuf.st_size;
  sz=sz<0?-1:sz;
@@ -342,7 +350,7 @@ F1(jtjdir){PROLOG;A*v,z,*zv;C*dir,*pat,*s,*x;I j=0,n=32;DIR*DP;struct dirent *f;
  while(f){
   if(ismatch(jt,pat,f->d_name)){
    if(j==n){RZ(z=ext(0,z)); n=AN(z); zv=AAV(z);}
-   RZ(zv[j++]=dir1(f)); 
+   RZ(zv[j++]=dir1(f));
   }
   f=readdir(DP);
  }

@@ -18,11 +18,11 @@ static A jtmakename(J jt,C*s){A z;I m;NM*zv;
  m=strlen(s);
  GA(z,NAME,m,1,0); zv=NAV(z);
  memcpy(zv->s,s,m); *(m+zv->s)=0;
- zv->m   =(UC)m; 
- zv->sn  =0; 
+ zv->m   =(UC)m;
+ zv->sn  =0;
  zv->e   =0;
  zv->flag=NMDOT;
- zv->hash=nmhash(m,s); 
+ zv->hash=NMHASH(m,s);
  ACX(z);
  R z;
 }
@@ -32,11 +32,11 @@ B jtglobinit(J jt){A x,y;C*s;D*d;I j;UC c,k;
  jt->adbreak=&breakdata; /* required for ma to work */
  meminit();  /* required for ma to work */
  jt->parsercalls=0;
- s=bitdisp; 
+ s=bitdisp;
  DO(256, c=(UC)i;      DO(BB, *s++=c&(UC)128?'1':'0'; *s++=' '; c<<=1;);           );
  DO(16,  c=(UC)i; k=0; DO(BB, if(c&(UC)1)++k;                   c>>=1;); bitc[i]=k;);
  DO(15, j=1+i; DO(16, bitc[16*j+i]=bitc[j]+bitc[i];););
- MC(&inf, XINF,SZD); 
+ MC(&inf, XINF,SZD);
  MC(&jnan,XNAN,SZD);
  infm=-inf;
  memset(testb,C0,256);
@@ -58,7 +58,7 @@ B jtglobinit(J jt){A x,y;C*s;D*d;I j;UC c,k;
  GA(x,INT, 1,1,0     ); ACX(x); * AV(x)=1;                iv1=xone   =x;
  GA(x,FL,  1,0,0     ); ACX(x); *DAV(x)=inf;              ainf       =x;
  GA(x,FL,  1,0,0     ); ACX(x); *DAV(x)=PI;               pie        =x;
- GA(x,MARK,1,0,0     ); ACX(x); * AV(x)=0;                mark       =x; 
+ GA(x,MARK,1,0,0     ); ACX(x); * AV(x)=0;                mark       =x;
  GA(x,B01, 0,2,&zeroZ); ACX(x);                           mtm        =x;
  GA(x,CMPX,1,0,0     ); ACX(x); d=DAV(x); *d=0; *(1+d)=1; a0j1       =x;
  RZ(y=str(1L,"z"));     ACX(y);

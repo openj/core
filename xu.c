@@ -3,6 +3,8 @@
 /*                                                                         */
 /* Xenos: u: conversions                                                   */
 
+#include <wchar.h>
+
 #include "j.h"
 #include "x.h"
 
@@ -98,17 +100,17 @@ static I wtomsize(US* src, I srcn){ US w;I r=0;
  R r;
 }
 
-F1(jttoutf16){A z;I n,t,q,b=0; C* wv; US* c2v; 
- RZ(w); ASSERT(1>=AR(w),EVRANK); n=AN(w); t=AT(w); wv=CAV(w);
- if(!n) {GA(z,LIT,n,1,0); R z;}; // empty lit list 
+F1(jttoutf16){A z;I n,t,q,b=0; UC* wv; US* c2v;
+ RZ(w); ASSERT(1>=AR(w),EVRANK); n=AN(w); t=AT(w); wv=(UC*)CAV(w);
+ if(!n) {GA(z,LIT,n,1,0); R z;}; // empty lit list
  if(LIT&t)
  {
-  DO(n, if(0>*wv++){b=1;break;});
+  DO(n, if(127<*wv++){b=1;break;});
   if(!b){ if(1==AR(w)) {R ca(w);}; GA(z,LIT,1,1,0); *CAV(z)=*CAV(w); R z;} // ascii list unchanged ascii scalar as list
-  q=mtowsize(CAV(w),n);
+  q=mtowsize((UC*)CAV(w),n);
   ASSERT(q>=0,EVDOMAIN);
   GA(z,C2T,q,1,0);
-  mtow(CAV(w),n,(US*)CAV(z));
+  mtow((UC*)CAV(w),n,(US*)CAV(z));
   R z; // u16 from u8
  }
  else if(C2T&t)
@@ -117,9 +119,9 @@ F1(jttoutf16){A z;I n,t,q,b=0; C* wv; US* c2v;
   DO(n, if(127<*c2v++){b=1;break;});
   if(b) R ca(w); // u16 unchanged
   GA(z,LIT,n,AR(w),AS(w));
-  wv=CAV(z);
+  wv=(UC*)CAV(z);
   c2v=(US*)AV(w);
-  DO(n, *wv++=(char)*c2v++;);
+  DO(n, *wv++=(UC)*c2v++;);
   R z;
  }
  else
@@ -128,26 +130,26 @@ F1(jttoutf16){A z;I n,t,q,b=0; C* wv; US* c2v;
 
 F1(jttoutf8){A z;I n,t,q;
 RZ(w); ASSERT(1>=AR(w),EVRANK); n=AN(w); t=AT(w);
-if(!n) {GA(z,LIT,n,AR(w),AS(w)); R z;}; // empty lit 
+if(!n) {GA(z,LIT,n,AR(w),AS(w)); R z;}; // empty lit
 if(t&LIT) R ca(w); // char unchanged
 ASSERT(t&C2T, EVDOMAIN);
 q=wtomsize((US*)CAV(w),n);
 GA(z,LIT,q,1,0);
-wtom((US*)CAV(w),n,CAV(z));
+wtom((US*)CAV(w),n,(UC*)CAV(z));
 R z;
 }    // 8 u: x - utf8 from LIT or C2T
 
 F1(jttoutf16x){I q;A z;
 ASSERT(LIT&AT(w),EVDOMAIN);
-q=mtowsize(CAV(w),AN(w));
+q=mtowsize((UC*)CAV(w),AN(w));
 ASSERT(q>=0,EVDOMAIN);
 GA(z,C2T,q,1,0);
-mtow(CAV(w),AN(w),(US*)CAV(z));
+mtow((UC*)CAV(w),AN(w),(US*)CAV(z));
 R z; // u16 from u8
 }
 
 void jttoutf8x(J jt,C* f, I n, US* fw){I q;
 q=wtomsize(fw,wcslen(fw));
-wtom(fw,wcslen(fw),f);
+wtom(fw,wcslen(fw),(UC*)f);
 f[q]=0;
 }

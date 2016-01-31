@@ -59,39 +59,39 @@ static void jtcirx(J jt,I n,I k,D*z,D*y){D p,t;
   case -2: DO(n, t=*y++; ASSERTW( -1.0<=t&&t<=1.0, EWIMAG ); *z++=acos(t););       break;
   case -3: DO(n,                                             *z++=atan(*y++););    break;
   case -4: DO(n, t=*y++; ASSERTW(t<=-1.0||1.0<=t,  EWIMAG ); *z++=t<-1e8||1e8<t?t:t==-1?0:(t+1)*sqrt((t-1)/(t+1));); break;
-  case -5: p=log(2.0); 
+  case -5: p=log(2.0);
            DO(n, t=*y++; *z++=1.0e8<t?p+log(t):-7.8e3>t?-(p+log(-t)):log(t+sqrt(t*t+1.0)););               break;
-  case -6: p=log(2.0); 
+  case -6: p=log(2.0);
            DO(n, t=*y++; ASSERTW(          1.0<=t, EWIMAG ); *z++=1.0e8<t?p+log(t):log(t+sqrt(t*t-1.0));); break;
   case -7: DO(n, t=*y++; ASSERTW( -1.0<=t&&t<=1.0, EWIMAG ); *z++=0.5*log((1.0+t)/(1.0-t)););              break;
-  case  9: DO(n,         *z++=*y++;);           break;    
+  case  9: DO(n,         *z++=*y++;);           break;
   case 10: DO(n, t=*y++; *z++=ABS(t););         break;
   case 11: DO(n,         *z++=0.0;);            break;
   case 12: DO(n,         *z++=0<=*y++?0.0:PI;); break;
  }
- NAN1V;
+NAN1V;
 }
 
 AHDR2(cirBD,D,B,D){ASSERTW(b&&1==m,EWIMAG); cirx(n,(I)*x,z,y);}
 AHDR2(cirID,D,I,D){ASSERTW(b&&1==m,EWIMAG); cirx(n,   *x,z,y);}
 
 AHDR2(cirDD,D,D,D){I k=(I)jfloor(0.5+*x);
- ASSERTW(k==*x,EVDOMAIN); 
- ASSERTW(b&&1==m,EWIMAG); 
+ ASSERTW(k==*x,EVDOMAIN);
+ ASSERTW(b&&1==m,EWIMAG);
  cirx(n,k,z,y);
 }
 
 
 F2(jtlogar2){A z;I t;
- RZ(a&&w); 
+ RZ(a&&w);
  t=maxtype(AT(a),AT(w));
  if(!(t&XNUM)||jt->xmode==XMEXACT){jt->xmode=XMEXACT; R divide(logar1(w),logar1(a));}
- z=rank2ex(cvt(XNUM,a),cvt(XNUM,w),0L,0L,0L,jtxlog2a); 
+ z=rank2ex(cvt(XNUM,a),cvt(XNUM,w),0L,0L,0L,jtxlog2a);
  if(z)R z;
  if(jt->jerr==EWIMAG||jt->jerr==EWIRR){RESETERR; jt->xmode=XMEXACT; R divide(logar1(w),logar1(a));}
  R 0;
 }
-    
+
 F2(jtroot){A z;I t;
  RZ(a&&w);
  t=maxtype(AT(a),AT(w));
@@ -112,7 +112,7 @@ F2(jtrdot2){R tymes(a,rdot1(w));}
 F1(jtpolar){RZ(w); R cvt(SPARSE&AT(w)?SFL:FL,df2(v2(10L,12L),w,qq(ds(CCIRCLE),v2(1L,0L))));}
 
 F1(jtrect){A e,z;B b;I r,t;P*wp,*zp;Z c;
- RZ(w); 
+ RZ(w);
  t=AT(w); r=AR(w); jt->rank=0;
  ASSERT(!AN(w)||t&NUMERIC,EVDOMAIN);
  if(t&CMPX){GA(z,FL,2*AN(w),1+r,AS(w)); *(AS(z)+r)=2; MC(AV(z),AV(w),AN(z)*sizeof(D)); R z;}

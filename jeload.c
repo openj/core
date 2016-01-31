@@ -24,12 +24,18 @@
  #define filesep '/'
  #define filesepx "/"
  #define ijx "11!:0'pc ijx closeok;xywh 0 0 300 200;cc e editijx rightmove bottommove ws_vscroll ws_hscroll;setfont e monospaced 12;pas 0 0;pgroup jijx;pshow;'[18!:4<'base'"
- #ifdef __MACH__ 
+ #ifdef __MACH__
   #define JDLLNAME "libj.dylib"
  #else
   #define JDLLNAME "libj.so"
  #endif
 #endif
+
+#ifdef ANDROID
+#include <unistd.h>
+#include <sys/stat.h>
+#endif
+
 #include "j.h"
 
 static void* hjdll;
@@ -39,6 +45,7 @@ static JFreeType jfree;
 static JgaType jga;
 static JGetLocaleType jgetlocale;
 static char path[PLEN];
+static char pathroot[PLEN];
 static char pathdll[PLEN];
 
 int jedo(char* sentence)
@@ -91,7 +98,7 @@ void jepath(char* arg)
  // fprintf(stderr,"arg0 %s\n",arg);
  // try host dependent way to get path to executable
  // use arg if they fail (arg command in PATH won't work)
-#ifdef __MACH__ 
+#ifdef __MACH__
  n=_NSGetExecutablePath(arg2,&len);
  if(0!=n) strcat(arg2,arg);
 #else
@@ -136,6 +143,8 @@ void jepath(char* arg)
  strcat(pathdll,filesepx);
  strcat(pathdll,JDLLNAME);
  // fprintf(stderr,"arg4 %s\n",path);
+ strcpy(pathroot,path);
+ *(strrchr(pathroot,filesep)) = 0;
 }
 
 // called by jwdp (java jnative.c) to set path
@@ -183,7 +192,35 @@ int jefirst(int type,char* arg)
 		*q++=*p++;
 	}
 	*q=0;
-	strcat(input,"'");
+#if ANDROID
+struct stat st;
+ strcat(input,"'[UNAME_z_=:'Android");
+ if(!getenv("HOME")) {
+  if(!stat("/sdcard",&st)) {
+   setenv("HOME","/sdcard",1);
+  } else {
+   setenv("HOME",pathroot,1);
+  }
+ }
+ if(!getenv("TMP")) {
+  char tmp[PLEN];
+	strcpy(tmp, pathroot);
+	strcat(tmp, filesepx);
+	strcat(tmp, "tmp");
+  if(stat(tmp,&st)) mkdir(tmp, S_IRWXU | S_IRWXG | S_IRWXO);
+  setenv("TMP",tmp,1);
+ }
+#endif
+#if defined(__arm__)
+  strcat(input,"'[IFARM_z_=:1");
+#else
+  strcat(input,"'[IFARM_z_=:0");
+#endif
+#if defined(__mips__)
+  strcat(input,"[IFMIPS_z_=:1");
+#else
+  strcat(input,"[IFMIPS_z_=:0");
+#endif
 	r=jedo(input);
 	free(input);
 	return r;

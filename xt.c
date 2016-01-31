@@ -8,10 +8,22 @@
 #include <winbase.h>
 #endif
 
+
 #include "j.h"
 
 #if !SY_WINCE && (SY_WIN32 || (SYS & SYS_LINUX))
 #include <time.h>
+#if (SYS & SYS_LINUX)
+#include <sys/time.h>
+
+#ifdef ANDROID
+#ifdef link
+#undef link
+#endif
+#endif
+
+#include <unistd.h>
+#endif
 #else
 #if (SY_GETTOD && !(SYS&SYS_IBMRS6000))
 #include <sys/time.h>
@@ -21,6 +33,7 @@
 #if !SY_WIN32 && (SYS & SYS_DOS)
 #include <dos.h>
 #endif
+
 
 #ifndef CLOCKS_PER_SEC
 #if (SYS & SYS_UNIX)
@@ -34,8 +47,8 @@
 
 F1(jtsp){ASSERTMTV(w); R sc(jt->bytes);}
 
-F1(jtspit){A z;I k; 
- F1RANK(1,jtspit,0); 
+F1(jtspit){A z;I k;
+ F1RANK(1,jtspit,0);
  jt->bytesmax=k=jt->bytes;
  FDEPINC(1); z=exec1(w); FDEPDEC(1);
  RZ(z);
@@ -110,11 +123,11 @@ static D qpc(void){R tod()*CLOCKS_PER_SEC;}
 
 #endif
 
-/* 
+/*
 // by Mark VanTassel from The Code Project
 
 __int64 GetMachineCycleCount()
-{      
+{
    __int64 cycles;
    _asm rdtsc; // won't work on 486 or below - only pentium or above
    _asm lea ebx,cycles;
@@ -131,8 +144,8 @@ F2(jttsit2){A z;D t;I n,old;
  F2RANK(0,1,jttsit2,0);
  RE(n=i0(a));
  FDEPINC(1);
- t=qpc(); 
- old=jt->tbase+jt->ttop; DO(n, z=exec1(w); if(!z)break; tpop(old);); 
+ t=qpc();
+ old=jt->tbase+jt->ttop; DO(n, z=exec1(w); if(!z)break; tpop(old););
  t=qpc()-t;
  FDEPDEC(1);
  RZ(z);
@@ -170,15 +183,15 @@ F1(jtpmctr){D x;I q;
  ASSERT(jt->pma,EVDOMAIN);
  x=q+(D)jt->pmctr;
  ASSERT(IMIN<=x&&x<=IMAX,EVDOMAIN);
- jt->pmctr=q=(I)x; 
+ jt->pmctr=q=(I)x;
  R sc(q);
 }    /* add w to pmctr */
 
 static F1(jtpmfree){A x,y;C*c;I m;PM*v;PM0*u;
  if(w){
-  c=CAV(w); u=(PM0*)c; v=(PM*)(c+sizeof(PM0)); 
-  m=u->wrapped?u->n:u->i; 
-  DO(m, x=v->name; if(x&&NAME==AT(x)&&AN(x)==*AS(x))fa(x); 
+  c=CAV(w); u=(PM0*)c; v=(PM*)(c+sizeof(PM0));
+  m=u->wrapped?u->n:u->i;
+  DO(m, x=v->name; if(x&&NAME==AT(x)&&AN(x)==*AS(x))fa(x);
         y=v->loc;  if(y&&NAME==AT(y)&&AN(y)==*AS(y))fa(y); ++v;);
   fa(w);
  }
@@ -190,11 +203,11 @@ F1(jtpmarea1){R pmarea2(vec(B01,2L,&zeroZ),w);}
 F2(jtpmarea2){A x;B a0,a1,*av;C*v;I an,n=0,s=sizeof(PM),s0=sizeof(PM0),wn;PM0*u;
  RZ(a&&w);
  ASSERT(prokey, EVDOMAIN);
- RZ(a=cvt(B01,a)); 
+ RZ(a=cvt(B01,a));
  an=AN(a);
  ASSERT(1>=AR(a),EVRANK);
  ASSERT(2>=an,EVLENGTH);
- av=BAV(a); 
+ av=BAV(a);
  a0=0<an?av[0]:0;
  a1=1<an?av[1]:0;
  RZ(w=vs(w));
@@ -206,13 +219,13 @@ F2(jtpmarea2){A x;B a0,a1,*av;C*v;I an,n=0,s=sizeof(PM),s0=sizeof(PM0),wn;PM0*u;
  RZ(pmfree(x));
  if(wn){
   v=CAV(w);
-  jt->pmu=u=(PM0*)v; 
-  jt->pmv=(PM*)(s0+v); 
+  jt->pmu=u=(PM0*)v;
+  jt->pmv=(PM*)(s0+v);
   jt->pmrec=u->rec=a0;
-  u->n=n=(wn-s0)/s; 
+  u->n=n=(wn-s0)/s;
   u->i=0;
   u->s=jt->bytesmax=jt->bytes;
-  u->trunc=a1; 
+  u->trunc=a1;
   u->wrapped=0;
  }
  R sc(n);
@@ -246,14 +259,14 @@ F1(jtpmunpack){A*au,*av,c,t,x,z,*zv;B*b;D*dv;I*iv,k,m,n,p,q,wn,*wv;PM*v,*v0,*vq;
  GA(x,B01,n,1,0); b=BAV(x); memset(b,wn?C0:C1,n);
  if(wn){
   DO(wn, k=wv[i]; if(0>k)k+=n; ASSERT(0<=k&&k<n,EVINDEX); b[k]=1;);
-  m=0; 
+  m=0;
   DO(n, if(b[i])++m;);
  }else m=n;
  v0=jt->pmv; vq=q+v0;
  GA(z,BOX,1+PMCOL,1,0); zv=AAV(z);
  GA(t,BOX,2*m,1,0); av=AAV(t); au=m+av;
- v=vq; DO(p, if(b[  i]){RZ(*av++=v->name?sfn(0,v->name):mtv); RZ(*au++=v->loc?sfn(0,v->loc):mtv);} ++v;); 
- v=v0; DO(q, if(b[p+i]){RZ(*av++=v->name?sfn(0,v->name):mtv); RZ(*au++=v->loc?sfn(0,v->loc):mtv);} ++v;); 
+ v=vq; DO(p, if(b[  i]){RZ(*av++=v->name?sfn(0,v->name):mtv); RZ(*au++=v->loc?sfn(0,v->loc):mtv);} ++v;);
+ v=v0; DO(q, if(b[p+i]){RZ(*av++=v->name?sfn(0,v->name):mtv); RZ(*au++=v->loc?sfn(0,v->loc):mtv);} ++v;);
  RZ(x=indexof(t,t));
  RZ(c=eq(x,IX(IC(x))));
  RZ(zv[6]=repeat(c,t));
@@ -262,14 +275,14 @@ F1(jtpmunpack){A*au,*av,c,t,x,z,*zv;B*b;D*dv;I*iv,k,m,n,p,q,wn,*wv;PM*v,*v0,*vq;
  RZ(zv[1]=vec(INT,m,m+iv));
  GA(t,INT,m,1,0); zv[2]=t; iv=AV(t); v=vq; DO(p, if(b[i])*iv++=(I)v->val;  ++v;); v=v0; DO(q, if(b[p+i])*iv++=(I)v->val; ++v;);
  GA(t,INT,m,1,0); zv[3]=t; iv=AV(t); v=vq; DO(p, if(b[i])*iv++=v->lc; ++v;); v=v0; DO(q, if(b[p+i])*iv++=v->lc; ++v;);
- GA(t,INT,m,1,0); zv[4]=t; iv=AV(t); v=vq; DO(p, if(b[i])*iv++=v->s;  ++v;); v=v0; DO(q, if(b[p+i])*iv++=v->s;  ++v;); 
+ GA(t,INT,m,1,0); zv[4]=t; iv=AV(t); v=vq; DO(p, if(b[i])*iv++=v->s;  ++v;); v=v0; DO(q, if(b[p+i])*iv++=v->s;  ++v;);
  GA(t,FL, m,1,0); zv[5]=t; dv=DAV(t);
 #if SY_WIN32
  v=vq; DO(p, if(b[i]  )*dv++=(((LI*)v->t)->LowPart+qpm*((LI*)v->t)->HighPart)/pf; ++v;);
  v=v0; DO(q, if(b[p+i])*dv++=(((LI*)v->t)->LowPart+qpm*((LI*)v->t)->HighPart)/pf; ++v;);
 #else
- v=vq; DO(p, if(b[i]  ){MC(dv,v->t,sizeof(D)); ++dv;} ++v;); 
- v=v0; DO(q, if(b[p+i]){MC(dv,v->t,sizeof(D)); ++dv;} ++v;); 
+ v=vq; DO(p, if(b[i]  ){MC(dv,v->t,sizeof(D)); ++dv;} ++v;);
+ v=v0; DO(q, if(b[p+i]){MC(dv,v->t,sizeof(D)); ++dv;} ++v;);
 #endif
  R z;
 }

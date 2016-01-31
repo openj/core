@@ -6,7 +6,7 @@
 #include "j.h"
 #include "vasm.h"
 
-#define DIVI(u,v)     (u||v ? u/(D)v : 0.0) 
+#define DIVI(u,v)     (u||v ? u/(D)v : 0.0)
 #define DIVBB(u,v)    (v?u:u?inf:0.0)
 
 #define TYMESBX(u,v)  (u?v:0)
@@ -16,7 +16,7 @@
 #define TYMESDD(u,v)  (u&&v?u*v:0)
 
 AOVF( plusII, I,I,I,  PLUSVV, PLUS1V, PLUSV1)
-AOVF(minusII, I,I,I, MINUSVV,MINUS1V,MINUSV1)   
+AOVF(minusII, I,I,I, MINUSVV,MINUS1V,MINUSV1)
 AOVF(tymesII, I,I,I, TYMESVV,TYMES1V,TYMESV1)
 
 APFX( plusIO, D,I,I,  PLUSO)
@@ -33,9 +33,9 @@ AIFX(minusBB, I,B,B, -     )    /* minusII */               AIFX(minusBD, D,B,D,
 AIFX(minusDB, D,D,B, -     )  AIFX(minusDI, D,D,I, -)       ANAN(minusDD, D,D,D, MINUS)
 ANAN(minusZZ, Z,Z,Z, zminus)
 
-    /* andBB */               APFX(tymesBI, I,B,I, TYMESBX) APFX(tymesBD, D,B,D, TYMESBX) 
-APFX(tymesIB, I,I,B, TYMESXB)   /* tymesII */               APFX(tymesID, D,I,D, TYMESID)  
-APFX(tymesDB, D,D,B, TYMESXB) APFX(tymesDI, D,D,I, TYMESDI) APFX(tymesDD, D,D,D, TYMESDD) 
+    /* andBB */               APFX(tymesBI, I,B,I, TYMESBX) APFX(tymesBD, D,B,D, TYMESBX)
+APFX(tymesIB, I,I,B, TYMESXB)   /* tymesII */               APFX(tymesID, D,I,D, TYMESID)
+APFX(tymesDB, D,D,B, TYMESXB) APFX(tymesDI, D,D,I, TYMESDI) APFX(tymesDD, D,D,D, TYMESDD)
 ANAN(tymesZZ, Z,Z,Z, ztymes )
 
 APFX(  divBB, D,B,B, DIVBB)   APFX(  divBI, D,B,I, DIVI)    APFX(  divBD, D,B,D, DIV)
@@ -43,13 +43,13 @@ APFX(  divIB, D,I,B, DIVI )   APFX(  divII, D,I,I, DIVI)    APFX(  divID, D,I,D,
 APFX(  divDB, D,D,B, DIVI )   APFX(  divDI, D,D,I, DIVI)    ANAN(  divDD, D,D,D, DIV)
 ANAN(  divZZ, Z,Z,Z, zdiv )
 
-     /* orBB */               APFX(  minBI, I,B,I, MIN)     APFX(  minBD, D,B,D, MIN)    
-APFX(  minIB, I,I,B, MIN)     APFX(  minII, I,I,I, MIN)     APFX(  minID, D,I,D, MIN)  
+     /* orBB */               APFX(  minBI, I,B,I, MIN)     APFX(  minBD, D,B,D, MIN)
+APFX(  minIB, I,I,B, MIN)     APFX(  minII, I,I,I, MIN)     APFX(  minID, D,I,D, MIN)
 APFX(  minDB, D,D,B, MIN)     APFX(  minDI, D,D,I, MIN)     APFX(  minDD, D,D,D, MIN)
 APFX(  minSS, SB,SB,SB, SBMIN)
 
-    /* andBB */               APFX(  maxBI, I,B,I, MAX)     APFX(  maxBD, D,B,D, MAX)    
-APFX(  maxIB, I,I,B, MAX)     APFX(  maxII, I,I,I, MAX)     APFX(  maxID, D,I,D, MAX)  
+    /* andBB */               APFX(  maxBI, I,B,I, MAX)     APFX(  maxBD, D,B,D, MAX)
+APFX(  maxIB, I,I,B, MAX)     APFX(  maxII, I,I,I, MAX)     APFX(  maxID, D,I,D, MAX)
 APFX(  maxDB, D,D,B, MAX)     APFX(  maxDI, D,D,I, MAX)     APFX(  maxDD, D,D,D, MAX)
 APFX(  maxSS, SB,SB,SB, SBMAX)
 
@@ -68,7 +68,7 @@ ANAN(remZZ, Z,Z,Z, zrem )
 static I jtremid(J jt,I a,D b){D r;I k;
  ASSERT(a&&-9e15<b&&b<9e15,EWOV);
  r=b-a*floor(b/a); k=(I)r;
- ASSERT(k==r,EWOV); 
+ ASSERT(k==r,EWOV);
  R k;
 }
 
@@ -104,7 +104,7 @@ D jtdgcd(J jt,D a,D b){D a1,b1,t;
  R a;
 }    /* D.L. Forkes 1984; E.E. McDonnell 1992 */
 #if SY_64
-#if SY_WIN32
+#if SY_WIN32 && !defined(NOASM)
 static I jtilcm(J jt,I a,I b){C er=0;I b1,d,z;
  if(a&&b){RZ(d=igcd(a,b)); b1=b/d; TYMESVV(1L,&z,&a,&b1); if(er)jt->jerr=EWOV; R    z;}else R 0;
 }
@@ -144,7 +144,7 @@ F2(jtintdiv){A z;B b,flr;I an,ar,*as,*av,c,d,j,k,m,n,p,p1,r,*s,wn,wr,*ws,*wv,*zv
  an=AN(a); ar=AR(a); as=AS(a); av=AV(a);
  wn=AN(w); wr=AR(w); ws=AS(w); wv=AV(w); b=ar>=wr; r=b?wr:ar; s=b?as:ws;
  ASSERT(!ICMP(as,ws,r),EVLENGTH);
- if(an&&wn){m=prod(r,s); n=prod(b?ar-r:wr-r,r+s);}else m=n=0; 
+ if(an&&wn){m=prod(r,s); n=prod(b?ar-r:wr-r,r+s);}else m=n=0;
  GA(z,INT,b?an:wn,b?ar:wr,s); zv=AV(z);
  d=wn?*wv:0; p=0<d?d:-d; p1=d==IMIN?p:p-1; flr=XMFLR==jt->xmode;
  if(!wr&&p&&!(p&p1)){

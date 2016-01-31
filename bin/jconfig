@@ -1,11 +1,15 @@
 # configuration for build shell scripts - edit to configure
 
+if [ "no" = "$JAVA_HOME"no ]; then
+JAVA_HOME=/usr/lib/jvm/java-6-sun-1.6.0.26
+fi
+
 # bits 32 or 64
-bits=64
+bits="${bits:=64}"
 
 # readline 0 or 1 to enable jconsole line recall
-readline=0
-LIBREADLINE=""
+# readline=0
+# LIBREADLINE=""
 
 # readline should be enabled if possible
 
@@ -15,17 +19,25 @@ LIBREADLINE=" -lreadline "
 
 # if link fails install readline or try one of next lines
 # LIBREADLINE=" -ledit -lncurses "
-# LIBREADLINE=" -ledit64 -lnccurses " 
+# LIBREADLINE=" -ledit64 -lnccurses "
 
 # be careful with changes after this line
 
+if [ "no" = "$un"no ]; then
 un=`uname`
+fi
 lcun=$( echo "$un" | tr -s  '[:upper:]'  '[:lower:]' )
+
+if [ "no" = "$HOSTCPU"no ]; then
+HOSTCPU=`uname -m`
+fi
 
 if [ $un != Linux ] && [ $un != Darwin ] && [ $un != FreeBSD ]
 then
-echo jconfig: not Linux or Darwin - changes to jconfig and other files required
+echo jconfig: not Linux or Darwin Or Win - changes to jconfig and other files required
 exit 1
+else
+echo jconfig: build for $un
 fi
 
 if [ $bits != 32 ] && [ $bits != 64 ]
@@ -40,11 +52,58 @@ echo jconfig:  readline must be 0 or 1
 exit 1
 fi
 
-COMP=" -fPIC -O3 -fno-strict-aliasing -DNOASM "
+if [ "no" = "$olecom"no ]; then
+olecom=0
+fi
+
+if [ $un != Win ]
+then
+olecom=0
+fi
+
+if [ $olecom != 0 ] && [ $olecom != 1 ]
+then
+echo jconfig:  olecom must be 0 or 1
+exit 1
+fi
+
+if [ $un == Win ]
+then
+if [ $olecom == 1 ]; then
+OLECOMX=" -DOLECOM "
+fi
+# readline 0 or 1 to enable jconsole line recall
+readline=0
+LIBREADLINE=""
+fi
+
+if [ "no" = "$jjni"no ]; then
+jjni=0
+fi
+
+if [ $jjni != 0 ] && [ $jjni != 1 ]
+then
+echo jconfig:  jjni must be 0 or 1
+exit 1
+fi
+
+if [ $jjni == 1 ]; then
+JJNIX=" -DJJNI -I$JAVA_HOME/include -I$JAVA_HOME/include/linux "
+fi
+
+if [ $un == Win ]
+then
+JCONLINK=' -Wl,--stack=8000000 '
+SOLINK=" -shared -Wl,--enable-stdcall-fixup -lm -lole32 -loleaut32 -luuid -o "
+TSLINK=" -shared -Wl,--enable-stdcall-fixup -o "
+SOSUFFIX=dll
+fi
 
 if [ $un == Linux ]
 then
-SOLINK="  -shared -W1,soname,libj.so -lm -ldl -o "
+JCONLINK=" -ldl "
+SOLINK=" -shared -Wl,-soname,libj.so -lm -ldl -o "
+TSLINK=" -shared -Wl,-soname,libtsdll.so -ldl -o "
 SOSUFFIX=so
 fi
 
@@ -56,18 +115,57 @@ fi
 
 if [ $un == Darwin ]
 then
+JCONLINK=""
 SOLINK=" -dynamiclib -lm -ldl -o "
+TSLINK=" -dynamiclib -ldl -o "
 SOSUFFIX=dylib
 fi
 
 if [ $bits == 32 ]
 then
-COMP=" -m32 $COMP "
-SOLINK=" -m32 $SOLINK "
-M32=" -m32 "
+if [ $un != Win ]
+then
+# faster, but sse2 not available for 32-bit amd cpu
+# sse does not support mfpmath=sse in 32-bit gcc
+DPREC=" -msse2 -mfpmath=sse "
 else
-COMP=" -D_UNIX64 $COMP "
+# slower, use 387 fpu and truncate extra precision
+# this still fail linux g410 g421p (repeat several times)
+DPREC=" -ffloat-store "
+fi
+M32=" -m32 "
+NOASM=" -DNOASM "
+else
+if [ $un != Win ]
+then
+UNIX64=" -D_UNIX64 "
+fi
+DPREC=""
+M32=" -m64 "
+NOASM=" -DNOASM "
+fi
+
+OPTCF=" -O3 -fno-strict-aliasing -fsignaling-nans "
+
+if [ ${HOSTCPU:0:3} == arm ]
+then
+bits=32
+NOASM=" -DNOASM "
+DPREC=" -mfloat-abi=softfp -mfpu=vfpv3 -march=armv7-a "
 M32=""
+UNIX64=""
+OPTCF=" -Os -fno-strict-aliasing -fsignaling-nans "
+fi
+
+# -O2 need -fno-strict-aliasing for dtoa.c,
+# -O3 linux gcc 4.6 crashed because of -ftree-vectorize misalignment
+#     either add -fno-tree-vectorize      (disable all loop vectorize)
+#         or define _MISALIGN_BYTEVECTOR  (disable some codes inside ar.c, 32-bit fails g331ins space requirement of test 0 1, need to relax)
+if [ $un == Win ]
+then
+COMP=" $OPTCF -std=c99 -pedantic -D_MISALIGN_BYTEVECTOR -D_JDLL -D_FILE_OFFSET_BITS=64 $OLECOMX $M32 $NOASM $DPREC $JJNIX $COMP "
+else
+COMP=" $OPTCF -std=c99 -pedantic -D_MISALIGN_BYTEVECTOR -fpic -D__USE_MISC -D_XOPEN_SOURCE -D_FILE_OFFSET_BITS=64 $UNIX64 $M32 $NOASM $DPREC $JJNIX $COMP "
 fi
 
 if [ $readline == 1 ]
@@ -75,5 +173,7 @@ then
 COMP="-DREADLINE $COMP "
 fi
 
-SOLINK=" $SOLINK $TARGET.$SOSUFFIX "
-export COMP SOLINK M32 LIBREADLINE
+SOLINK=" $M32 $SOLINK $TARGET.$SOSUFFIX "
+TSLINK=" $M32 $TSLINK $TARGET.$SOSUFFIX "
+JCONLINK=" $M32 $JCONLINK "
+export COMP JCONLINK TSLINK SOLINK LIBREADLINE olecom

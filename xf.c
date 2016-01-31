@@ -10,15 +10,21 @@
 #include <winbase.h>
 #endif
 
-#include "j.h"
-#include "x.h"
-
 #if !SY_WIN32 && (SYS & SYS_DOS)
 #include <dos.h>
 #endif
 
-#if (SYS & SYS_UNIX)
+
+#include "j.h"
+#if (SYS & SYS_UNIX) || defined(__MINGW32__)
 #include <stdlib.h>
+#ifdef ANDROID
+#ifdef link
+#undef link
+#endif
+#endif
+#include <unistd.h>
+//#include <unistd.h>
 typedef long long INT64;
 #endif
 
@@ -27,12 +33,14 @@ typedef long long INT64;
 #include <io.h>
 #endif
 
+#include "x.h"
+
 
 #if SY_64
 static I fsize(F f){fpos_t z;
  RZ(f);
-#if SY_WIN32
- _lseeki64(_fileno(f),0,SEEK_END); 
+#if SY_WIN32 && !defined(__MINGW32__)
+ _lseeki64(_fileno(f),0,SEEK_END);
 #else
  fseek(f,0L,SEEK_END);
 #endif
@@ -85,10 +93,10 @@ static B jtwa(J jt,F f,I j,A w){C*x;I n,p=0;size_t q=1;
 #else
  fseek(f,(long)(0>j?1+j:j),0>j?SEEK_END:SEEK_SET);
 #endif
- 
+
  clearerr(f);
  while(q&&n>p){
-  p+=q=fwrite(p+x,sizeof(C),(size_t)(n-p),f); 
+  p+=q=fwrite(p+x,sizeof(C),(size_t)(n-p),f);
   if(ferror(f))R jerrno()?1:0;
  }
  R 1;
@@ -99,7 +107,7 @@ F1(jtjfread){A z;F f;
  F1RANK(0,jtjfread,0);
  RE(f=stdf(w));
  if(f)R 1==(I)f?jgets("\001"):3==(I)f?rdns(stdin):rd(vfn(f),0L,-1L);
- RZ(f=jope(w,FREAD)); z=rd(f,0L,-1L); fclose(f); 
+ RZ(f=jope(w,FREAD)); z=rd(f,0L,-1L); fclose(f);
  R z;
 }
 
@@ -110,8 +118,8 @@ F2(jtjfwrite){B b;F f;
  if(2==(I)f){b=jt->tostdout; jt->tostdout=1; jt->mtyo=MTYOFILE; jpr(a); jt->mtyo=0; jt->tostdout=b; R a;}
  if(4==(I)f){R (U)AN(a)!=fwrite(CAV(a),sizeof(C),AN(a),stdout)?jerrno():a;}
  if(5==(I)f){R (U)AN(a)!=fwrite(CAV(a),sizeof(C),AN(a),stderr)?jerrno():a;}
- if(b=!f)RZ(f=jope(w,FWRITE)) else RE(vfn(f)); 
- wa(f,0L,a); 
+ if(b=!f)RZ(f=jope(w,FWRITE)) else RE(vfn(f));
+ wa(f,0L,a);
  if(b)fclose(f);else fflush(f);
  RNE(mtm);
 }
@@ -131,8 +139,8 @@ F2(jtjfappend){B b;F f;
 F1(jtjfsize){B b;F f;I m;
  F1RANK(0,jtjfsize,0);
  RE(f=stdf(w));
- if(b=!f)RZ(f=jope(w,FREAD)) else RE(vfn(f)); 
- m=fsize(f); 
+ if(b=!f)RZ(f=jope(w,FREAD)) else RE(vfn(f));
+ m=fsize(f);
  if(b)fclose(f);else fflush(f);
  RNE(sc(m));
 }
@@ -142,7 +150,7 @@ static F jtixf(J jt,A w){F f;
  switch(AT(w)){
   default:  ASSERT(0,EVDOMAIN);
   case B01: ASSERT(0,EVFNUM);
-  case BOX: ASSERT(2==AN(w),EVLENGTH); f=stdf(head(w)); break; 
+  case BOX: ASSERT(2==AN(w),EVLENGTH); f=stdf(head(w)); break;
   case INT: f=(F)*AV(w); ASSERT(2<(UI)f,EVFNUM);
  }
  R f?vfn(f):f;
@@ -172,7 +180,7 @@ F2(jtjiwrite){B b;F f;I i;
  ASSERT(!AN(a)||AT(a)&LIT+C2T,EVDOMAIN);
  ASSERT(1>=AR(a),EVRANK);
  RE(f=ixf(w)); if(b=!f)RZ(f=jope(w,FUPDATE));
- if(ixin(w,fsize(f),&i,0L))wa(f,i,a); 
+ if(ixin(w,fsize(f),&i,0L))wa(f,i,a);
  if(b)fclose(f);else fflush(f);
  RNE(mtm);
 }
@@ -305,7 +313,7 @@ F1(jtjgetpid){
 #if (SYS & SYS_UNIX)
 F1(jtpathdll){
  ASSERTMTV(w); R cstr("");
-} 
+}
 #else
 F1(jtpathdll){char p[MAX_PATH]; extern C dllpath[];
  ASSERTMTV(w);

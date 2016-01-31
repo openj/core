@@ -23,7 +23,16 @@ case. 'Win' do.
   closesocketJ=: 'closesocket i i' scdm
   ioctlsocketJ=: 'ioctlsocket i i i *i' scdm
 case. 'Linux' do.
-  c=. > (IFDEF'android') {'libc.so.6';'libc.so'
+  c=. 'libc.so.6'
+  ccdm=: 1 : ('(''"',c,'" '',x)&(15!:0)')
+  ncdm=: ccdm
+  scdm=: ccdm
+  wcdm=: 1 : ']'
+  LIB=: c
+  closesocketJ=: 'close i i' scdm
+  ioctlsocketJ=: 'ioctl i i i *i' scdm
+case. 'Android' do.
+  c=. 'libc.so'
   ccdm=: 1 : ('(''"',c,'" '',x)&(15!:0)')
   ncdm=: ccdm
   scdm=: ccdm

@@ -17,7 +17,7 @@ mkdir d
 test perm d
 erase d
 
-f =. <'foogoo5.x'
+f =. <((((<UNAME) e. 'Linux';'Android') *. 1 e. '/sdcard' E. 1!:43'')#BINPATH,'/'),'foogoo5.x'
 'foo upon thee' write f
 test perm f
 

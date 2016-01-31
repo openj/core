@@ -1,8 +1,18 @@
 /* Copyright 1990-2011, Jsoftware Inc.  All rights reserved. */
 /* License in license.txt.                                   */
 
+#ifdef _WIN32
+#ifdef __MINGW32__
+#ifndef _stdcall
+#define _stdcall __stdcall
+#endif
+#endif
+#else
+#define _stdcall
+#endif
+
 J _stdcall JInit();                         /* init instance */
-void _stdcall JSM(J jt, void*callbacks[]);  /* set callbacks */ 
+void _stdcall JSM(J jt, void*callbacks[]);  /* set callbacks */
 int _stdcall JDo(J jt,C*);                  /* run sentence */
 C* _stdcall JGetLocale(J jt);               /* get locale */			
 int _stdcall JFree(J jt);                   /* free instance */
@@ -11,7 +21,7 @@ I _stdcall JSetA(J jt,I n,C* name,I x,C* d);/* name=:3!:2 data */
 
 typedef void* (_stdcall *JInitType)     ();
 typedef int   (_stdcall *JDoType)       (void*, C*);
-typedef C*    (_stdcall *JGetLocaleType)(void*);    
+typedef C*    (_stdcall *JGetLocaleType)(void*);
 typedef void  (_stdcall *JSMType)       (void*, void*);
 typedef void  (_stdcall *JFreeType)     (void*);
 typedef A     (_stdcall *JgaType)       (J jt, I t, I n, I r, I*s);
